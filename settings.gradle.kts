@@ -1,3 +1,18 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
 rootProject.name = "palmastro"
 
 include(
@@ -8,5 +23,7 @@ include(
     ":engine-scoring",
     ":engine-content",
     ":svc-analytics",
+    ":data-room",
+    ":app",
     ":integration-tests",
 )
