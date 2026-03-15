@@ -65,6 +65,9 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val profile = userRepository.get() ?: return@launch
             userRepository.save(profile.copy(rawMediaRetention = enabled, updatedAt = System.currentTimeMillis()))
+            if (!enabled) {
+                wipeManager.deleteAllScanImages()
+            }
         }
     }
 
