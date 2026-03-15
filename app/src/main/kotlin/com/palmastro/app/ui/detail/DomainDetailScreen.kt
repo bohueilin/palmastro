@@ -3,17 +3,23 @@ package com.palmastro.app.ui.detail
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.palmastro.app.share.ShareCardRenderer
+import com.palmastro.app.share.ShareHelper
+import com.palmastro.app.viewmodel.DomainDetailState
 import com.palmastro.app.viewmodel.DomainDetailViewModel
 import com.palmastro.contracts.Observation
 
@@ -35,6 +41,7 @@ fun DomainDetailScreen(
     viewModel: DomainDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -43,6 +50,13 @@ fun DomainDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                    }
+                },
+                actions = {
+                    if (state.payload != null) {
+                        IconButton(onClick = { shareDomainDetail(context, state) }) {
+                            Icon(Icons.Default.Share, contentDescription = "分享")
+                        }
                     }
                 },
             )
@@ -141,6 +155,28 @@ fun DomainDetailScreen(
             }
         }
     }
+}
+
+private fun shareDomainDetail(context: Context, state: DomainDetailState) {
+    val payload = state.payload ?: return
+    val data = ShareCardRenderer.DomainDetailData(
+        displayName = state.displayName,
+        score = payload.scoreCard.totalScore,
+        grade = payload.scoreCard.grade,
+        interpretation = payload.interpretationZh,
+        actionToday = payload.actionTodayZh,
+        prompt = payload.promptZh,
+    )
+    val bitmap = ShareCardRenderer.renderDomainDetailCard(data)
+    val text = ShareHelper.buildDomainText(
+        state.displayName,
+        payload.scoreCard.totalScore,
+        payload.scoreCard.grade,
+        payload.interpretationZh,
+        payload.actionTodayZh,
+    )
+    ShareHelper.share(context, bitmap, text)
+    bitmap.recycle()
 }
 
 @Composable
