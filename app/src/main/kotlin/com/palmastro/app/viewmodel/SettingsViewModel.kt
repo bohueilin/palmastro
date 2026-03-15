@@ -1,12 +1,19 @@
 package com.palmastro.app.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.palmastro.app.worker.ScanReminderWorker
 import com.palmastro.data.repository.UserRepository
 import com.palmastro.data.repository.WipeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 data class SettingsState(
@@ -20,6 +27,7 @@ data class SettingsState(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val userRepository: UserRepository,
     private val wipeManager: WipeManager,
 ) : ViewModel() {
@@ -58,6 +66,7 @@ class SettingsViewModel @Inject constructor(
             val profile = userRepository.get() ?: return@launch
             userRepository.save(profile.copy(reminders = reminders, updatedAt = System.currentTimeMillis()))
         }
+        scheduleReminder(reminders)
     }
 
     fun setRetention(enabled: Boolean) {
@@ -75,7 +84,26 @@ class SettingsViewModel @Inject constructor(
         _state.update { it.copy(isWiping = true) }
         viewModelScope.launch {
             wipeManager.deleteAllData()
+            WorkManager.getInstance(appContext).cancelUniqueWork(ScanReminderWorker.WORK_NAME)
             _state.update { it.copy(isWiping = false, isWipeComplete = true) }
         }
+    }
+
+    private fun scheduleReminder(reminders: String) {
+        val workManager = WorkManager.getInstance(appContext)
+
+        if (reminders == "off") {
+            workManager.cancelUniqueWork(ScanReminderWorker.WORK_NAME)
+            return
+        }
+
+        val request = PeriodicWorkRequestBuilder<ScanReminderWorker>(30, TimeUnit.DAYS)
+            .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            ScanReminderWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE,
+            request,
+        )
     }
 }
