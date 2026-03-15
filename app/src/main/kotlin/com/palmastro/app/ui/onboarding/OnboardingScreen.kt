@@ -11,6 +11,33 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.viewmodel.OnboardingViewModel
 import java.time.LocalDate
 
+private data class County(val name: String, val lat: Double, val lon: Double)
+
+private val taiwanCounties = listOf(
+    County("台北市", 25.033, 121.565),
+    County("新北市", 25.012, 121.465),
+    County("基隆市", 25.128, 121.739),
+    County("桃園市", 24.994, 121.301),
+    County("新竹市", 24.804, 120.969),
+    County("新竹縣", 24.839, 121.004),
+    County("苗栗縣", 24.560, 120.822),
+    County("台中市", 24.148, 120.674),
+    County("彰化縣", 24.076, 120.542),
+    County("南投縣", 23.961, 120.685),
+    County("雲林縣", 23.709, 120.432),
+    County("嘉義市", 23.480, 120.449),
+    County("嘉義縣", 23.452, 120.256),
+    County("台南市", 22.999, 120.227),
+    County("高雄市", 22.627, 120.301),
+    County("屏東縣", 22.552, 120.549),
+    County("宜蘭縣", 24.757, 121.753),
+    County("花蓮縣", 23.992, 121.601),
+    County("台東縣", 22.756, 121.145),
+    County("澎湖縣", 23.571, 119.579),
+    County("金門縣", 24.449, 118.377),
+    County("連江縣", 26.160, 119.950),
+)
+
 @Composable
 fun OnboardingScreen(
     onComplete: () -> Unit,
@@ -41,7 +68,13 @@ fun OnboardingScreen(
             )
             2 -> BirthDetailsStep(
                 onSkip = { viewModel.skipBirthDetails(); viewModel.nextStep() },
-                onNext = { viewModel.nextStep() },
+                onContinue = { hour, minute, county ->
+                    viewModel.setBirthTime(hour, minute)
+                    if (county != null) {
+                        viewModel.setBirthPlace(county.name, county.lat, county.lon)
+                    }
+                    viewModel.nextStep()
+                },
             )
             3 -> ToneStep(
                 selected = state.tone,
@@ -90,14 +123,90 @@ private fun BirthdayStep(onSelect: (LocalDate) -> Unit) {
 }
 
 @Composable
-private fun BirthDetailsStep(onSkip: () -> Unit, onNext: () -> Unit) {
+private fun BirthDetailsStep(
+    onSkip: () -> Unit,
+    onContinue: (hour: Int, minute: Int, county: County?) -> Unit,
+) {
+    var hour by remember { mutableStateOf("12") }
+    var minute by remember { mutableStateOf("0") }
+    var selectedCounty by remember { mutableStateOf<County?>(null) }
+    var dropdownExpanded by remember { mutableStateOf(false) }
+
     Text("出生時間與地點（選填）", fontSize = 20.sp)
     Spacer(Modifier.height(8.dp))
     Text("提供完整資訊可獲得更精準的分析 (L2)", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     Spacer(Modifier.height(24.dp))
-    Button(onClick = onSkip) { Text("跳過，繼續") }
+
+    // Birth time
+    Text("出生時間", fontSize = 16.sp)
+    Spacer(Modifier.height(8.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedTextField(
+            value = hour,
+            onValueChange = { hour = it },
+            label = { Text("時") },
+            modifier = Modifier.width(80.dp),
+        )
+        OutlinedTextField(
+            value = minute,
+            onValueChange = { minute = it },
+            label = { Text("分") },
+            modifier = Modifier.width(80.dp),
+        )
+    }
+
+    Spacer(Modifier.height(20.dp))
+
+    // Birth place
+    Text("出生地點", fontSize = 16.sp)
+    Spacer(Modifier.height(8.dp))
+    Box {
+        OutlinedButton(
+            onClick = { dropdownExpanded = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                selectedCounty?.name ?: "選擇縣市",
+                fontSize = 16.sp,
+            )
+        }
+        DropdownMenu(
+            expanded = dropdownExpanded,
+            onDismissRequest = { dropdownExpanded = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text("海外（不指定）") },
+                onClick = {
+                    selectedCounty = null
+                    dropdownExpanded = false
+                },
+            )
+            taiwanCounties.forEach { county ->
+                DropdownMenuItem(
+                    text = { Text(county.name) },
+                    onClick = {
+                        selectedCounty = county
+                        dropdownExpanded = false
+                    },
+                )
+            }
+        }
+    }
+
+    Spacer(Modifier.height(32.dp))
+
+    Button(
+        onClick = {
+            val h = hour.toIntOrNull()?.coerceIn(0, 23) ?: 12
+            val m = minute.toIntOrNull()?.coerceIn(0, 59) ?: 0
+            onContinue(h, m, selectedCounty)
+        },
+        modifier = Modifier.fillMaxWidth(),
+    ) { Text("確認") }
+
     Spacer(Modifier.height(12.dp))
-    TextButton(onClick = onNext) { Text("我要填寫") }
+
+    TextButton(onClick = onSkip) { Text("跳過此步驟") }
 }
 
 @Composable

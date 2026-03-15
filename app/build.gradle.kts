@@ -75,6 +75,9 @@ dependencies {
     // MediaPipe
     implementation("com.google.mediapipe:tasks-vision:0.10.9")
 
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     // Hilt
     implementation("com.google.dagger:hilt-android:2.50")
     ksp("com.google.dagger:hilt-compiler:2.50")
