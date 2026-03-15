@@ -1,19 +1,26 @@
 package com.palmastro.app.ui.results
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.palmastro.app.share.ShareCardRenderer
+import com.palmastro.app.share.ShareHelper
 import com.palmastro.app.viewmodel.DomainCard
+import com.palmastro.app.viewmodel.ResultsState
 import com.palmastro.app.viewmodel.ResultsViewModel
 
 private val gradeColors = mapOf(
@@ -36,6 +43,7 @@ fun ResultsScreen(
     viewModel: ResultsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(
@@ -44,7 +52,14 @@ fun ResultsScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("掌紋星象", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            TextButton(onClick = onSettingsClick) { Text("設定") }
+            Row {
+                if (state.hasResults) {
+                    IconButton(onClick = { shareSummary(context, state) }) {
+                        Icon(Icons.Default.Share, contentDescription = "分享")
+                    }
+                }
+                TextButton(onClick = onSettingsClick) { Text("設定") }
+            }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -100,6 +115,22 @@ fun ResultsScreen(
             }
         }
     }
+}
+
+private fun shareSummary(context: Context, state: ResultsState) {
+    val domains = state.domainCards.map {
+        ShareCardRenderer.DomainScore(it.displayName, it.score, it.grade)
+    }
+    val data = ShareCardRenderer.SummaryData(
+        monthKey = state.monthKey,
+        grade = state.grade,
+        confidence = state.confidence,
+        domains = domains,
+    )
+    val bitmap = ShareCardRenderer.renderSummaryCard(data)
+    val text = ShareHelper.buildSummaryText(state.monthKey, state.grade, state.confidence, domains)
+    ShareHelper.share(context, bitmap, text)
+    bitmap.recycle()
 }
 
 @Composable
