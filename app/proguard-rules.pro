@@ -20,3 +20,11 @@
 -keep class * extends androidx.room.RoomDatabase
 -keep @androidx.room.Entity class *
 -dontwarn androidx.room.paging.**
+
+# MediaPipe proto classes (not bundled but referenced)
+-dontwarn com.google.mediapipe.proto.CalculatorProfileProto$CalculatorProfile
+-dontwarn com.google.mediapipe.proto.GraphTemplateProto$CalculatorGraphTemplate
+
+# Annotation processing (compile-time only, not needed at runtime)
+-dontwarn javax.annotation.processing.**
+-dontwarn javax.lang.model.**
