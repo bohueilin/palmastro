@@ -8,6 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import com.palmastro.app.viewmodel.OnboardingViewModel
 import java.time.LocalDate
 
@@ -94,7 +99,12 @@ private fun HandSelectionStep(selected: String, onSelect: (String) -> Unit, onNe
             OutlinedButton(
                 onClick = { onSelect(key) },
                 colors = if (selected == key) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-                modifier = Modifier.width(120.dp),
+                modifier = Modifier
+                    .width(120.dp)
+                    .semantics {
+                        role = Role.RadioButton
+                        stateDescription = if (selected == key) "已選取" else "未選取"
+                    },
             ) { Text(label, fontSize = 18.sp) }
         }
     }
@@ -163,7 +173,9 @@ private fun BirthDetailsStep(
     Box {
         OutlinedButton(
             onClick = { dropdownExpanded = true },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = selectedCounty?.name ?: "選擇縣市，展開選單" },
         ) {
             Text(
                 selectedCounty?.name ?: "選擇縣市",
@@ -226,7 +238,12 @@ private fun ToneStep(selected: String, onSelect: (String) -> Unit, onComplete: (
             OutlinedButton(
                 onClick = { onSelect(tone.key) },
                 colors = if (selected == tone.key) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics {
+                        role = Role.RadioButton
+                        stateDescription = if (selected == tone.key) "已選取" else "未選取"
+                    },
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(tone.label, fontSize = 16.sp)
