@@ -1,5 +1,6 @@
 package com.palmastro.app.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.palmastro.data.repository.ResultRepository
@@ -27,26 +28,32 @@ data class ResultsState(
 
 @HiltViewModel
 class ResultsViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val resultRepository: ResultRepository,
     private val userRepository: UserRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ResultsState())
     val state = _state.asStateFlow()
 
-    init {
-        loadLatest()
-    }
+    private val targetMonthKey: String? = savedStateHandle.get<String>("monthKey")
 
-    fun loadLatest() {
+    init { load() }
+
+    fun load() {
         viewModelScope.launch {
-            val results = resultRepository.getRecent(1)
+            val entity = if (targetMonthKey != null) {
+                resultRepository.getByMonth(targetMonthKey)
+            } else {
+                resultRepository.getRecent(1).firstOrNull()
+            }
             val profile = userRepository.get()
-            if (results.isEmpty()) {
+
+            if (entity == null) {
                 _state.update { it.copy(hasResults = false) }
                 return@launch
             }
-            val latest = results.first()
-            val scores = latest.domainScoresJson.removeSurrounding("{", "}")
+
+            val scores = entity.domainScoresJson.removeSurrounding("{", "}")
                 .split(",")
                 .filter { it.contains(":") }
                 .associate { entry ->
@@ -54,10 +61,10 @@ class ResultsViewModel @Inject constructor(
                     k.trim('"') to v.trim().toInt()
                 }
             val domainNames = mapOf(
-                "career" to "\u4e8b\u696d",
-                "wealth" to "\u8ca1\u5bcc",
-                "family" to "\u5bb6\u5ead",
-                "health" to "\u5065\u5eb7"
+                "career" to "事業",
+                "wealth" to "財富",
+                "family" to "家庭",
+                "health" to "健康"
             )
             _state.update {
                 it.copy(
@@ -67,12 +74,12 @@ class ResultsViewModel @Inject constructor(
                             domain = domain,
                             displayName = domainNames[domain] ?: domain,
                             score = score,
-                            grade = latest.grade
+                            grade = entity.grade
                         )
                     },
-                    grade = latest.grade,
-                    confidence = latest.confidenceLevel,
-                    monthKey = latest.monthKey,
+                    grade = entity.grade,
+                    confidence = entity.confidenceLevel,
+                    monthKey = entity.monthKey,
                     tone = profile?.tone ?: "scientific",
                 )
             }
