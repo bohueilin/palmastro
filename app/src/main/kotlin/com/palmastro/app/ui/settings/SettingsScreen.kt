@@ -7,6 +7,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -43,8 +45,19 @@ fun SettingsScreen(
             Spacer(Modifier.height(8.dp))
             val tones = listOf("scientific" to "科學分析", "healing" to "療癒關懷", "roast_safe" to "犀利直說")
             tones.forEach { (key, label) ->
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    RadioButton(selected = state.tone == key, onClick = { viewModel.setTone(key) })
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .selectable(
+                            selected = state.tone == key,
+                            onClick = { viewModel.setTone(key) },
+                            role = Role.RadioButton,
+                        )
+                        .padding(vertical = 4.dp),
+                ) {
+                    RadioButton(selected = state.tone == key, onClick = null)
                     Text(label, modifier = Modifier.padding(start = 8.dp))
                 }
             }
@@ -55,8 +68,19 @@ fun SettingsScreen(
             Spacer(Modifier.height(8.dp))
             val reminders = listOf("30d" to "每30天", "monthly" to "每月1號", "off" to "關閉")
             reminders.forEach { (key, label) ->
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    RadioButton(selected = state.reminders == key, onClick = { viewModel.setReminders(key) })
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .selectable(
+                            selected = state.reminders == key,
+                            onClick = { viewModel.setReminders(key) },
+                            role = Role.RadioButton,
+                        )
+                        .padding(vertical = 4.dp),
+                ) {
+                    RadioButton(selected = state.reminders == key, onClick = null)
                     Text(label, modifier = Modifier.padding(start = 8.dp))
                 }
             }
