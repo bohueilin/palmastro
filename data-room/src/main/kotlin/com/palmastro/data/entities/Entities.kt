@@ -40,6 +40,7 @@ data class MonthlyResultEntity(
     val contentVersion: String,
     val scanQualityScore: Int,
     val featureCoverage: Float,
+    val scanImagePath: String = "",
     val createdAt: Long = System.currentTimeMillis(),
 )
 

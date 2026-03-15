@@ -20,4 +20,7 @@ interface MonthlyResultDao {
 
     @Query("DELETE FROM monthly_result")
     suspend fun deleteAll()
+
+    @Query("UPDATE monthly_result SET scanImagePath = ''")
+    suspend fun clearAllScanImagePaths()
 }
