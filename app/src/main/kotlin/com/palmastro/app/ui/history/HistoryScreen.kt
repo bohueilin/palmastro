@@ -16,13 +16,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.viewmodel.HistoryViewModel
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.palmastro.app.viewmodel.MonthSummary
 
 private val gradeColors = mapOf(
-    "Growing" to Color(0xFF4CAF50),
-    "Stable" to Color(0xFF2196F3),
-    "Building" to Color(0xFFFF9800),
-    "Watchout" to Color(0xFFF44336),
+    "Growing" to Color(0xFF388E3C),
+    "Stable" to Color(0xFF1976D2),
+    "Building" to Color(0xFFE65100),
+    "Watchout" to Color(0xFFD32F2F),
 )
 
 private val gradeNamesZh = mapOf(
@@ -82,8 +85,19 @@ fun HistoryScreen(
 
 @Composable
 private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
+    val gradeZh = gradeNamesZh[month.grade] ?: month.grade
+    val orderedDomains = listOf("career", "wealth", "family", "health")
+    val scoresText = orderedDomains.joinToString(" ") { domain ->
+        "${domainNamesZh[domain] ?: domain}${month.domainScores[domain] ?: 0}分"
+    }
+
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "${month.monthKey} $gradeZh $scoresText 信心度${month.confidence}"
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -98,7 +112,7 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
                     shape = MaterialTheme.shapes.small,
                 ) {
                     Text(
-                        gradeNamesZh[month.grade] ?: month.grade,
+                        gradeZh,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         color = gradeColors[month.grade] ?: MaterialTheme.colorScheme.primary,
@@ -109,7 +123,6 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
 
             Spacer(Modifier.height(12.dp))
 
-            val orderedDomains = listOf("career", "wealth", "family", "health")
             orderedDomains.forEach { domain ->
                 val score = month.domainScores[domain] ?: 0
                 Row(
@@ -119,7 +132,10 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
                     Text(domainNamesZh[domain] ?: domain, fontSize = 13.sp, modifier = Modifier.width(40.dp))
                     LinearProgressIndicator(
                         progress = score / 100f,
-                        modifier = Modifier.weight(1f).height(6.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(6.dp)
+                            .clearAndSetSemantics {},
                         color = gradeColors[month.grade] ?: MaterialTheme.colorScheme.primary,
                     )
                     Text("$score", fontSize = 13.sp, fontWeight = FontWeight.Medium,
