@@ -13,6 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,10 +28,10 @@ import com.palmastro.app.viewmodel.ResultsState
 import com.palmastro.app.viewmodel.ResultsViewModel
 
 private val gradeColors = mapOf(
-    "Growing" to Color(0xFF4CAF50),
-    "Stable" to Color(0xFF2196F3),
-    "Building" to Color(0xFFFF9800),
-    "Watchout" to Color(0xFFF44336),
+    "Growing" to Color(0xFF388E3C),
+    "Stable" to Color(0xFF1976D2),
+    "Building" to Color(0xFFE65100),
+    "Watchout" to Color(0xFFD32F2F),
 )
 
 private val gradeNamesZh = mapOf(
@@ -44,6 +48,7 @@ fun ResultsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val view = LocalView.current
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(
@@ -54,8 +59,11 @@ fun ResultsScreen(
             Text("掌紋星象", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Row {
                 if (state.hasResults) {
-                    IconButton(onClick = { shareSummary(context, state) }) {
-                        Icon(Icons.Default.Share, contentDescription = "分享")
+                    IconButton(onClick = {
+                        view.announceForAccessibility("正在分享月度報告")
+                        shareSummary(context, state)
+                    }) {
+                        Icon(Icons.Default.Share, contentDescription = "分享月度報告")
                     }
                 }
                 TextButton(onClick = onSettingsClick) { Text("設定") }
@@ -109,7 +117,7 @@ fun ResultsScreen(
                     Spacer(Modifier.height(4.dp))
                     TextButton(
                         onClick = onHistoryClick,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
                     ) { Text("歷史記錄") }
                 }
             }
@@ -135,8 +143,14 @@ private fun shareSummary(context: Context, state: ResultsState) {
 
 @Composable
 private fun DomainCardItem(card: DomainCard, onClick: () -> Unit) {
+    val gradeZh = gradeNamesZh[card.grade] ?: card.grade
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "${card.displayName} ${card.score}分 $gradeZh"
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -156,7 +170,10 @@ private fun DomainCardItem(card: DomainCard, onClick: () -> Unit) {
             Spacer(Modifier.height(4.dp))
             LinearProgressIndicator(
                 progress = card.score / 100f,
-                modifier = Modifier.fillMaxWidth().height(6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clearAndSetSemantics {},
                 color = gradeColors[card.grade] ?: MaterialTheme.colorScheme.primary,
             )
             Spacer(Modifier.height(4.dp))
