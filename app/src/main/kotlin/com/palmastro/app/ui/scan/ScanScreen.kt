@@ -23,6 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,6 +59,7 @@ fun ScanScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val view = LocalView.current
 
     var hasPermission by remember { mutableStateOf(false) }
     var permissionDenied by remember { mutableStateOf(false) }
@@ -70,6 +77,12 @@ fun ScanScreen(
 
     LaunchedEffect(state.isComplete) {
         if (state.isComplete) onComplete()
+    }
+
+    LaunchedEffect(state.showFlash) {
+        if (state.showFlash) {
+            view.announceForAccessibility("拍攝完成")
+        }
     }
 
     when {
@@ -128,7 +141,7 @@ private fun CaptureScreen(
 
         // Hand overlay guide
         HandOverlay(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().clearAndSetSemantics {},
         )
 
         // Flash animation
@@ -216,7 +229,9 @@ private fun CaptureScreen(
             ) {
                 Text(
                     coachingHint,
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .semantics { liveRegion = LiveRegionMode.Polite },
                     fontSize = 16.sp,
                     color = Color.White,
                     textAlign = TextAlign.Center,
@@ -238,6 +253,7 @@ private fun CaptureScreen(
                     .size(80.dp)
                     .clip(CircleShape)
                     .border(4.dp, Color.White, CircleShape)
+                    .semantics { contentDescription = "拍攝" }
                     .then(
                         if (!isCapturing) Modifier.clickable { onCapture() }
                         else Modifier
@@ -283,7 +299,12 @@ private fun ErrorScreen(error: String, onDismiss: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("發生錯誤", fontSize = 20.sp, color = MaterialTheme.colorScheme.error)
+        Text(
+            "發生錯誤",
+            fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        )
         Spacer(Modifier.height(8.dp))
         Text(error, fontSize = 14.sp)
         Spacer(Modifier.height(16.dp))
