@@ -14,10 +14,10 @@ object ShareCardRenderer {
     private val headerColorEnd = Color.parseColor("#7E57C2")
 
     private val gradeColors = mapOf(
-        "Growing" to Color.parseColor("#4CAF50"),
-        "Stable" to Color.parseColor("#2196F3"),
-        "Building" to Color.parseColor("#FF9800"),
-        "Watchout" to Color.parseColor("#F44336"),
+        "Growing" to Color.parseColor("#388E3C"),
+        "Stable" to Color.parseColor("#1976D2"),
+        "Building" to Color.parseColor("#E65100"),
+        "Watchout" to Color.parseColor("#D32F2F"),
     )
 
     private val gradeNamesZh = mapOf(
