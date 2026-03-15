@@ -99,6 +99,16 @@ fun ScanScreen(
                 CircularProgressIndicator()
             }
         }
+        state.modelDownloading -> ModelDownloadingScreen()
+        state.modelError != null -> ModelErrorScreen(
+            error = state.modelError ?: "",
+            onRetry = { viewModel.retryModelDownload() },
+        )
+        !state.modelReady -> {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
         state.isProcessing -> ProcessingScreen()
         state.error != null -> ErrorScreen(
             error = state.error ?: "",
@@ -276,6 +286,38 @@ private fun CaptureScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ModelDownloadingScreen() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        CircularProgressIndicator(modifier = Modifier.size(64.dp))
+        Spacer(Modifier.height(16.dp))
+        Text("正在下載分析模型...", fontSize = 18.sp)
+    }
+}
+
+@Composable
+private fun ModelErrorScreen(error: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            error,
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        )
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onRetry) { Text("重試") }
     }
 }
 

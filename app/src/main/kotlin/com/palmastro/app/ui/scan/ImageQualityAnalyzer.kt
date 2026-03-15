@@ -16,13 +16,13 @@ data class ImageQualityMetrics(
     val stability: Float = 0.9f,
 )
 
-class ImageQualityAnalyzer(context: Context) : Closeable {
+class ImageQualityAnalyzer(context: Context, modelPath: String) : Closeable {
 
     private val handLandmarker: HandLandmarker
 
     init {
         val baseOptions = BaseOptions.builder()
-            .setModelAssetPath("hand_landmarker.task")
+            .setModelAssetPath(modelPath)
             .build()
         val options = HandLandmarker.HandLandmarkerOptions.builder()
             .setBaseOptions(baseOptions)

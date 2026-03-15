@@ -44,6 +44,9 @@ data class ScanState(
     val error: String? = null,
     val coachingHint: String? = null,
     val showFlash: Boolean = false,
+    val modelReady: Boolean = false,
+    val modelDownloading: Boolean = false,
+    val modelError: String? = null,
 )
 
 @HiltViewModel
@@ -59,11 +62,49 @@ class ScanViewModel @Inject constructor(
     private val qualityGate = QualityGateImpl()
     private val capturedPaths = mutableMapOf<Angle, String>()
     private val qualityResults = mutableMapOf<Angle, QualityScores>()
-    private val analyzer = ImageQualityAnalyzer(appContext)
+    private var analyzer: ImageQualityAnalyzer? = null
 
     val imageCapture: ImageCapture = ImageCapture.Builder()
         .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
         .build()
+
+    init {
+        checkAndDownloadModel()
+    }
+
+    private fun checkAndDownloadModel() {
+        if (com.palmastro.app.share.ModelManager.isModelReady(appContext)) {
+            initAnalyzer()
+            return
+        }
+        _state.update { it.copy(modelDownloading = true, modelError = null) }
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                com.palmastro.app.share.ModelManager.downloadModel(appContext)
+            }
+            result.fold(
+                onSuccess = { initAnalyzer() },
+                onFailure = {
+                    _state.update {
+                        it.copy(
+                            modelDownloading = false,
+                            modelError = "需要下載分析模型，請確認網路連線",
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    private fun initAnalyzer() {
+        val path = com.palmastro.app.share.ModelManager.getModelPath(appContext)
+        analyzer = ImageQualityAnalyzer(appContext, path)
+        _state.update { it.copy(modelReady = true, modelDownloading = false, modelError = null) }
+    }
+
+    fun retryModelDownload() {
+        checkAndDownloadModel()
+    }
 
     fun captureCurrentAngle() {
         if (_state.value.isCapturing) return
@@ -98,7 +139,7 @@ class ScanViewModel @Inject constructor(
             val metrics = withContext(Dispatchers.Default) {
                 val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                     ?: return@withContext null
-                val result = analyzer.analyze(bitmap)
+                val result = analyzer!!.analyze(bitmap)
                 bitmap.recycle()
                 result
             }
@@ -165,7 +206,7 @@ class ScanViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        analyzer.close()
+        analyzer?.close()
     }
 
     private fun runPipeline() {
