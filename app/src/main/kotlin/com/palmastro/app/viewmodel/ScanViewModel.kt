@@ -21,6 +21,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.util.UUID
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 data class ScanState(
@@ -138,7 +140,7 @@ class ScanViewModel @Inject constructor(
                             .joinToString(",", "{", "}") { "\"${it.key}\":${it.value}" },
                         subdimScoresJson = "{}",
                         grade = scoringResult.grade,
-                        semanticPayloadsJson = "{}",
+                        semanticPayloadsJson = Json.encodeToString(payloads),
                         palmFeatureSummaryJson = "{}",
                         astroSignalsJson = "[]",
                         explainabilityJson = "[]",
