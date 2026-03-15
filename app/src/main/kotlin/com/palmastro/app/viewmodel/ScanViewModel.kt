@@ -1,5 +1,9 @@
 package com.palmastro.app.viewmodel
 
+import android.content.Context
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.palmastro.astro.AstroEngineImpl
@@ -10,32 +14,37 @@ import com.palmastro.data.entities.MonthlyResultEntity
 import com.palmastro.data.repository.ResultRepository
 import com.palmastro.data.repository.UserRepository
 import com.palmastro.palm.PalmFeatureExtractorImpl
+import com.palmastro.scan.CoachingHints
 import com.palmastro.scan.QualityGateImpl
 import com.palmastro.scoring.DeltaEngineImpl
 import com.palmastro.scoring.ScoringEngineImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.util.UUID
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 data class ScanState(
     val currentAngleIndex: Int = 0,
     val completedAngles: Set<Angle> = emptySet(),
-    val isScanning: Boolean = false,
+    val isCapturing: Boolean = false,
     val isProcessing: Boolean = false,
     val isComplete: Boolean = false,
     val error: String? = null,
+    val coachingHint: String? = null,
+    val showFlash: Boolean = false,
 )
 
 @HiltViewModel
 class ScanViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val userRepository: UserRepository,
     private val resultRepository: ResultRepository,
 ) : ViewModel() {
@@ -44,26 +53,94 @@ class ScanViewModel @Inject constructor(
 
     private val angles = Angle.entries
     private val qualityGate = QualityGateImpl()
+    private val capturedPaths = mutableMapOf<Angle, String>()
+    private val qualityResults = mutableMapOf<Angle, QualityScores>()
 
-    fun startAngleScan() {
-        _state.update { it.copy(isScanning = true) }
+    val imageCapture: ImageCapture = ImageCapture.Builder()
+        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+        .build()
+
+    fun captureCurrentAngle() {
+        if (_state.value.isCapturing) return
+        _state.update { it.copy(isCapturing = true, coachingHint = null) }
+
+        val angle = angles[_state.value.currentAngleIndex]
+        val monthKey = YearMonth.now().toString()
+        val scanDir = File(appContext.filesDir, "scans/$monthKey")
+        scanDir.mkdirs()
+        val outputFile = File(scanDir, "${angle.name}.jpg")
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
+
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(appContext),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    onFrameCaptured(angle, outputFile)
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    _state.update {
+                        it.copy(isCapturing = false, error = "拍攝失敗：${exception.message}")
+                    }
+                }
+            }
+        )
+    }
+
+    private fun onFrameCaptured(angle: Angle, file: File) {
+        // Score the frame using quality gate with simulated metrics
+        // (Real ML-based scoring would analyze the actual image here)
+        val scores = qualityGate.scoreFrame(0.85f, 0.9f, 0.8f, 0.88f, 0.92f)
+        val gateResult = qualityGate.evaluateAngle(angle, scores)
+
+        if (!gateResult.passed) {
+            val hint = CoachingHints.getHint(gateResult.failReason ?: "blur")
+            file.delete()
+            _state.update { it.copy(isCapturing = false, coachingHint = hint) }
+            return
+        }
+
+        capturedPaths[angle] = file.absolutePath
+        qualityResults[angle] = scores
+
+        _state.update {
+            it.copy(
+                isCapturing = false,
+                showFlash = true,
+                completedAngles = it.completedAngles + angle,
+                currentAngleIndex = it.currentAngleIndex + 1,
+                coachingHint = null,
+            )
+        }
+
         viewModelScope.launch {
-            delay(2000)
-            val angle = angles[_state.value.currentAngleIndex]
-            _state.update {
-                it.copy(
-                    isScanning = false,
-                    completedAngles = it.completedAngles + angle,
-                    currentAngleIndex = it.currentAngleIndex + 1,
-                )
-            }
-            if (_state.value.currentAngleIndex >= angles.size) {
-                runPipeline()
-            }
+            kotlinx.coroutines.delay(200)
+            _state.update { it.copy(showFlash = false) }
+        }
+
+        if (_state.value.currentAngleIndex >= angles.size) {
+            runPipeline()
+        }
+    }
+
+    fun retakePreviousAngle() {
+        val newIndex = (_state.value.currentAngleIndex - 1).coerceAtLeast(0)
+        val angle = angles[newIndex]
+        capturedPaths.remove(angle)
+        qualityResults.remove(angle)
+        _state.update {
+            it.copy(
+                currentAngleIndex = newIndex,
+                completedAngles = it.completedAngles - angle,
+                coachingHint = null,
+            )
         }
     }
 
     fun dismissError() = _state.update { it.copy(error = null) }
+
+    fun dismissCoachingHint() = _state.update { it.copy(coachingHint = null) }
 
     private fun runPipeline() {
         _state.update { it.copy(isProcessing = true) }
@@ -72,9 +149,10 @@ class ScanViewModel @Inject constructor(
                 val profile = userRepository.get()
                     ?: throw IllegalStateException("No user profile found")
 
-                val scores = qualityGate.scoreFrame(0.85f, 0.9f, 0.8f, 0.88f, 0.92f)
-                val bestFrames = Angle.entries.associateWith {
-                    BestFrameResult(it, 0, scores, null)
+                val bestFrames = angles.associateWith { angle ->
+                    val scores = qualityResults[angle]
+                        ?: qualityGate.scoreFrame(0.85f, 0.9f, 0.8f, 0.88f, 0.92f)
+                    BestFrameResult(angle, 0, scores, null)
                 }
                 val hand = if (profile.dominantHand == "left") Hand.LEFT else Hand.RIGHT
 
@@ -104,13 +182,15 @@ class ScanViewModel @Inject constructor(
 
                 if (prevEntity != null && prevEntity.monthKey != monthKey) {
                     val prevMonthly = prevEntity.toMonthlyResult()
+                    val avgScore = qualityResults.values
+                        .map { it.composite }.average().toInt()
                     val currentMonthly = MonthlyResult(
                         resultId = "temp",
                         monthKey = monthKey,
                         scanSessionId = "s1",
                         scoringResult = scoringResult,
                         semanticPayloads = emptyMap(),
-                        scanQualityScore = scores.composite,
+                        scanQualityScore = avgScore,
                         featureCoverage = palmResult.featureCoverage,
                         createdAt = System.currentTimeMillis()
                     )
@@ -125,6 +205,9 @@ class ScanViewModel @Inject constructor(
 
                 val safetyFilter = SafetyFilterImpl()
                 payloads.values.forEach { payload -> safetyFilter.validate(payload) }
+
+                val avgQuality = qualityResults.values
+                    .map { it.composite }.average().toInt()
 
                 val resultId = UUID.randomUUID().toString()
                 resultRepository.saveResult(
@@ -146,8 +229,9 @@ class ScanViewModel @Inject constructor(
                         explainabilityJson = "[]",
                         rulesetVersion = scoringResult.rulesetVersion,
                         contentVersion = "1.0.0",
-                        scanQualityScore = scores.composite,
+                        scanQualityScore = avgQuality,
                         featureCoverage = palmResult.featureCoverage,
+                        scanImagePath = "scans/$monthKey",
                     )
                 )
 

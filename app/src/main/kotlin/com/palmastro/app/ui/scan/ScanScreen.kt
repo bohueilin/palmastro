@@ -63,7 +63,7 @@ fun ScanScreen(
                     modifier = Modifier.size(250.dp).clip(CircleShape).background(Color(0xFF2A2A3E)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    if (state.isScanning) {
+                    if (state.isCapturing) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     } else {
                         Text("\uD83D\uDD90", fontSize = 80.sp)
@@ -75,11 +75,11 @@ fun ScanScreen(
                 Spacer(Modifier.height(24.dp))
 
                 Button(
-                    onClick = { viewModel.startAngleScan() },
-                    enabled = !state.isScanning,
+                    onClick = { viewModel.captureCurrentAngle() },
+                    enabled = !state.isCapturing,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                 ) {
-                    Text(if (state.isScanning) "掃描中..." else "開始掃描", fontSize = 18.sp)
+                    Text(if (state.isCapturing) "拍攝中..." else "拍攝", fontSize = 18.sp)
                 }
             }
         }
