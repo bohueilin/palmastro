@@ -1,5 +1,6 @@
 package com.palmastro.app.ui.results
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,6 +31,8 @@ private val gradeNamesZh = mapOf(
 fun ResultsScreen(
     onScanClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onDomainClick: (domain: String, monthKey: String) -> Unit,
+    onHistoryClick: () -> Unit,
     viewModel: ResultsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -75,14 +78,24 @@ fun ResultsScreen(
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(state.domainCards) { card ->
-                    DomainCardItem(card)
+                    DomainCardItem(
+                        card = card,
+                        onClick = { onDomainClick(card.domain, state.monthKey) },
+                    )
                 }
                 item {
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(8.dp))
                     OutlinedButton(
                         onClick = onScanClick,
                         modifier = Modifier.fillMaxWidth().height(48.dp),
                     ) { Text("重新掃描") }
+                }
+                item {
+                    Spacer(Modifier.height(4.dp))
+                    TextButton(
+                        onClick = onHistoryClick,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("歷史記錄") }
                 }
             }
         }
@@ -90,9 +103,9 @@ fun ResultsScreen(
 }
 
 @Composable
-private fun DomainCardItem(card: DomainCard) {
+private fun DomainCardItem(card: DomainCard, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
