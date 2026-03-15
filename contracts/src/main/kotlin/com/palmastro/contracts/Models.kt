@@ -1,5 +1,7 @@
 package com.palmastro.contracts
 
+import kotlinx.serialization.Serializable
+
 data class QualityScores(
     val blur: Float, val glare: Float, val exposure: Float,
     val coverage: Float, val stability: Float, val composite: Int
@@ -35,6 +37,7 @@ data class AstroResult(
     val engineVersion: String
 )
 
+@Serializable
 data class ExplainEntry(val signalId: String, val mappingZh: String, val contribution: Double)
 
 data class ScoringInput(
@@ -54,6 +57,7 @@ data class ScoringResult(
     val rulesetVersion: String
 )
 
+@Serializable
 data class DeltaValue(val value: Int, val arrow: String)
 
 data class GradeShift(val from: String, val to: String)
@@ -75,6 +79,7 @@ data class ContentInput(
     val calcLevel: CalcLevel, val monthKey: String
 )
 
+@Serializable
 data class SemanticPayload(
     val domain: String,
     val monthKey: String,
@@ -91,8 +96,10 @@ data class SemanticPayload(
     val scoreCard: ScoreCard
 )
 
+@Serializable
 data class Observation(val signalId: String, val displayNameZh: String, val evidenceSummaryZh: String)
 
+@Serializable
 data class ScoreCard(
     val totalScore: Int, val grade: String,
     val delta: DeltaValue?, val comparabilityScore: Int?,
