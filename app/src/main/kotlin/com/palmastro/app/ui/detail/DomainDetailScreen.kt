@@ -15,6 +15,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.share.ShareCardRenderer
@@ -24,10 +28,10 @@ import com.palmastro.app.viewmodel.DomainDetailViewModel
 import com.palmastro.contracts.Observation
 
 private val gradeColors = mapOf(
-    "Growing" to Color(0xFF4CAF50),
-    "Stable" to Color(0xFF2196F3),
-    "Building" to Color(0xFFFF9800),
-    "Watchout" to Color(0xFFF44336),
+    "Growing" to Color(0xFF388E3C),
+    "Stable" to Color(0xFF1976D2),
+    "Building" to Color(0xFFE65100),
+    "Watchout" to Color(0xFFD32F2F),
 )
 
 private val gradeNamesZh = mapOf(
@@ -42,6 +46,7 @@ fun DomainDetailScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val view = LocalView.current
 
     Scaffold(
         topBar = {
@@ -54,8 +59,11 @@ fun DomainDetailScreen(
                 },
                 actions = {
                     if (state.payload != null) {
-                        IconButton(onClick = { shareDomainDetail(context, state) }) {
-                            Icon(Icons.Default.Share, contentDescription = "分享")
+                        IconButton(onClick = {
+                            view.announceForAccessibility("正在分享分析報告")
+                            shareDomainDetail(context, state)
+                        }) {
+                            Icon(Icons.Default.Share, contentDescription = "分享分析報告")
                         }
                     }
                 },
@@ -70,7 +78,11 @@ fun DomainDetailScreen(
             }
             state.error != null -> {
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    Text(state.error ?: "", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        state.error ?: "",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                    )
                 }
             }
             state.payload != null -> {
