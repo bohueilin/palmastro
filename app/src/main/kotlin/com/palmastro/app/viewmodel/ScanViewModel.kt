@@ -20,8 +20,12 @@ import com.palmastro.scoring.DeltaEngineImpl
 import com.palmastro.scoring.ScoringEngineImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import android.graphics.BitmapFactory
+import com.palmastro.app.ui.scan.ImageQualityAnalyzer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -55,6 +59,7 @@ class ScanViewModel @Inject constructor(
     private val qualityGate = QualityGateImpl()
     private val capturedPaths = mutableMapOf<Angle, String>()
     private val qualityResults = mutableMapOf<Angle, QualityScores>()
+    private val analyzer = ImageQualityAnalyzer(appContext)
 
     val imageCapture: ImageCapture = ImageCapture.Builder()
         .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
@@ -89,38 +94,54 @@ class ScanViewModel @Inject constructor(
     }
 
     private fun onFrameCaptured(angle: Angle, file: File) {
-        // Score the frame using quality gate with simulated metrics
-        // (Real ML-based scoring would analyze the actual image here)
-        val scores = qualityGate.scoreFrame(0.85f, 0.9f, 0.8f, 0.88f, 0.92f)
-        val gateResult = qualityGate.evaluateAngle(angle, scores)
-
-        if (!gateResult.passed) {
-            val hint = CoachingHints.getHint(gateResult.failReason ?: "blur")
-            file.delete()
-            _state.update { it.copy(isCapturing = false, coachingHint = hint) }
-            return
-        }
-
-        capturedPaths[angle] = file.absolutePath
-        qualityResults[angle] = scores
-
-        _state.update {
-            it.copy(
-                isCapturing = false,
-                showFlash = true,
-                completedAngles = it.completedAngles + angle,
-                currentAngleIndex = it.currentAngleIndex + 1,
-                coachingHint = null,
-            )
-        }
-
         viewModelScope.launch {
+            val metrics = withContext(Dispatchers.Default) {
+                val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                    ?: return@withContext null
+                val result = analyzer.analyze(bitmap)
+                bitmap.recycle()
+                result
+            }
+
+            if (metrics == null) {
+                _state.update {
+                    it.copy(isCapturing = false, error = "無法讀取拍攝的影像")
+                }
+                return@launch
+            }
+
+            val scores = qualityGate.scoreFrame(
+                metrics.blur, metrics.glare, metrics.exposure,
+                metrics.coverage, metrics.stability,
+            )
+            val gateResult = qualityGate.evaluateAngle(angle, scores)
+
+            if (!gateResult.passed) {
+                val hint = CoachingHints.getHint(gateResult.failReason ?: "blur")
+                file.delete()
+                _state.update { it.copy(isCapturing = false, coachingHint = hint) }
+                return@launch
+            }
+
+            capturedPaths[angle] = file.absolutePath
+            qualityResults[angle] = scores
+
+            _state.update {
+                it.copy(
+                    isCapturing = false,
+                    showFlash = true,
+                    completedAngles = it.completedAngles + angle,
+                    currentAngleIndex = it.currentAngleIndex + 1,
+                    coachingHint = null,
+                )
+            }
+
             kotlinx.coroutines.delay(200)
             _state.update { it.copy(showFlash = false) }
-        }
 
-        if (_state.value.currentAngleIndex >= angles.size) {
-            runPipeline()
+            if (_state.value.currentAngleIndex >= angles.size) {
+                runPipeline()
+            }
         }
     }
 
@@ -142,6 +163,11 @@ class ScanViewModel @Inject constructor(
 
     fun dismissCoachingHint() = _state.update { it.copy(coachingHint = null) }
 
+    override fun onCleared() {
+        super.onCleared()
+        analyzer.close()
+    }
+
     private fun runPipeline() {
         _state.update { it.copy(isProcessing = true) }
         viewModelScope.launch {
@@ -151,7 +177,7 @@ class ScanViewModel @Inject constructor(
 
                 val bestFrames = angles.associateWith { angle ->
                     val scores = qualityResults[angle]
-                        ?: qualityGate.scoreFrame(0.85f, 0.9f, 0.8f, 0.88f, 0.92f)
+                        ?: qualityGate.scoreFrame(0.0f, 0.0f, 0.0f, 0.0f, 0.0f)
                     BestFrameResult(angle, 0, scores, null)
                 }
                 val hand = if (profile.dominantHand == "left") Hand.LEFT else Hand.RIGHT
