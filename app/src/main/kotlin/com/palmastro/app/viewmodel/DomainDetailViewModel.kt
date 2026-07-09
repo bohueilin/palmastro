@@ -31,7 +31,7 @@ class DomainDetailViewModel @Inject constructor(
     private val monthKey: String = savedStateHandle.get<String>("monthKey") ?: ""
 
     private val domainNames = mapOf(
-        "career" to "事業", "wealth" to "財富", "family" to "家庭", "health" to "健康"
+        "career" to "Career", "wealth" to "Wealth", "family" to "Family", "health" to "Health"
     )
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -43,7 +43,7 @@ class DomainDetailViewModel @Inject constructor(
             try {
                 val entity = resultRepository.getByMonth(monthKey)
                 if (entity == null) {
-                    _state.update { it.copy(isLoading = false, error = "找不到結果") }
+                    _state.update { it.copy(isLoading = false, error = "Results not found") }
                     return@launch
                 }
 
@@ -57,7 +57,7 @@ class DomainDetailViewModel @Inject constructor(
                         domain = domain,
                         displayName = domainNames[domain] ?: domain,
                         payload = payload,
-                        error = if (payload == null) "找不到該領域的分析" else null,
+                        error = if (payload == null) "No analysis for this domain" else null,
                     )
                 }
             } catch (e: Exception) {

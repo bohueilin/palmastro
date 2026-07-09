@@ -7,16 +7,16 @@ object SignalResolver {
         val f = features.features
         val matched = mutableListOf<SignalDefinition>()
 
-        if (f["headline_present"] == true && f["headline_clarity"] == "clear" && f["headline_length"] == "long") {
+        if (f.headlinePresent && f.headlineClarity == "clear" && f.headlineLength == "long") {
             ruleset.signals.find { it.signalId == "PALM_HEADLINE_LONG_CLEAR" }?.let { matched.add(it) }
         }
-        if (f["heartline_present"] == true && f["heartline_clarity"] in listOf("clear", "moderate")) {
+        if (f.heartlinePresent && f.heartlineClarity in listOf("clear", "moderate")) {
             ruleset.signals.find { it.signalId == "PALM_HEARTLINE_STRONG" }?.let { matched.add(it) }
         }
-        if (f["lifeline_present"] == true && f["lifeline_clarity"] in listOf("clear", "moderate")) {
+        if (f.lifelinePresent && f.lifelineClarity in listOf("clear", "moderate")) {
             ruleset.signals.find { it.signalId == "PALM_LIFELINE_CLEAR" }?.let { matched.add(it) }
         }
-        if (f["fateline_present"] == true && f["fateline_shape"] == "straight") {
+        if (f.fatelinePresent && f.fatelineShape == "straight") {
             ruleset.signals.find { it.signalId == "PALM_FATELINE_STRONG" }?.let { matched.add(it) }
         }
 

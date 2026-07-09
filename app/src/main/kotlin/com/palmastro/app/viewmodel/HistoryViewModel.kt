@@ -6,6 +6,7 @@ import com.palmastro.data.repository.ResultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 data class MonthSummary(
@@ -34,13 +35,11 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             resultRepository.observeAll().collect { entities ->
                 val months = entities.map { entity ->
-                    val scores = entity.domainScoresJson.removeSurrounding("{", "}")
-                        .split(",")
-                        .filter { it.contains(":") }
-                        .associate { entry ->
-                            val (k, v) = entry.split(":")
-                            k.trim('"') to v.trim().toInt()
-                        }
+                    val scores: Map<String, Int> = try {
+                        Json.decodeFromString(entity.domainScoresJson)
+                    } catch (_: Exception) {
+                        emptyMap()
+                    }
                     MonthSummary(
                         monthKey = entity.monthKey,
                         grade = entity.grade,

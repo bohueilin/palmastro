@@ -18,11 +18,14 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): PalmAstroDatabase =
         Room.databaseBuilder(context, PalmAstroDatabase::class.java, "palmastro.db")
+            .addMigrations(PalmAstroDatabase.MIGRATION_1_2)
             .fallbackToDestructiveMigration()
             .build()
 
     @Provides fun provideUserProfileDao(db: PalmAstroDatabase): UserProfileDao = db.userProfileDao()
     @Provides fun provideMonthlyResultDao(db: PalmAstroDatabase): MonthlyResultDao = db.monthlyResultDao()
     @Provides fun provideDeltaDao(db: PalmAstroDatabase): DeltaDao = db.deltaDao()
+    @Provides fun provideEntitlementDao(db: PalmAstroDatabase): EntitlementDao = db.entitlementDao()
     @Provides fun provideInstallIdDao(db: PalmAstroDatabase): InstallIdDao = db.installIdDao()
+    @Provides fun provideJournalDao(db: PalmAstroDatabase): JournalDao = db.journalDao()
 }

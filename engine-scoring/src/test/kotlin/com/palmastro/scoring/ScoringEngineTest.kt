@@ -11,11 +11,12 @@ class ScoringEngineTest {
     private fun makeInput(
         palmConfidence: String = "high",
         astroLevel: CalcLevel = CalcLevel.L2,
-        palmFeatures: Map<String, Any> = mapOf(
-            "headline_present" to true, "headline_shape" to "curved",
-            "headline_clarity" to "clear", "headline_length" to "long",
-            "heartline_present" to true, "lifeline_present" to true,
-            "fateline_present" to true, "fateline_shape" to "straight"
+        palmFeatures: PalmFeatures = PalmFeatures(
+            headlinePresent = true, heartlinePresent = true, lifelinePresent = true, fatelinePresent = true,
+            headlineShape = "curved", heartlineShape = "curved", lifelineShape = "curved", fatelineShape = "straight",
+            headlineClarity = "clear", heartlineClarity = "clear", lifelineClarity = "clear", fatelineClarity = "moderate",
+            headlineLength = "long", fatelineLength = "medium",
+            venusMountDensity = "med", jupiterMountDensity = "med", saturnMountDensity = "low", minorLineDensity = "med",
         ),
         astroSignals: List<AstroSignal> = listOf(
             AstroSignal("ASTRO_SUN_ARIES", "+", 3, "high", "SAFE_GENERAL"),

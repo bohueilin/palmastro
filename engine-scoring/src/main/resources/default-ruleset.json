@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "signals": [
+    {"signalId":"PALM_HEADLINE_LONG_CLEAR","source":"PALM","direction":1,"magnitude":4,"minConfidence":"med","domainWeights":{"career":0.9,"wealth":0.6,"family":0.2,"health":0.2},"safetyTag":"SAFE_CAREER"},
+    {"signalId":"PALM_HEARTLINE_STRONG","source":"PALM","direction":1,"magnitude":3,"minConfidence":"med","domainWeights":{"career":0.2,"wealth":0.2,"family":0.8,"health":0.5},"safetyTag":"SAFE_FAMILY"},
+    {"signalId":"PALM_LIFELINE_CLEAR","source":"PALM","direction":1,"magnitude":3,"minConfidence":"med","domainWeights":{"career":0.3,"wealth":0.3,"family":0.3,"health":0.9},"safetyTag":"SAFE_HEALTH_SOFT_ONLY"},
+    {"signalId":"PALM_FATELINE_STRONG","source":"PALM","direction":1,"magnitude":4,"minConfidence":"med","domainWeights":{"career":0.8,"wealth":0.7,"family":0.2,"health":0.2},"safetyTag":"SAFE_CAREER"},
+    {"signalId":"ASTRO_SUN_FIRE","source":"ASTRO","direction":1,"magnitude":2,"minConfidence":"low","domainWeights":{"career":0.5,"wealth":0.3,"family":0.3,"health":0.4},"safetyTag":"SAFE_GENERAL"},
+    {"signalId":"ASTRO_SATURN_STRONG","source":"ASTRO","direction":1,"magnitude":3,"minConfidence":"med","domainWeights":{"career":0.8,"wealth":0.5,"family":0.2,"health":0.3},"safetyTag":"SAFE_CAREER"},
+    {"signalId":"ASTRO_JUPITER_STRONG","source":"ASTRO","direction":1,"magnitude":3,"minConfidence":"med","domainWeights":{"career":0.4,"wealth":0.8,"family":0.5,"health":0.3},"safetyTag":"SAFE_WEALTH_SOFT_ONLY"}
+  ],
+  "gradeThresholds": {
+    "Watchout":{"min":0,"max":35},
+    "Building":{"min":36,"max":55},
+    "Stable":{"min":56,"max":75},
+    "Growing":{"min":76,"max":100}
+  },
+  "confidenceMultipliers": {"high":1.0,"med":0.8,"low":0.5}
+}

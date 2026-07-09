@@ -26,8 +26,8 @@ class ScanReminderWorker(
 
         val notification = NotificationCompat.Builder(applicationContext, PalmAstroApp.CHANNEL_SCAN_REMINDER)
             .setSmallIcon(android.R.drawable.ic_menu_camera)
-            .setContentTitle("掌紋星象")
-            .setContentText("是時候掃描你的手掌了！開啟 PalmAstro 查看本月分析")
+            .setContentTitle("PalmAstro")
+            .setContentText("Time to scan your palm! Open PalmAstro for this month's analysis")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

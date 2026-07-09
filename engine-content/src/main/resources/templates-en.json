@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "domains": {
+    "career": {
+      "interpretationHigh": "Your career energy is in a stable upward phase.",
+      "interpretationLow": "Your career is currently in a building phase, gathering momentum.",
+      "blindspot": "Pursuing efficiency too aggressively may cause you to overlook the importance of teamwork.",
+      "actionToday": "Spend 15 minutes today planning your most important task for the week.",
+      "actionWeek": "Try tackling your hardest task first thing each morning this week.",
+      "prompt": "What area of decision-making have you felt most confident about recently?",
+      "safetyNotes": []
+    },
+    "wealth": {
+      "interpretationHigh": "Your financial awareness is strong — keep it up.",
+      "interpretationLow": "Consider paying more attention to your daily spending habits.",
+      "blindspot": "The need for security may lead to overly conservative choices.",
+      "actionToday": "Record three expenses today and reflect on whether each was necessary.",
+      "actionWeek": "Review your fixed expenses list once this week.",
+      "prompt": "What was the most reassuring purchase you made last week?",
+      "safetyNotes": ["This content is for personal growth reference only and does not constitute investment advice."]
+    },
+    "family": {
+      "interpretationHigh": "Family relationships are solid with smooth communication.",
+      "interpretationLow": "Try expressing care more proactively to your family members.",
+      "blindspot": "Being busy may cause you to overlook small needs of your family.",
+      "actionToday": "Proactively share something about your day with a family member today.",
+      "actionWeek": "Schedule dedicated quality time with your family this week.",
+      "prompt": "Who in your family would you most like to thank recently?",
+      "safetyNotes": []
+    },
+    "health": {
+      "interpretationHigh": "Your physical and mental state is good — maintain your current rhythm.",
+      "interpretationLow": "Pay attention to rest and stress management.",
+      "blindspot": "Ignoring minor body signals may allow them to accumulate into larger issues.",
+      "actionToday": "Do a 5-minute deep breathing exercise today.",
+      "actionWeek": "Walk at least 20 minutes every day this week.",
+      "prompt": "What signal has your body been giving you most recently?",
+      "safetyNotes": ["This content is for self-observation reference only and does not constitute medical diagnosis or advice."]
+    }
+  }
+}

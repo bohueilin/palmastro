@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.palmastro.app.ui.detail.DomainDetailScreen
 import com.palmastro.app.ui.history.HistoryScreen
+import com.palmastro.app.ui.journal.JournalScreen
 import com.palmastro.app.ui.onboarding.OnboardingScreen
 import com.palmastro.app.ui.results.ResultsScreen
 import com.palmastro.app.ui.scan.ScanScreen
@@ -20,6 +21,7 @@ sealed class Route(val path: String) {
     data object Settings : Route("settings")
     data object DomainDetail : Route("domain_detail/{domain}/{monthKey}")
     data object History : Route("history")
+    data object Journal : Route("journal/{monthKey}?domain={domain}")
 }
 
 @Composable
@@ -38,9 +40,7 @@ fun AppNavigation(hasProfile: Boolean) {
         composable(
             route = "results?monthKey={monthKey}",
             arguments = listOf(navArgument("monthKey") {
-                type = NavType.StringType
-                nullable = true
-                defaultValue = null
+                type = NavType.StringType; nullable = true; defaultValue = null
             }),
         ) {
             ResultsScreen(
@@ -75,16 +75,28 @@ fun AppNavigation(hasProfile: Boolean) {
                 navArgument("domain") { type = NavType.StringType },
                 navArgument("monthKey") { type = NavType.StringType },
             ),
-        ) {
-            DomainDetailScreen(onBack = { navController.popBackStack() })
+        ) { entry ->
+            val domain = entry.arguments?.getString("domain") ?: ""
+            val monthKey = entry.arguments?.getString("monthKey") ?: ""
+            DomainDetailScreen(
+                onBack = { navController.popBackStack() },
+                onJournalClick = { navController.navigate("journal/$monthKey?domain=$domain") },
+            )
         }
         composable(Route.History.path) {
             HistoryScreen(
                 onBack = { navController.popBackStack() },
-                onMonthClick = { monthKey ->
-                    navController.navigate("results?monthKey=$monthKey")
-                },
+                onMonthClick = { monthKey -> navController.navigate("results?monthKey=$monthKey") },
             )
+        }
+        composable(
+            route = "journal/{monthKey}?domain={domain}",
+            arguments = listOf(
+                navArgument("monthKey") { type = NavType.StringType },
+                navArgument("domain") { type = NavType.StringType; nullable = true; defaultValue = null },
+            ),
+        ) {
+            JournalScreen(onBack = { navController.popBackStack() })
         }
     }
 }

@@ -9,7 +9,6 @@ class PalmFeatureExtractorImpl(
 
     override fun extract(bestFrames: Map<Angle, BestFrameResult>, hand: Hand): PalmFeatureResult {
         val avgQuality = bestFrames.values.map { it.qualityScores.composite }.average().toInt()
-        val avgCoverage = bestFrames.values.map { it.qualityScores.coverage }.average().toFloat()
 
         val features = buildFeatures(avgQuality)
         val featureCoverage = computeFeatureCoverage(features)
@@ -23,39 +22,51 @@ class PalmFeatureExtractorImpl(
         )
     }
 
-    private fun buildFeatures(quality: Int): Map<String, Any> {
+    private fun buildFeatures(quality: Int): PalmFeatures {
         val clear = quality >= 70
-        return mapOf(
-            "headline_present" to true,
-            "heartline_present" to true,
-            "lifeline_present" to true,
-            "fateline_present" to (quality >= 50),
-            "headline_shape" to if (clear) "curved" else "unclear",
-            "heartline_shape" to if (clear) "curved" else "faint",
-            "lifeline_shape" to if (clear) "curved" else "unclear",
-            "fateline_shape" to if (quality >= 50) "straight" else "faint",
-            "headline_clarity" to if (clear) "clear" else "moderate",
-            "heartline_clarity" to if (clear) "clear" else "moderate",
-            "lifeline_clarity" to if (clear) "clear" else "faint",
-            "fateline_clarity" to if (quality >= 50) "moderate" else "faint",
-            "headline_length" to if (clear) "long" else "medium",
-            "fateline_length" to if (quality >= 60) "medium" else "short",
-            "venus_mount_density" to if (quality >= 60) "med" else "low",
-            "jupiter_mount_density" to "med",
-            "saturn_mount_density" to "low",
-            "minor_line_density" to if (quality >= 70) "med" else "low",
+        return PalmFeatures(
+            headlinePresent = true,
+            heartlinePresent = true,
+            lifelinePresent = true,
+            fatelinePresent = quality >= 50,
+            headlineShape = if (clear) "curved" else "unclear",
+            heartlineShape = if (clear) "curved" else "faint",
+            lifelineShape = if (clear) "curved" else "unclear",
+            fatelineShape = if (quality >= 50) "straight" else "faint",
+            headlineClarity = if (clear) "clear" else "moderate",
+            heartlineClarity = if (clear) "clear" else "moderate",
+            lifelineClarity = if (clear) "clear" else "faint",
+            fatelineClarity = if (quality >= 50) "moderate" else "faint",
+            headlineLength = if (clear) "long" else "medium",
+            fatelineLength = if (quality >= 60) "medium" else "short",
+            venusMountDensity = if (quality >= 60) "med" else "low",
+            jupiterMountDensity = "med",
+            saturnMountDensity = "low",
+            minorLineDensity = if (quality >= 70) "med" else "low",
         )
     }
 
-    private fun computeFeatureCoverage(features: Map<String, Any>): Float {
+    private fun computeFeatureCoverage(features: PalmFeatures): Float {
         val totalExpected = 18
-        val present = features.count { (_, v) ->
-            when (v) {
-                is Boolean -> v
-                is String -> v != "unclear" && v != "faint"
-                else -> false
-            }
-        }
+        var present = 0
+        if (features.headlinePresent) present++
+        if (features.heartlinePresent) present++
+        if (features.lifelinePresent) present++
+        if (features.fatelinePresent) present++
+        if (features.headlineShape != "unclear" && features.headlineShape != "faint") present++
+        if (features.heartlineShape != "unclear" && features.heartlineShape != "faint") present++
+        if (features.lifelineShape != "unclear" && features.lifelineShape != "faint") present++
+        if (features.fatelineShape != "unclear" && features.fatelineShape != "faint") present++
+        if (features.headlineClarity != "unclear" && features.headlineClarity != "faint") present++
+        if (features.heartlineClarity != "unclear" && features.heartlineClarity != "faint") present++
+        if (features.lifelineClarity != "unclear" && features.lifelineClarity != "faint") present++
+        if (features.fatelineClarity != "unclear" && features.fatelineClarity != "faint") present++
+        if (features.headlineLength != "unclear" && features.headlineLength != "faint") present++
+        if (features.fatelineLength != "unclear" && features.fatelineLength != "faint") present++
+        if (features.venusMountDensity != "unclear" && features.venusMountDensity != "faint") present++
+        if (features.jupiterMountDensity != "unclear" && features.jupiterMountDensity != "faint") present++
+        if (features.saturnMountDensity != "unclear" && features.saturnMountDensity != "faint") present++
+        if (features.minorLineDensity != "unclear" && features.minorLineDensity != "faint") present++
         return (present.toFloat() / totalExpected).coerceIn(0f, 1f)
     }
 

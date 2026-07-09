@@ -16,9 +16,9 @@ class PalmFeatureExtractorTest {
     @Test
     fun `extract returns non-identifying categorical features`() {
         val result = extractor.extract(makeBestFrames(), Hand.RIGHT)
-        assertTrue(result.features["headline_present"] is Boolean)
-        assertTrue(result.features["headline_shape"] is String)
-        assertTrue(result.features["headline_clarity"] is String)
+        assertTrue(result.features.headlinePresent)
+        assertTrue(result.features.headlineShape.isNotBlank())
+        assertTrue(result.features.headlineClarity.isNotBlank())
     }
 
     @Test

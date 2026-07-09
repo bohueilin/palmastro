@@ -18,6 +18,9 @@ data class UserProfileEntity(
     val rawMediaRetention: Boolean = true,
     val calcLevel: String = "L1",
     val createdAt: Long = System.currentTimeMillis(),
+    val name: String? = null,
+    val gender: String? = null,
+    val relationshipStatus: String? = null,
     val updatedAt: Long = System.currentTimeMillis(),
 )
 
@@ -70,4 +73,20 @@ data class InstallIdEntity(
     @PrimaryKey val id: Int = 1,
     val installId: String,
     val createdAt: Long = System.currentTimeMillis(),
+)
+
+@Entity(
+    tableName = "journal",
+    indices = [Index(value = ["monthKey", "domain"], unique = true)]
+)
+data class JournalEntryEntity(
+    @PrimaryKey val id: String,
+    val monthKey: String,
+    val domain: String? = null,
+    val text: String,
+    val createdAt: Long = System.currentTimeMillis(),
+    val name: String? = null,
+    val gender: String? = null,
+    val relationshipStatus: String? = null,
+    val updatedAt: Long = System.currentTimeMillis(),
 )

@@ -88,7 +88,7 @@ class ScanViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             modelDownloading = false,
-                            modelError = "需要下載分析模型，請確認網路連線",
+                            modelError = "Analysis model needed — check your internet connection",
                         )
                     }
                 },
@@ -97,8 +97,8 @@ class ScanViewModel @Inject constructor(
     }
 
     private fun initAnalyzer() {
-        val path = com.palmastro.app.share.ModelManager.getModelPath(appContext)
-        analyzer = ImageQualityAnalyzer(appContext, path)
+        val source = com.palmastro.app.share.ModelManager.getModelSource(appContext)
+        analyzer = ImageQualityAnalyzer(appContext, source)
         _state.update { it.copy(modelReady = true, modelDownloading = false, modelError = null) }
     }
 
@@ -127,7 +127,7 @@ class ScanViewModel @Inject constructor(
 
                 override fun onError(exception: ImageCaptureException) {
                     _state.update {
-                        it.copy(isCapturing = false, error = "拍攝失敗：${exception.message}")
+                        it.copy(isCapturing = false, error = "Capture failed: ${exception.message}")
                     }
                 }
             }
@@ -146,7 +146,7 @@ class ScanViewModel @Inject constructor(
 
             if (metrics == null) {
                 _state.update {
-                    it.copy(isCapturing = false, error = "無法讀取拍攝的影像")
+                    it.copy(isCapturing = false, error = "Unable to read captured image")
                 }
                 return@launch
             }

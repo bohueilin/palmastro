@@ -67,11 +67,11 @@ class ScoringEngineImpl(
         )
     }
 
-    private fun assignGrade(score: Int): String = when {
-        score <= 35 -> "Watchout"
-        score <= 55 -> "Building"
-        score <= 75 -> "Stable"
-        else -> "Growing"
+    private fun assignGrade(score: Int): String {
+        for ((grade, range) in ruleset.gradeIntRanges) {
+            if (score in range) return grade
+        }
+        return ruleset.gradeIntRanges.keys.last()
     }
 
     private fun meetsConfidence(required: String, actual: String): Boolean {

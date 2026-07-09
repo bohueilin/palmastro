@@ -8,6 +8,7 @@ import com.palmastro.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 data class DomainCard(
@@ -53,18 +54,16 @@ class ResultsViewModel @Inject constructor(
                 return@launch
             }
 
-            val scores = entity.domainScoresJson.removeSurrounding("{", "}")
-                .split(",")
-                .filter { it.contains(":") }
-                .associate { entry ->
-                    val (k, v) = entry.split(":")
-                    k.trim('"') to v.trim().toInt()
-                }
+            val scores: Map<String, Int> = try {
+                Json.decodeFromString(entity.domainScoresJson)
+            } catch (_: Exception) {
+                emptyMap()
+            }
             val domainNames = mapOf(
-                "career" to "事業",
-                "wealth" to "財富",
-                "family" to "家庭",
-                "health" to "健康"
+                "career" to "Career",
+                "wealth" to "Wealth",
+                "family" to "Family",
+                "health" to "Health"
             )
             _state.update {
                 it.copy(
@@ -78,7 +77,7 @@ class ResultsViewModel @Inject constructor(
                         )
                     },
                     grade = entity.grade,
-                    confidence = entity.confidenceLevel,
+                    confidence = when (entity.confidenceLevel) { "high" -> "High"; "med" -> "Medium"; "low" -> "Low"; else -> entity.confidenceLevel },
                     monthKey = entity.monthKey,
                     tone = profile?.tone ?: "scientific",
                 )

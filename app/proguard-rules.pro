@@ -28,3 +28,13 @@
 # Annotation processing (compile-time only, not needed at runtime)
 -dontwarn javax.annotation.processing.**
 -dontwarn javax.lang.model.**
+
+# Firebase Crashlytics
+-keepattributes SourceFile,LineNumberTable
+-keep public class * extends java.lang.Exception
+-keep class com.google.firebase.crashlytics.** { *; }
+
+# Firebase Crashlytics
+-keepattributes SourceFile,LineNumberTable
+-keep public class * extends java.lang.Exception
+-keep class com.google.firebase.crashlytics.** { *; }

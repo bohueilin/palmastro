@@ -58,4 +58,27 @@ class SafetyFilterTest {
         val filtered = filter.filter(report)
         assertNotEquals(report.htmlZh, filtered.htmlZh)
     }
+
+    @Test
+    fun `catches zero-width character bypass attempts`() {
+        val payload = makePayload("wealth", interpretation = "買​入股票")
+        val result = filter.validate(payload)
+        assertFalse(result.passed)
+        assertTrue(result.violations.any { it.contains("wealth_prohibited") })
+    }
+
+    @Test
+    fun `catches fullwidth character bypass attempts`() {
+        val payload = makePayload("wealth", interpretation = "４０％投資建議很重要")
+        val result = filter.validate(payload)
+        assertFalse(result.passed)
+    }
+
+    @Test
+    fun `catches cross-domain health terms in career content`() {
+        val payload = makePayload("career", interpretation = "你的事業壓力可能導致糖尿病")
+        val result = filter.validate(payload)
+        assertFalse(result.passed)
+        assertTrue(result.violations.any { it.contains("cross_domain_health") })
+    }
 }

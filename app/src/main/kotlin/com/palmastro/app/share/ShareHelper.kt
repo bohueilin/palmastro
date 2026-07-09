@@ -29,7 +29,7 @@ object ShareHelper {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        context.startActivity(Intent.createChooser(intent, "分享掌紋星象"))
+        context.startActivity(Intent.createChooser(intent, "Share PalmAstro"))
     }
 
     fun buildSummaryText(
@@ -39,14 +39,14 @@ object ShareHelper {
         domains: List<ShareCardRenderer.DomainScore>,
     ): String {
         val gradeNamesZh = mapOf(
-            "Growing" to "成長期", "Stable" to "穩定期", "Building" to "累積期", "Watchout" to "注意期",
+            "Growing" to "Growing", "Stable" to "Stable", "Building" to "Building", "Watchout" to "Watch Out",
         )
         val domainLine = domains.joinToString("  ") { "${it.displayName}：${it.score}" }
         return """
-            |掌紋星象 — $monthKey 月度報告
-            |等級：${gradeNamesZh[grade] ?: grade}
+            |PalmAstro — $monthKey Monthly Report
+            |Grade: ${gradeNamesZh[grade] ?: grade}
             |$domainLine
-            |信心度：$confidence
+            |Confidence: $confidence
         """.trimMargin()
     }
 
@@ -58,15 +58,15 @@ object ShareHelper {
         actionToday: String,
     ): String {
         val gradeNamesZh = mapOf(
-            "Growing" to "成長期", "Stable" to "穩定期", "Building" to "累積期", "Watchout" to "注意期",
+            "Growing" to "Growing", "Stable" to "Stable", "Building" to "Building", "Watchout" to "Watch Out",
         )
         val interpTruncated = if (interpretation.length > 100) interpretation.take(100) + "…" else interpretation
         val actionTruncated = if (actionToday.length > 80) actionToday.take(80) + "…" else actionToday
         return """
-            |掌紋星象 — ${displayName}分析
-            |分數：$score（${gradeNamesZh[grade] ?: grade}）
-            |分析：$interpTruncated
-            |行動建議：$actionTruncated
+            |PalmAstro — ${displayName}Analysis
+            |Score: $score（${gradeNamesZh[grade] ?: grade}）
+            |Analysis：$interpTruncated
+            |Action: $actionTruncated
         """.trimMargin()
     }
 }

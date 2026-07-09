@@ -21,7 +21,7 @@ object ShareCardRenderer {
     )
 
     private val gradeNamesZh = mapOf(
-        "Growing" to "成長期", "Stable" to "穩定期", "Building" to "累積期", "Watchout" to "注意期",
+        "Growing" to "Growing", "Stable" to "Stable", "Building" to "Building", "Watchout" to "Watch Out",
     )
 
     data class SummaryData(
@@ -53,7 +53,7 @@ object ShareCardRenderer {
         val canvas = Canvas(bitmap)
 
         drawBackground(canvas, totalHeight)
-        drawHeader(canvas, "掌紋星象 — 月度報告")
+        drawHeader(canvas, "PalmAstro — Monthly Report")
 
         var y = HEADER_HEIGHT + PADDING
 
@@ -114,7 +114,7 @@ object ShareCardRenderer {
             color = Color.parseColor("#888888")
             textSize = 24f
         }
-        canvas.drawText("信心度：${data.confidence}", PADDING, y + 24f, confPaint)
+        canvas.drawText("Confidence: ${data.confidence}", PADDING, y + 24f, confPaint)
 
         drawFooter(canvas, totalHeight)
         return bitmap
@@ -136,7 +136,7 @@ object ShareCardRenderer {
         val canvas = Canvas(bitmap)
 
         drawBackground(canvas, totalHeight)
-        drawHeader(canvas, "掌紋星象 — ${data.displayName}")
+        drawHeader(canvas, "PalmAstro — ${data.displayName}")
 
         var y = HEADER_HEIGHT + PADDING
 
@@ -157,15 +157,15 @@ object ShareCardRenderer {
         canvas.drawText(gradeLabel, PADDING + bigScorePaint.measureText("${data.score}") + 16f, y + 56f, gradeLabelPaint)
         y += 80f
 
-        y = drawSection(canvas, "分析", interpLines, y)
-        y = drawSection(canvas, "行動建議", actionLines, y)
+        y = drawSection(canvas, "Analysis", interpLines, y)
+        y = drawSection(canvas, "Action Items", actionLines, y)
 
         val sectionPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#5E35B1")
             textSize = 24f
             typeface = Typeface.DEFAULT_BOLD
         }
-        canvas.drawText("反思", PADDING, y + 20f, sectionPaint)
+        canvas.drawText("Reflection", PADDING, y + 20f, sectionPaint)
         y += 36f
 
         val boxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

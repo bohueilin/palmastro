@@ -21,8 +21,29 @@ data class ScanSessionSummary(
     val totalDurationMs: Long, val totalAttempts: Int
 )
 
+data class PalmFeatures(
+    val headlinePresent: Boolean,
+    val heartlinePresent: Boolean,
+    val lifelinePresent: Boolean,
+    val fatelinePresent: Boolean,
+    val headlineShape: String,
+    val heartlineShape: String,
+    val lifelineShape: String,
+    val fatelineShape: String,
+    val headlineClarity: String,
+    val heartlineClarity: String,
+    val lifelineClarity: String,
+    val fatelineClarity: String,
+    val headlineLength: String,
+    val fatelineLength: String,
+    val venusMountDensity: String,
+    val jupiterMountDensity: String,
+    val saturnMountDensity: String,
+    val minorLineDensity: String,
+)
+
 data class PalmFeatureResult(
-    val features: Map<String, Any>,
+    val features: PalmFeatures,
     val featureCoverage: Float, val confidence: String,
     val extractorVersion: String
 )

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">पामएस्ट्रो</string>
+    <string name="grade_growing">विकास</string>
+    <string name="grade_stable">स्थिर</string>
+    <string name="grade_building">निर्माण</string>
+    <string name="grade_watchout">सावधानी</string>
+    <string name="domain_career">करियर</string>
+    <string name="domain_wealth">धन</string>
+    <string name="domain_family">परिवार</string>
+    <string name="domain_health">स्वास्थ्य</string>
+    <string name="common_back">वापस</string>
+    <string name="common_confirm">ठीक</string>
+    <string name="common_cancel">रद्द करें</string>
+    <string name="common_settings">सेटिंग्स</string>
+    <string name="common_next">आगे</string>
+    <string name="common_retry">पुनः प्रयास</string>
+    <string name="results_no_results">अभी तक कोई स्कैन परिणाम नहीं</string>
+    <string name="results_start_scan">अपनी हथेली स्कैन करें</string>
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="onboarding_hand_select">अपना प्रमुख हाथ चुनें</string>
+    <string name="onboarding_left_hand">बायां</string>
+    <string name="onboarding_right_hand">दायां</string>
+    <string name="onboarding_birthday_title">अपना जन्मदिन दर्ज करें</string>
+    <string name="onboarding_start">शुरू करें</string>
+    <string name="notification_reminder_text">अपनी हथेली स्कैन करने का समय! इस महीने का विश्लेषण देखने के लिए PalmAstro खोलें</string>
+</resources>

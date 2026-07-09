@@ -1,4 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">掌紋星象</string>
+    <string name="app_name">PalmAstro</string>
+
+    <string name="grade_growing">Growing</string>
+    <string name="grade_stable">Stable</string>
+    <string name="grade_building">Building</string>
+    <string name="grade_watchout">Watch Out</string>
+
+    <string name="domain_career">Career</string>
+    <string name="domain_wealth">Wealth</string>
+    <string name="domain_family">Family</string>
+    <string name="domain_health">Health</string>
+
+    <string name="common_back">Back</string>
+    <string name="common_confirm">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_settings">Settings</string>
+    <string name="common_next">Next</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_selected">Selected</string>
+    <string name="common_unselected">Not selected</string>
+
+    <string name="scan_angle_front">Front</string>
+    <string name="scan_angle_left_tilt">Left Tilt</string>
+    <string name="scan_angle_right_tilt">Right Tilt</string>
+    <string name="scan_angle_near">Close Up</string>
+    <string name="scan_angle_far">Far Away</string>
+    <string name="scan_angle_up_tilt">Up Tilt</string>
+    <string name="scan_angle_down_tilt">Down Tilt</string>
+
+    <string name="scan_instruction_front">Hold your palm face up</string>
+    <string name="scan_instruction_left_tilt">Tilt your palm to the left</string>
+    <string name="scan_instruction_right_tilt">Tilt your palm to the right</string>
+    <string name="scan_instruction_near">Move your palm closer to the camera</string>
+    <string name="scan_instruction_far">Move your palm away from the camera</string>
+    <string name="scan_instruction_up_tilt">Tilt your palm upward</string>
+    <string name="scan_instruction_down_tilt">Tilt your palm downward</string>
+
+    <string name="scan_progress">%1$d / %2$d</string>
+    <string name="scan_retake">Retake previous angle</string>
+    <string name="scan_capture">Capture</string>
+    <string name="scan_capture_done">Capture complete</string>
+    <string name="scan_downloading">Downloading analysis model…</string>
+    <string name="scan_processing">Analyzing your palm…</string>
+    <string name="scan_error_title">An error occurred</string>
+    <string name="scan_permission_title">Camera permission required</string>
+    <string name="scan_permission_message">PalmAstro needs camera access to scan your palm. Please enable camera permission in Settings.</string>
+    <string name="scan_go_settings">Open Settings</string>
+    <string name="scan_hand_overlay">Palm placement guide — place your palm in the center of the screen</string>
+
+    <string name="coaching_blur">Hold still and wait for the image to stabilize</string>
+    <string name="coaching_glare">Avoid direct light sources</string>
+    <string name="coaching_low_light">Not enough light — move to a brighter area</string>
+    <string name="coaching_over_exposure">Too much light — move away from bright light</string>
+    <string name="coaching_low_coverage">Place your entire palm within the guide frame</string>
+    <string name="coaching_unstable">Keep your palm steady</string>
+    <string name="coaching_no_hand">No palm detected — place your hand in the frame</string>
+    <string name="coaching_default">Please scan again</string>
+
+    <string name="scan_model_download_error">Analysis model download needed — check your internet connection</string>
+    <string name="scan_capture_failed">Capture failed: %s</string>
+    <string name="scan_read_error">Unable to read captured image</string>
+    <string name="scan_error_state">System error: %s</string>
+    <string name="scan_error_format">Data format error: %s</string>
+    <string name="scan_error_generic">Analysis error: %s</string>
+
+    <string name="results_no_results">No scan results yet</string>
+    <string name="results_start_scan">Start palm scan</string>
+    <string name="results_month_report">%s Monthly Report</string>
+    <string name="results_confidence">Confidence: %s</string>
+    <string name="results_rescan">Scan Again</string>
+    <string name="results_history">History</string>
+    <string name="results_sharing">Sharing monthly report</string>
+    <string name="results_share">Share monthly report</string>
+    <string name="results_score_desc">%1$s %2$d points %3$s</string>
+
+    <string name="detail_sharing">Sharing analysis report</string>
+    <string name="detail_share">Share analysis report</string>
+    <string name="detail_analysis">Analysis</string>
+    <string name="detail_blindspot">Blind Spot</string>
+    <string name="detail_actions">Action Items</string>
+    <string name="detail_today">Today</string>
+    <string name="detail_week">This Week</string>
+    <string name="detail_reflection">Reflection</string>
+    <string name="detail_observations">Observations</string>
+    <string name="detail_not_found">Results not found</string>
+    <string name="detail_domain_not_found">Analysis not found for this domain</string>
+
+    <string name="history_title">History</string>
+    <string name="history_single_record">Only one record — scan more months to see trends</string>
+    <string name="history_score_desc">%1$s %2$s %3$s confidence %4$s</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_tone_label">Analysis Style</string>
+    <string name="settings_tone_scientific">Scientific</string>
+    <string name="settings_tone_healing">Healing</string>
+    <string name="settings_tone_roast">Straight Talk</string>
+    <string name="settings_reminder_label">Reminders</string>
+    <string name="settings_reminder_30d">Every 30 days</string>
+    <string name="settings_reminder_monthly">1st of each month</string>
+    <string name="settings_reminder_off">Off</string>
+    <string name="settings_retention_title">Keep raw images</string>
+    <string name="settings_retention_desc">Images auto-deleted after 24 hours</string>
+    <string name="settings_wipe">Delete all data</string>
+    <string name="settings_wipe_warning">This cannot be undone. All scan results and settings will be erased.</string>
+    <string name="settings_wipe_confirm_title">Confirm deletion</string>
+    <string name="settings_wipe_confirm_message">Are you sure you want to delete all data? This cannot be undone.</string>
+    <string name="settings_wipe_confirm_button">Delete</string>
+
+    <string name="onboarding_hand_select">Choose your dominant hand</string>
+    <string name="onboarding_left_hand">Left</string>
+    <string name="onboarding_right_hand">Right</string>
+    <string name="onboarding_birthday_title">Enter your birthday</string>
+    <string name="onboarding_year">Year</string>
+    <string name="onboarding_month">Month</string>
+    <string name="onboarding_day">Day</string>
+    <string name="onboarding_invalid_number">Please enter valid numbers</string>
+    <string name="onboarding_year_range">Year must be between 1900 and %d</string>
+    <string name="onboarding_month_range">Month must be between 1 and 12</string>
+    <string name="onboarding_day_range">Day must be between 1 and 31</string>
+    <string name="onboarding_future_date">Birthday cannot be in the future</string>
+    <string name="onboarding_invalid_date">Invalid date combination</string>
+    <string name="onboarding_birth_details">Birth time and place (optional)</string>
+    <string name="onboarding_l2_hint">Provide full details for more accurate analysis (L2)</string>
+    <string name="onboarding_birth_time">Birth time</string>
+    <string name="onboarding_hour">Hour</string>
+    <string name="onboarding_minute">Minute</string>
+    <string name="onboarding_birth_place">Birth place</string>
+    <string name="onboarding_county_select">Select county</string>
+    <string name="onboarding_county_expand">Select county — expand menu</string>
+    <string name="onboarding_overseas">Overseas (unspecified)</string>
+    <string name="onboarding_confirm">Confirm</string>
+    <string name="onboarding_skip">Skip this step</string>
+    <string name="onboarding_tone_title">Choose analysis style</string>
+    <string name="onboarding_tone_scientific_desc">Objective, data-driven</string>
+    <string name="onboarding_tone_healing_desc">Warm, encouraging</string>
+    <string name="onboarding_tone_roast_desc">Direct, challenging but safe</string>
+    <string name="onboarding_start">Get Started</string>
+
+    <string name="share_chooser_title">Share PalmAstro</string>
+    <string name="share_summary_header">PalmAstro — %1$s Monthly Report</string>
+    <string name="share_grade_label">Grade: %s</string>
+    <string name="share_confidence_label">Confidence: %s</string>
+    <string name="share_domain_header">PalmAstro — %s Analysis</string>
+    <string name="share_score_format">Score: %1$d (%2$s)</string>
+    <string name="share_analysis_label">Analysis: %s</string>
+    <string name="share_action_label">Action: %s</string>
+
+    <string name="notification_channel_name">Scan Reminders</string>
+    <string name="notification_channel_desc">Monthly palm scan reminders</string>
+    <string name="notification_reminder_text">Time to scan your palm! Open PalmAstro for this month\'s analysis</string>
+
+    <string name="journal_title">Journal</string>
+    <string name="journal_prompt">Record your reflection…</string>
+    <string name="journal_save">Save</string>
+    <string name="journal_saved">Saved</string>
+    <string name="journal_char_count">%1$d / %2$d</string>
+    <string name="journal_empty">No journal entries yet. Start writing your reflections.</string>
+
+    <string name="widget_title">PalmAstro</string>
+    <string name="widget_no_data">No data yet</string>
+    <string name="widget_description">Monthly palm reading score</string>
 </resources>

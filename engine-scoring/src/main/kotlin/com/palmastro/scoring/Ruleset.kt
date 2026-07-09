@@ -1,5 +1,15 @@
 package com.palmastro.scoring
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+
+@Serializable
+data class GradeRange(val min: Int, val max: Int) {
+    fun toIntRange(): IntRange = min..max
+}
+
+@Serializable
 data class SignalDefinition(
     val signalId: String,
     val source: String,
@@ -10,24 +20,39 @@ data class SignalDefinition(
     val safetyTag: String
 )
 
+@Serializable
 data class Ruleset(
     val version: String,
     val signals: List<SignalDefinition>,
-    val gradeThresholds: Map<String, IntRange>,
+    val gradeThresholds: Map<String, GradeRange>,
     val confidenceMultipliers: Map<String, Double>
 ) {
+    val gradeIntRanges: Map<String, IntRange>
+        get() = gradeThresholds.mapValues { it.value.toIntRange() }
+
     companion object {
-        fun default(): Ruleset = Ruleset(
-            version = "1.0.0",
-            signals = defaultSignals(),
-            gradeThresholds = mapOf(
-                "Watchout" to 0..35,
-                "Building" to 36..55,
-                "Stable" to 56..75,
-                "Growing" to 76..100
-            ),
-            confidenceMultipliers = mapOf("high" to 1.0, "med" to 0.8, "low" to 0.5)
-        )
+        private val json = Json { ignoreUnknownKeys = true; prettyPrint = true }
+
+        fun default(): Ruleset {
+            val resource = Ruleset::class.java.getResourceAsStream("/default-ruleset.json")
+            if (resource != null) {
+                return fromJson(resource.bufferedReader().readText())
+            }
+            return Ruleset(
+                version = "1.0.0",
+                signals = defaultSignals(),
+                gradeThresholds = mapOf(
+                    "Watchout" to GradeRange(0, 35),
+                    "Building" to GradeRange(36, 55),
+                    "Stable" to GradeRange(56, 75),
+                    "Growing" to GradeRange(76, 100)
+                ),
+                confidenceMultipliers = mapOf("high" to 1.0, "med" to 0.8, "low" to 0.5)
+            )
+        }
+
+        fun fromJson(jsonString: String): Ruleset = json.decodeFromString(jsonString)
+        fun toJson(ruleset: Ruleset): String = json.encodeToString(ruleset)
 
         private fun defaultSignals() = listOf(
             SignalDefinition("PALM_HEADLINE_LONG_CLEAR", "PALM", 1, 4, "med",
