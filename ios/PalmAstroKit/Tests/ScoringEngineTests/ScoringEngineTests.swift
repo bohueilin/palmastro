@@ -69,26 +69,28 @@ import CoreContracts
 
 @Suite struct ScoringEngineTests {
 
+    // Canonical extractor v2 vocabulary (Kotlin SignalResolver parity):
+    // clarity "clear" | "medium" | "faint" | "broken" | "thin" (heartline);
+    // densities "high" | "med" | "low".
     private func features(
         headlineClarity: String = "clear",
         headlineLength: String = "long",
-        headlineShape: String = "smooth",
         heartlineClarity: String = "clear",
-        lifelineClarity: String = "moderate",
-        fatelineShape: String = "smooth",
+        lifelineClarity: String = "medium",
         fatelineClarity: String = "clear",
+        minorLineDensity: String = "low",
         confidence: String = "high",
         coverage: Float = 0.8
     ) -> PalmFeatureResult {
         PalmFeatureResult(
             features: PalmFeatures(
                 headlinePresent: true, heartlinePresent: true, lifelinePresent: true, fatelinePresent: true,
-                headlineShape: headlineShape, heartlineShape: "smooth", lifelineShape: "smooth", fatelineShape: fatelineShape,
+                headlineShape: "straight", heartlineShape: "curved", lifelineShape: "curved", fatelineShape: "straight",
                 headlineClarity: headlineClarity, heartlineClarity: heartlineClarity,
                 lifelineClarity: lifelineClarity, fatelineClarity: fatelineClarity,
                 headlineLength: headlineLength, fatelineLength: "medium",
-                venusMountDensity: "unknown", jupiterMountDensity: "unknown",
-                saturnMountDensity: "unknown", minorLineDensity: "unknown"
+                venusMountDensity: "med", jupiterMountDensity: "med",
+                saturnMountDensity: "med", minorLineDensity: minorLineDensity
             ),
             featureCoverage: coverage,
             confidence: confidence,
@@ -123,16 +125,58 @@ import CoreContracts
 
     @Test func negativeSignalsLowerScores() throws {
         let engine = try ScoringEngineImpl()
-        // Chained headline + faint lifeline + faint heartline, nothing positive.
+        // Broken head/fate lines + thin heartline + faint lifeline + dense
+        // minor lines: all five v2 negatives, nothing positive.
         let negativePalm = features(
-            headlineClarity: "moderate", headlineLength: "medium", headlineShape: "chained",
-            heartlineClarity: "faint", lifelineClarity: "faint",
-            fatelineShape: "chained", fatelineClarity: "moderate"
+            headlineClarity: "broken", headlineLength: "short",
+            heartlineClarity: "thin", lifelineClarity: "faint",
+            fatelineClarity: "broken", minorLineDensity: "high"
         )
         let result = engine.score(input: input(palm: negativePalm, astro: astro()))
         #expect((result.domainScores["career"] ?? 100) < 50)
         #expect((result.domainScores["health"] ?? 100) < 50)
         #expect((result.domainScores["family"] ?? 100) < 50)
+    }
+
+    @Test func allNegativeFeaturesResolveFivePalmSignals() throws {
+        // Kotlin SignalResolverTest parity: broken headline, broken fateline,
+        // thin heartline, faint lifeline, high minor-line density.
+        let ruleset = try Ruleset.loadDefault()
+        let negativePalm = features(
+            headlineClarity: "broken", headlineLength: "short",
+            heartlineClarity: "thin", lifelineClarity: "faint",
+            fatelineClarity: "broken", minorLineDensity: "high"
+        )
+        let resolved = SignalResolver.resolvePalmSignals(features: negativePalm, ruleset: ruleset)
+        #expect(resolved.map(\.signalId) == [
+            "PALM_HEADLINE_CHAINED", "PALM_FATELINE_BREAKS",
+            "PALM_HEARTLINE_THIN", "PALM_LIFELINE_FAINT", "PALM_MINOR_LINES_DENSE",
+        ])
+        #expect(resolved.allSatisfy { $0.direction == -1 })
+    }
+
+    @Test func allPositiveFeaturesResolveFourPalmSignalsInMatchOrder() throws {
+        let ruleset = try Ruleset.loadDefault()
+        let resolved = SignalResolver.resolvePalmSignals(features: features(lifelineClarity: "clear"), ruleset: ruleset)
+        #expect(resolved.map(\.signalId) == [
+            "PALM_HEADLINE_LONG_CLEAR", "PALM_HEARTLINE_STRONG",
+            "PALM_LIFELINE_CLEAR", "PALM_FATELINE_STRONG",
+        ])
+        // "medium" clarity also counts as positive for heart/life lines.
+        let medium = SignalResolver.resolvePalmSignals(
+            features: features(heartlineClarity: "medium", lifelineClarity: "medium"), ruleset: ruleset
+        )
+        #expect(medium.map(\.signalId).contains("PALM_HEARTLINE_STRONG"))
+        #expect(medium.map(\.signalId).contains("PALM_LIFELINE_CLEAR"))
+        // Absent or unclear lines never trigger signals.
+        let faintAll = SignalResolver.resolvePalmSignals(
+            features: features(
+                headlineClarity: "faint", heartlineClarity: "faint",
+                lifelineClarity: "unclear", fatelineClarity: "faint"
+            ),
+            ruleset: ruleset
+        )
+        #expect(faintAll.isEmpty)
     }
 
     @Test func scoresAreClampedTo0To100() throws {

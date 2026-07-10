@@ -1,0 +1,161 @@
+{
+    "input": {
+        "palmFeatures": {
+            "features": {
+                "headlinePresent": true,
+                "heartlinePresent": true,
+                "lifelinePresent": true,
+                "fatelinePresent": true,
+                "headlineShape": "straight",
+                "heartlineShape": "straight",
+                "lifelineShape": "curved",
+                "fatelineShape": "straight",
+                "headlineClarity": "broken",
+                "heartlineClarity": "thin",
+                "lifelineClarity": "faint",
+                "fatelineClarity": "broken",
+                "headlineLength": "short",
+                "fatelineLength": "short",
+                "venusMountDensity": "low",
+                "jupiterMountDensity": "low",
+                "saturnMountDensity": "low",
+                "minorLineDensity": "high"
+            },
+            "featureCoverage": 0.85,
+            "confidence": "high",
+            "extractorVersion": "2.0.0"
+        },
+        "astroResult": {
+            "calcLevel": "L1",
+            "signals": [
+                {
+                    "signalId": "ASTRO_SUN_SCORPIO",
+                    "direction": "+",
+                    "magnitude": 3,
+                    "confidence": "high",
+                    "safetyTag": "SAFE_GENERAL"
+                },
+                {
+                    "signalId": "ASTRO_SUN_WATER",
+                    "direction": "+",
+                    "magnitude": 2,
+                    "confidence": "high",
+                    "safetyTag": "SAFE_HEALTH_SOFT_ONLY"
+                },
+                {
+                    "signalId": "ASTRO_SUN_FIXED",
+                    "direction": "+",
+                    "magnitude": 2,
+                    "confidence": "high",
+                    "safetyTag": "SAFE_GENERAL"
+                }
+            ],
+            "engineVersion": "2.0.0"
+        },
+        "userContext": {
+            "dominantHand": "LEFT",
+            "oneHandOnly": false
+        },
+        "rulesetVersion": "2.0.0"
+    },
+    "expected": {
+        "domainScores": {
+            "career": 34,
+            "wealth": 37,
+            "family": 38,
+            "health": 35
+        },
+        "subdimScores": {
+        },
+        "grade": "Building",
+        "confidence": "med",
+        "confidenceReasons": [
+            "missing_birth_time"
+        ],
+        "explainability": [
+            {
+                "signalId": "PALM_FATELINE_BREAKS",
+                "mapping": "PALM_FATELINE_BREAKS → career",
+                "contribution": -5.4
+            },
+            {
+                "signalId": "PALM_HEARTLINE_THIN",
+                "mapping": "PALM_HEARTLINE_THIN → family",
+                "contribution": -5.4
+            },
+            {
+                "signalId": "PALM_LIFELINE_FAINT",
+                "mapping": "PALM_LIFELINE_FAINT → health",
+                "contribution": -5.4
+            },
+            {
+                "signalId": "PALM_HEADLINE_CHAINED",
+                "mapping": "PALM_HEADLINE_CHAINED → career",
+                "contribution": -4.800000000000001
+            },
+            {
+                "signalId": "PALM_FATELINE_BREAKS",
+                "mapping": "PALM_FATELINE_BREAKS → wealth",
+                "contribution": -4.800000000000001
+            },
+            {
+                "signalId": "PALM_MINOR_LINES_DENSE",
+                "mapping": "PALM_MINOR_LINES_DENSE → health",
+                "contribution": -4.0
+            },
+            {
+                "signalId": "PALM_LIFELINE_FAINT",
+                "mapping": "PALM_LIFELINE_FAINT → family",
+                "contribution": -3.5999999999999996
+            },
+            {
+                "signalId": "PALM_HEADLINE_CHAINED",
+                "mapping": "PALM_HEADLINE_CHAINED → health",
+                "contribution": -3.5999999999999996
+            },
+            {
+                "signalId": "PALM_MINOR_LINES_DENSE",
+                "mapping": "PALM_MINOR_LINES_DENSE → career",
+                "contribution": -3.0
+            },
+            {
+                "signalId": "PALM_HEADLINE_CHAINED",
+                "mapping": "PALM_HEADLINE_CHAINED → wealth",
+                "contribution": -3.0
+            },
+            {
+                "signalId": "PALM_MINOR_LINES_DENSE",
+                "mapping": "PALM_MINOR_LINES_DENSE → wealth",
+                "contribution": -2.5
+            },
+            {
+                "signalId": "PALM_HEARTLINE_THIN",
+                "mapping": "PALM_HEARTLINE_THIN → health",
+                "contribution": -2.4000000000000004
+            },
+            {
+                "signalId": "PALM_MINOR_LINES_DENSE",
+                "mapping": "PALM_MINOR_LINES_DENSE → family",
+                "contribution": -2.0
+            },
+            {
+                "signalId": "ASTRO_SUN_WATER",
+                "mapping": "ASTRO_SUN_WATER → family",
+                "contribution": 1.2
+            },
+            {
+                "signalId": "ASTRO_SUN_WATER",
+                "mapping": "ASTRO_SUN_WATER → health",
+                "contribution": 1.0
+            },
+            {
+                "signalId": "ASTRO_SUN_FIXED",
+                "mapping": "ASTRO_SUN_FIXED → wealth",
+                "contribution": 0.5
+            }
+        ],
+        "matchedBuckets": [
+        ],
+        "rulesetVersion": "2.0.0"
+    }
+}

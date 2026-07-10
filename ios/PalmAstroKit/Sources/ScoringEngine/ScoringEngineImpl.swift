@@ -67,8 +67,17 @@ public final class ScoringEngineImpl: ScoringEngineProtocol {
         let confidence = minConfidence(input.palmFeatures.confidence, astroConfidence(input.astroResult))
         let reasons = buildConfidenceReasons(input: input)
 
+        // Kotlin's sortedByDescending is stable; Swift's sort is not guaranteed
+        // to be, so break abs-contribution ties by insertion order explicitly —
+        // parity fixtures compare explainability entry order exactly.
         let sortedExplain = distinctByKey(explainability) { "\($0.signalId)-\($0.mapping)" }
-            .sorted { abs($0.contribution) > abs($1.contribution) }
+            .enumerated()
+            .sorted { a, b in
+                let absA = abs(a.element.contribution)
+                let absB = abs(b.element.contribution)
+                return absA != absB ? absA > absB : a.offset < b.offset
+            }
+            .map(\.element)
 
         return ScoringResult(
             domainScores: domainScores,
