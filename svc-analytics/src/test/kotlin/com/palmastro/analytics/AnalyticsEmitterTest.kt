@@ -44,22 +44,22 @@ class AnalyticsEmitterTest {
 
     @Test
     fun `emit strips birthday value props`() {
-        emitter.emit("onboarding_complete", mapOf("birthday_value" to "1990-01-01", "birthday_provided" to true))
+        emitter.emit("onboarding_complete", mapOf("birthday_value" to "1990-01-01", "enabled" to true))
         assertTrue("birthday_value" !in emitted[0].second)
-        assertEquals(true, emitted[0].second["birthday_provided"])
+        assertEquals(true, emitted[0].second["enabled"])
     }
 
     @Test
     fun `emit strips numeric arrays longer than 3`() {
-        emitter.emit("scan_complete", mapOf("scores" to listOf(1, 2, 3, 4, 5), "count" to 7))
-        assertTrue("scores" !in emitted[0].second)
-        assertEquals(7, emitted[0].second["count"])
+        emitter.emit("scan_complete", mapOf("value" to listOf(1, 2, 3, 4, 5), "duration_ms" to 7))
+        assertTrue("value" !in emitted[0].second)
+        assertEquals(7, emitted[0].second["duration_ms"])
     }
 
     @Test
     fun `emit strips file path props with scan or media`() {
-        emitter.emit("scan_complete", mapOf("file" to "/data/scan/frame01.jpg", "quality" to 80))
-        assertTrue("file" !in emitted[0].second)
+        emitter.emit("scan_complete", mapOf("screen" to "/data/scan/frame01.jpg", "value" to 80))
+        assertTrue("screen" !in emitted[0].second)
     }
 
     @Test

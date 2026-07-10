@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl$private fun computeFeatureCoverage( features: PalmFeatures, regions: Map&lt;String, AggregatedRegion?&gt; ): Float</ID>
+    <ID>LongMethod:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl$override fun extract(bestFrames: Map&lt;Angle, BestFrameResult&gt;, hand: Hand): PalmFeatureResult</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl$0.4f</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl$0.5f</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl$0.6f</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl$0.8f</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl$1.25f</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl$40</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl$70</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl.PalmGeometry.Companion$0.12f</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl.PalmGeometry.Companion$13</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl.PalmGeometry.Companion$17</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl.PalmGeometry.Companion$5</ID>
+    <ID>MagicNumber:PalmFeatureExtractorImpl.kt$PalmFeatureExtractorImpl.PalmGeometry.Companion$9</ID>
+    <ID>WildcardImport:PalmFeatureExtractorImpl.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:PalmFeatureExtractorTest.kt$import com.palmastro.contracts.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

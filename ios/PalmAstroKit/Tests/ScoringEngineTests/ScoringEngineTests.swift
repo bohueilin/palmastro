@@ -14,17 +14,20 @@ import CoreContracts
     }
 
     @Test func rulesetContainsAppendixA1NegativePalmSignals() throws {
+        // Canonical v2 palm signal set (Kotlin RulesetTest parity):
+        // four positives kept from v1 plus five negatives new in v2.
         let ruleset = try Ruleset.loadDefault()
         let ids = Set(ruleset.signals.map(\.signalId))
         for required in [
             "PALM_HEADLINE_LONG_CLEAR", "PALM_HEADLINE_CHAINED",
             "PALM_FATELINE_STRONG", "PALM_FATELINE_BREAKS",
-            "PALM_HEARTLINE_DEEP", "PALM_HEARTLINE_THIN",
+            "PALM_HEARTLINE_STRONG", "PALM_HEARTLINE_THIN",
             "PALM_LIFELINE_CLEAR", "PALM_LIFELINE_FAINT",
-            "PALM_VENUS_TEXTURE_DENSE", "PALM_MINOR_LINES_DENSE",
+            "PALM_MINOR_LINES_DENSE",
         ] {
             #expect(ids.contains(required), "missing \(required)")
         }
+        #expect(ruleset.signals.count == 24, "canonical v2 ruleset carries exactly 24 signals")
         let negatives = ruleset.signals.filter { $0.direction < 0 }
         #expect(negatives.count >= 4, "v2 ruleset must include negative palm signals")
     }

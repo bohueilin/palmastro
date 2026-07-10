@@ -379,7 +379,7 @@ class ScanViewModel @Inject constructor(
                                 mapOf("reason" to "safety", "domain" to domain),
                             )
                         }
-                        safetyFilter.safeFallbackPayload(domain, language)
+                        contentComposer.safeFallbackPayload(domain, language, base = payload)
                     }
                 }
 

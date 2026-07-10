@@ -1,10 +1,12 @@
 import Foundation
 import CoreContracts
 
-/// Tone-aware plain-text renderer. Section labels and tone prefixes come from
-/// content-templates.json for the payload's language — the engine emits no
-/// hardcoded display strings. Tones keep their contract names
-/// (SCIENTIFIC/HEALING/ROAST_SAFE); display names are a UI concern (PRD §45).
+// Mirrors engine-content/src/main/kotlin/com/palmastro/content/ToneRenderer.kt.
+
+/// Renders a `SemanticPayload` to a plain-text report (no HTML) in the
+/// payload's language, applying tone prefixes/labels from the versioned
+/// template library (PRD §19, §45, §50). Tones keep their contract names
+/// (SCIENTIFIC/HEALING/ROAST_SAFE); display names are a UI concern.
 public final class ToneRendererImpl: Renderer {
 
     private let templates: ContentTemplates
@@ -18,34 +20,42 @@ public final class ToneRendererImpl: Renderer {
     }
 
     public func render(payload: SemanticPayload, tone: Tone) -> RenderedReport {
-        let (_, bundle) = templates.resolveLanguage(payload.language)
-        let domainName = bundle.domains[payload.domain]?.displayName ?? payload.domain
-
-        let tonePrefix = bundle.tonePrefixes[tone.rawValue] ?? ""
-        let blindspotLabel = bundle.toneBlindspotLabels[tone.rawValue]
-            ?? bundle.labels["blindspot"] ?? "blindspot"
+        let lang = templates.resolveLanguage(payload.language)
+        let toneTemplate = templates.tones[tone.rawValue]
+        let prefix = toneTemplate.map { templates.localized($0.interpretationPrefix, language: lang) } ?? ""
+        let blindspotLabel = toneTemplate.map { templates.localized($0.blindspotLabel, language: lang) } ?? ""
+        let labels = templates.labels
+        let domainName = templates.domains[payload.domain]
+            .map { templates.localized($0.displayName, language: lang) }
+            .flatMap { $0.isBlank ? nil : $0 }
+            ?? payload.domain
+        let grade = labels.grades[payload.scoreCard.grade]
+            .map { templates.localized($0, language: lang) }
+            .flatMap { $0.isBlank ? nil : $0 }
+            ?? payload.scoreCard.grade
 
         var lines: [String] = []
-        lines.append("\(domainName) — \(payload.scoreCard.totalScore) / 100 — \(payload.scoreCard.grade)")
+        if grade.isBlank {
+            lines.append("\(domainName) — \(payload.scoreCard.totalScore)/100")
+        } else {
+            lines.append("\(domainName) — \(payload.scoreCard.totalScore)/100 · \(grade)")
+        }
         lines.append("")
-        lines.append("\(tonePrefix)\(payload.interpretation.pattern)")
-        if !payload.interpretation.trigger.isEmpty {
-            lines.append(payload.interpretation.trigger)
-        }
-        if !payload.interpretation.cost.isEmpty {
-            lines.append(payload.interpretation.cost)
-        }
-        if !payload.blindspot.isEmpty {
+        lines.append("\(prefix)\(payload.interpretation.pattern)")
+        if !payload.interpretation.trigger.isBlank { lines.append(payload.interpretation.trigger) }
+        if !payload.interpretation.cost.isBlank { lines.append(payload.interpretation.cost) }
+        if !payload.blindspot.isBlank {
             lines.append("")
-            lines.append("\(blindspotLabel): \(payload.blindspot)")
+            lines.append("\(blindspotLabel)\(payload.blindspot)")
         }
         lines.append("")
-        lines.append("\(bundle.labels["actionToday"] ?? "today"): \(payload.actionToday)")
-        lines.append("\(bundle.labels["actionWeek"] ?? "week"): \(payload.actionWeek)")
+        lines.append("\(templates.localized(labels.actionToday, language: lang))\(payload.actionToday)")
+        lines.append("\(templates.localized(labels.actionWeek, language: lang))\(payload.actionWeek)")
         lines.append("")
-        lines.append("\(bundle.labels["prompt"] ?? "prompt"): \(payload.prompt)")
+        lines.append("\(templates.localized(labels.prompt, language: lang))\(payload.prompt)")
         for note in payload.safetyNotes {
-            lines.append("\(bundle.labels["safety"] ?? "note"): \(note)")
+            lines.append("")
+            lines.append("\(templates.localized(labels.safetyNote, language: lang))\(note)")
         }
 
         return RenderedReport(domain: payload.domain, tone: tone, text: lines.joined(separator: "\n"))

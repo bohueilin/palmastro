@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>MagicNumber:QualityGateImpl.kt$QualityGateImpl$0.2f</ID>
+    <ID>MagicNumber:QualityGateImpl.kt$QualityGateImpl$1000</ID>
+    <ID>WildcardImport:QualityGateImpl.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:QualityGateTest.kt$import com.palmastro.contracts.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

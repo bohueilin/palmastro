@@ -24,5 +24,7 @@ subprojects {
         config.setFrom(rootProject.files("detekt.yml"))
         buildUponDefaultConfig = true
         parallel = true
+        // Pre-launch debt is frozen per-module; detekt gates only NEW findings (maxIssues=0).
+        baseline = file("detekt-baseline.xml")
     }
 }

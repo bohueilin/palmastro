@@ -1,7 +1,6 @@
 package com.palmastro.app.navigation
 
 import android.content.Intent
-import android.net.Uri
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
@@ -14,13 +13,13 @@ class DeepLinkHandlerTest {
 
     private fun intentWithUri(uri: String): Intent {
         val intent = mockk<Intent>()
-        every { intent.data } returns Uri.parse(uri)
+        every { intent.dataString } returns uri
         return intent
     }
 
     @Test
     fun `parse returns null for null intent`() {
-        assertNull(DeepLinkHandler.parse(null))
+        assertNull(DeepLinkHandler.parse(null as android.content.Intent?))
     }
 
     @Test

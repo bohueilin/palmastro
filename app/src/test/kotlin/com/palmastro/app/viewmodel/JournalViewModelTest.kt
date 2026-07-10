@@ -20,13 +20,18 @@ class JournalViewModelTest {
     @BeforeEach fun setUp() { Dispatchers.setMain(testDispatcher); clearAllMocks() }
     @AfterEach fun tearDown() { Dispatchers.resetMain() }
 
-    private fun createViewModel(monthKey: String = "2026-03", domain: String? = null): JournalViewModel {
+    private fun createViewModel(
+        monthKey: String = "2026-03",
+        domain: String? = null,
+        existing: JournalEntryEntity? = null,
+        entries: List<JournalEntryEntity> = emptyList(),
+    ): JournalViewModel {
         val handle = SavedStateHandle(buildMap {
             put("monthKey", monthKey)
             if (domain != null) put("domain", domain)
         })
-        coEvery { journalRepository.getByMonth(any()) } returns emptyList()
-        coEvery { journalRepository.getByMonthAndDomain(any(), any()) } returns null
+        coEvery { journalRepository.getByMonth(any()) } returns entries
+        coEvery { journalRepository.getByMonthAndDomain(any(), any()) } returns existing
         return JournalViewModel(handle, journalRepository)
     }
 
@@ -72,9 +77,7 @@ class JournalViewModelTest {
     @Test
     fun `loads existing entry on init`() = runTest {
         val existing = JournalEntryEntity("j-1", "2026-03", "career", "Previous entry")
-        coEvery { journalRepository.getByMonthAndDomain("2026-03", "career") } returns existing
-        coEvery { journalRepository.getByMonth("2026-03") } returns listOf(existing)
-        val vm = createViewModel("2026-03", "career")
+        val vm = createViewModel("2026-03", "career", existing = existing, entries = listOf(existing))
         assertEquals("Previous entry", vm.state.value.text)
         assertEquals(1, vm.state.value.existingEntries.size)
     }

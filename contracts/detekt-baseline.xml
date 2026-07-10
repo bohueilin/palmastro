@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>MaxLineLength:ModelsTest.kt$ModelsTest$val signal = AstroSignal(signalId = "ASTRO_SUN_EARTH_SIGN", direction = "+", magnitude = 3, confidence = "high", safetyTag = "SAFE_CAREER")</ID>
+    <ID>WildcardImport:EngineInterfaces.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ScanInterfaces.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:StorageInterfaces.kt$import com.palmastro.contracts.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

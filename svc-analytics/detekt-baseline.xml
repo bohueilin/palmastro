@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>MagicNumber:AnalyticsEmitterImpl.kt$AnalyticsEmitterImpl$3</ID>
+  </CurrentIssues>
+</SmellBaseline>

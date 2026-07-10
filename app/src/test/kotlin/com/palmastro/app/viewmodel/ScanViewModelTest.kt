@@ -296,7 +296,7 @@ class ScanViewModelTest {
             if (payload.domain == "career") SafetyCheckResult(false, listOf("deterministic_claim"))
             else SafetyCheckResult(true, emptyList())
         }
-        every { safetyFilter.safeFallbackPayload("career", "en") } returns fallback
+        every { contentComposer.safeFallbackPayload("career", "en", any()) } returns fallback
 
         val vm = buildViewModel()
         val entity = runPipelineToCompletion(vm, this)
@@ -305,7 +305,7 @@ class ScanViewModelTest {
         assertFalse(entity.semanticPayloadsJson.contains("ok interpretation for career"))
         // Other domains untouched
         assertTrue(entity.semanticPayloadsJson.contains("ok interpretation for wealth"))
-        verify { safetyFilter.safeFallbackPayload("career", "en") }
+        verify { contentComposer.safeFallbackPayload("career", "en", any()) }
         verify { analytics.emit("inference_fail", match { it["reason"] == "safety" && it["domain"] == "career" }) }
     }
 
@@ -318,7 +318,7 @@ class ScanViewModelTest {
             if (payload.domain == "health") SafetyCheckResult(false, listOf("medical_claim"))
             else SafetyCheckResult(true, emptyList())
         }
-        every { safetyFilter.safeFallbackPayload("health", "en") } returns fallback
+        every { contentComposer.safeFallbackPayload("health", "en", any()) } returns fallback
 
         val vm = buildViewModel()
         val entity = runPipelineToCompletion(vm, this)

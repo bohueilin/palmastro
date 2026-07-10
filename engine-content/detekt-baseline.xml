@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>NestedBlockDepth:ContentTemplateTest.kt$ContentTemplateTest$@Test fun `every domain field bucket and language has non-blank copy`()</ID>
+    <ID>NestedBlockDepth:LocalizationSmokeTest.kt$LocalizationSmokeTest$@Test fun `every supported language composes complete and safe payloads`()</ID>
+    <ID>UseCheckOrError:ContentTemplates.kt$ContentTemplates.Companion$throw IllegalStateException("Resource not found: $path")</ID>
+    <ID>UseCheckOrError:SafetyRules.kt$SafetyRules.Companion$throw IllegalStateException("Resource not found: $path")</ID>
+    <ID>WildcardImport:ContentComposerTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ContentTemplateTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:LocalizationSmokeTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:SafetyFilterAdversarialTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:SafetyFilterEnglishTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:SafetyFilterTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ToneRendererSnapshotTest.kt$import com.palmastro.contracts.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

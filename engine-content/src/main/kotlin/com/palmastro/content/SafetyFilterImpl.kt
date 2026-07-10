@@ -33,7 +33,11 @@ class SafetyFilterImpl(
             id = category.id,
             zhTerms = category.zh.map { normalize(it) },
             enPatterns = category.en.map { pattern ->
-                pattern to Regex("\\b(?:$pattern)\\b", RegexOption.IGNORE_CASE)
+                // Explicit ASCII lookarounds, NOT \b: Java's \b is Unicode-aware and treats
+                // CJK ideographs as word chars, so \b never matches at a CJK↔Latin seam
+                // (e.g. "buy stocks現在"). ASCII lookarounds keep the cure-in-"secure"
+                // false-positive protection while catching EN terms inside Chinese text.
+                pattern to Regex("(?<![a-zA-Z0-9_])(?:$pattern)(?![a-zA-Z0-9_])", RegexOption.IGNORE_CASE)
             },
         )
     }

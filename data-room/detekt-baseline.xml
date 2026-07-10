@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>WildcardImport:DeltaDao.kt$import androidx.room.*</ID>
+    <ID>WildcardImport:Entities.kt$import androidx.room.*</ID>
+    <ID>WildcardImport:EntitlementDao.kt$import androidx.room.*</ID>
+    <ID>WildcardImport:InstallIdDao.kt$import androidx.room.*</ID>
+    <ID>WildcardImport:InstallIdRepositoryTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:JournalDao.kt$import androidx.room.*</ID>
+    <ID>WildcardImport:JournalRepositoryTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:MonthlyResultDao.kt$import androidx.room.*</ID>
+    <ID>WildcardImport:PalmAstroDatabase.kt$import com.palmastro.data.dao.*</ID>
+    <ID>WildcardImport:PalmAstroDatabase.kt$import com.palmastro.data.entities.*</ID>
+    <ID>WildcardImport:ResultRepositoryTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:UserProfileDao.kt$import androidx.room.*</ID>
+    <ID>WildcardImport:WipeManager.kt$import com.palmastro.data.dao.*</ID>
+    <ID>WildcardImport:WipeManagerTest.kt$import com.palmastro.data.dao.*</ID>
+    <ID>WildcardImport:WipeManagerTest.kt$import io.mockk.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

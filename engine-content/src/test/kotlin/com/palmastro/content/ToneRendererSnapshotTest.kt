@@ -112,7 +112,7 @@ class ToneRendererSnapshotTest {
 
 /**
  * Golden snapshots (PRD §50): 4 domains x en/zh-TW x 3 tones, composed from a
- * fixed input and rendered, compared against src/test/resources/golden/*.txt.
+ * fixed input and rendered, compared against src/test/resources/golden txt files.
  */
 class GoldenReportSnapshotTest {
     private val composer = ContentComposerImpl()

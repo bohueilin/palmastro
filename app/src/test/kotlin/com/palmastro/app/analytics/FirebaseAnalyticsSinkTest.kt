@@ -13,16 +13,16 @@ class FirebaseAnalyticsSinkTest {
         val emitter = AnalyticsEmitterImpl { name, props -> received.add(name to props) }
 
         emitter.emit("scan_complete", mapOf(
-            "quality" to 80,
+            "value" to 80,
             "palm_feature_vector" to listOf(0.1, 0.2, 0.3, 0.4),
-            "hand" to "right",
+            "angle" to "front",
             "birthday_value" to "1990-03-21",
         ))
 
         assertEquals(1, received.size)
         val props = received[0].second
-        assertEquals(80, props["quality"])
-        assertEquals("right", props["hand"])
+        assertEquals(80, props["value"])
+        assertEquals("front", props["angle"])
         assertTrue("palm_feature_vector" !in props)
         assertTrue("birthday_value" !in props)
     }
@@ -52,7 +52,7 @@ class FirebaseAnalyticsSinkTest {
         val emitter = AnalyticsEmitterImpl { name, props -> received.add(name to props) }
 
         emitter.emit("scan_complete", mapOf(
-            "quality" to 80,
+            "value" to 80,
             "image_path" to "/data/data/com.palmastro.app/files/scan/frame.jpg",
         ))
 

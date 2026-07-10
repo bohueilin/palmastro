@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:SignalResolver.kt$SignalResolver$fun resolvePalmSignals(features: PalmFeatureResult, ruleset: Ruleset): List&lt;SignalDefinition&gt;</ID>
+    <ID>MagicNumber:DeltaEngineImpl.kt$DeltaEngineImpl$0.10</ID>
+    <ID>MagicNumber:DeltaEngineImpl.kt$DeltaEngineImpl$0.15</ID>
+    <ID>MagicNumber:DeltaEngineImpl.kt$DeltaEngineImpl$0.20</ID>
+    <ID>MagicNumber:DeltaEngineImpl.kt$DeltaEngineImpl$0.25</ID>
+    <ID>MagicNumber:DeltaEngineImpl.kt$DeltaEngineImpl$0.3</ID>
+    <ID>MagicNumber:DeltaEngineImpl.kt$DeltaEngineImpl$0.30</ID>
+    <ID>MagicNumber:DeltaEngineImpl.kt$DeltaEngineImpl$50</ID>
+    <ID>MagicNumber:DeltaEngineImpl.kt$DeltaEngineImpl$50.0</ID>
+    <ID>MagicNumber:DeltaEngineImpl.kt$DeltaEngineImpl$70</ID>
+    <ID>MagicNumber:ScoringEngineImpl.kt$ScoringEngineImpl$0.3</ID>
+    <ID>MagicNumber:ScoringEngineImpl.kt$ScoringEngineImpl$0.5</ID>
+    <ID>MagicNumber:ScoringEngineImpl.kt$ScoringEngineImpl$0.5f</ID>
+    <ID>MaxLineLength:RulesetLoadTest.kt$RulesetLoadTest$val r = Ruleset.fromJson("""{"version":"2.0","signals":[{"signalId":"X","source":"TEST","direction":1,"magnitude":1,"minConfidence":"low","domainWeights":{"career":1.0},"safetyTag":"SAFE"}],"gradeThresholds":{"Low":{"min":0,"max":50},"High":{"min":51,"max":100}},"confidenceMultipliers":{"high":1.0}}""")</ID>
+    <ID>MaxLineLength:ScoringPropertyTest.kt$ScoringPropertyTest$palmFeatures = PalmFeatureResult(randomPalmFeatures(rng), rng.nextFloat().coerceIn(0.1f, 1.0f), confidences.random(rng), "2.0.0")</ID>
+    <ID>MaxLineLength:ScoringPropertyTest.kt$ScoringPropertyTest$val high = engine.score(ScoringInput(PalmFeatureResult(pf, 0.9f, "high", "2.0.0"), AstroResult(CalcLevel.L2, astro, "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))</ID>
+    <ID>MaxLineLength:ScoringPropertyTest.kt$ScoringPropertyTest$val low = engine.score(ScoringInput(PalmFeatureResult(pf, 0.9f, "low", "2.0.0"), AstroResult(CalcLevel.L2, astro, "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))</ID>
+    <ID>MaxLineLength:ScoringPropertyTest.kt$ScoringPropertyTest$val pf = PalmFeatures(false, false, false, false, "unclear", "unclear", "unclear", "unclear", "unclear", "unclear", "unclear", "unclear", "short", "short", "low", "low", "low", "low")</ID>
+    <ID>MaxLineLength:ScoringPropertyTest.kt$ScoringPropertyTest$val pf = PalmFeatures(true, true, true, true, "curved", "curved", "curved", "straight", "clear", "clear", "clear", "clear", "long", "medium", "med", "med", "low", "med")</ID>
+    <ID>MaxLineLength:ScoringPropertyTest.kt$ScoringPropertyTest$val pf = PalmFeatures(true, true, true, true, "straight", "straight", "straight", "straight", "broken", "thin", "faint", "broken", "short", "short", "low", "low", "low", "high")</ID>
+    <ID>MaxLineLength:ScoringPropertyTest.kt$ScoringPropertyTest$val r = engine.score(ScoringInput(PalmFeatureResult(pf, 0.1f, "low", "2.0.0"), AstroResult(CalcLevel.L1, emptyList(), "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))</ID>
+    <ID>MaxLineLength:ScoringPropertyTest.kt$ScoringPropertyTest$val r = engine.score(ScoringInput(PalmFeatureResult(pf, 0.95f, "high", "2.0.0"), AstroResult(CalcLevel.L2, emptyList(), "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))</ID>
+    <ID>MaxLineLength:ScoringPropertyTest.kt$ScoringPropertyTest$val r = engine.score(ScoringInput(PalmFeatureResult(pf, 0.9f, "high", "2.0.0"), AstroResult(CalcLevel.L1, emptyList(), "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))</ID>
+    <ID>NestedBlockDepth:ScoringEngineImpl.kt$ScoringEngineImpl$override fun score(input: ScoringInput): ScoringResult</ID>
+    <ID>WildcardImport:DeltaEngineImpl.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:DeltaEngineTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ScoringEngineImpl.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ScoringEngineTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ScoringPropertyTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:SignalResolver.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:SignalResolverTest.kt$import com.palmastro.contracts.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

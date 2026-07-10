@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>MagicNumber:AstroEngineImpl.kt$AstroEngineImpl$3</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$0.000387933</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$0.114332</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$0.185116</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$0.213618</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$0.658314</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$1.274027</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$12</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$134.9633964</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$14</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$1440.0</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$15.0</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$153</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$218.3164477</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$24.0</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$280.46061837</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$297.8501921</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$3</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$32045L</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$357.5291092</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$35999.0502909</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$360.0</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$360.98564736629</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$36525.0</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$365L</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$38710000.0</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$4</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$400</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$445267.1114034</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$477198.8675055</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$4800</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$481267.88123421</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$483202.0175233</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$5</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$6.288774</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$86400.0</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$89.9</ID>
+    <ID>MagicNumber:AstroMath.kt$AstroMath$93.2720950</ID>
+    <ID>MagicNumber:ZodiacCalculator.kt$ZodiacCalculator$11</ID>
+    <ID>MagicNumber:ZodiacCalculator.kt$ZodiacCalculator$30.0</ID>
+    <ID>MagicNumber:ZodiacCalculator.kt$ZodiacCalculator$360.0</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Apr 19 is Aries, Apr 20 is Taurus`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Aug 22 is Leo, Aug 23 is Virgo`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Dec 21 is Sagittarius, Dec 22 is Capricorn`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Feb 18 is Aquarius, Feb 19 is Pisces`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Jan 19 is Capricorn, Jan 20 is Aquarius`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Jul 22 is Cancer, Jul 23 is Leo`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Jun 20 is Gemini, Jun 21 is Cancer`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Mar 20 is Pisces, Mar 21 is Aries`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `May 20 is Taurus, May 21 is Gemini`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Nov 21 is Scorpio, Nov 22 is Sagittarius`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Oct 22 is Libra, Oct 23 is Scorpio`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.CuspBoundaries$@Test fun `Sep 22 is Virgo, Sep 23 is Libra`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.Elements$@Test fun `air signs`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.Elements$@Test fun `earth signs`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.Elements$@Test fun `fire signs`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.Elements$@Test fun `water signs`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.Modalities$@Test fun `cardinal signs`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.Modalities$@Test fun `fixed signs`()</ID>
+    <ID>MaxLineLength:ZodiacCalculatorTest.kt$ZodiacCalculatorTest.Modalities$@Test fun `mutable signs`()</ID>
+    <ID>WildcardImport:AstroEngineImpl.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:AstroEngineTest.kt$import com.palmastro.contracts.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

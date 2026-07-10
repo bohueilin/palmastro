@@ -54,9 +54,12 @@ let package = Package(
             dependencies: ["CoreContracts"],
             resources: [.process("Resources")]
         ),
+        // SafetyEngine mirrors the Kotlin engine-content module, where the
+        // safety filter draws its localized replacement copy from the content
+        // template library — hence the ContentEngine dependency.
         .target(
             name: "SafetyEngine",
-            dependencies: ["CoreContracts"],
+            dependencies: ["CoreContracts", "ContentEngine"],
             resources: [.process("Resources")]
         ),
         .target(name: "AnalyticsService", dependencies: ["CoreContracts"]),
@@ -69,7 +72,7 @@ let package = Package(
         engineTestTarget("AstroEngineTests", dependencies: ["AstroEngine", "CoreContracts"]),
         engineTestTarget("ScoringEngineTests", dependencies: ["ScoringEngine", "CoreContracts"]),
         engineTestTarget("ContentEngineTests", dependencies: ["ContentEngine", "ScoringEngine", "CoreContracts"]),
-        engineTestTarget("SafetyEngineTests", dependencies: ["SafetyEngine", "CoreContracts"]),
+        engineTestTarget("SafetyEngineTests", dependencies: ["SafetyEngine", "ContentEngine", "CoreContracts"]),
         engineTestTarget("AnalyticsServiceTests", dependencies: ["AnalyticsService", "CoreContracts"]),
         engineTestTarget("DataStoreTests", dependencies: ["DataStore", "CoreContracts"]),
         engineTestTarget(

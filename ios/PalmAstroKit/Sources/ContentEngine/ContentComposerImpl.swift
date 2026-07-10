@@ -1,17 +1,25 @@
 import Foundation
 import CoreContracts
 
-/// Template-driven content composer (PRD §19, Appendix B).
-/// All display text comes from content-templates.json — nothing user-visible
-/// is hardcoded here. `ContentInput.language` is honored with fallback to the
-/// template file's fallback language.
+// Mirrors engine-content/src/main/kotlin/com/palmastro/content/ContentComposerImpl.kt.
+
+/// Deterministic template-driven composer (PRD §19, §50, Appendix B).
+///
+/// All copy comes from the injected `ContentTemplates` (default: the bundled
+/// canonical `content-templates.json`, version `templatesVersion`).
+/// `compose(input:)` is the only composition API; it honors
+/// `ContentInput.language` and falls back to the template default language
+/// ("en") for unsupported requests.
 public final class ContentComposerImpl: ContentComposer {
 
-    /// Score at or above which the "high" variants are used (matches the
-    /// Android composer's behaviour split).
-    public static let highScoreThreshold = 65
+    private static let defaultScore = 50
+    private static let maxObservations = 3
+    private static let domainPlaceholder = "{domain}"
 
     private let templates: ContentTemplates
+
+    /// Persist this alongside results instead of a hardcoded literal.
+    public var templatesVersion: String { templates.version }
 
     public init(templates: ContentTemplates) {
         self.templates = templates
@@ -23,90 +31,127 @@ public final class ContentComposerImpl: ContentComposer {
     }
 
     public func compose(input: ContentInput) -> [String: SemanticPayload] {
-        let (languageTag, bundle) = templates.resolveLanguage(input.language)
-
+        let language = templates.resolveLanguage(input.language)
         var payloads: [String: SemanticPayload] = [:]
         for domain in Domains.all {
-            guard let template = bundle.domains[domain] else { continue }
-
-            let score = input.scoringResult.domainScores[domain] ?? 50
-            let grade = input.scoringResult.grade
-            let high = score >= Self.highScoreThreshold
-            let domainExplain = input.scoringResult.explainability.filter { $0.mapping.contains(domain) }
-            let delta = input.deltaResult?.domainDeltas[domain]
-
-            let observations = domainExplain.prefix(3).map { entry in
-                Observation(
-                    signalId: entry.signalId,
-                    displayName: displayName(for: entry.signalId, bundle: bundle),
-                    evidenceSummary: evidenceSummary(for: entry.contribution, bundle: bundle)
-                )
-            }
-
-            let band = template.band(forScore: score)
-            let interpretation = Interpretation(
-                pattern: band?.pattern ?? "",
-                trigger: band?.trigger ?? "",
-                cost: band?.cost ?? ""
-            )
-
-            let subdims = input.scoringResult.subdimScores.filter { $0.key.hasPrefix("\(domain).") }
-
-            payloads[domain] = SemanticPayload(
-                domain: domain,
-                monthKey: input.monthKey,
-                calcLevel: input.calcLevel,
-                confidence: input.scoringResult.confidence,
-                confidenceReasons: input.scoringResult.confidenceReasons,
-                language: languageTag,
-                observations: Array(observations),
-                interpretation: interpretation,
-                blindspot: high ? template.blindspotHigh : template.blindspotLow,
-                actionToday: high ? template.actionTodayHigh : template.actionTodayLow,
-                actionWeek: high ? template.actionWeekHigh : template.actionWeekLow,
-                prompt: high ? template.promptHigh : template.promptLow,
-                safetyNotes: template.safetyNotes,
-                explainability: domainExplain,
-                scoreCard: ScoreCard(
-                    totalScore: score,
-                    grade: grade,
-                    delta: delta,
-                    comparabilityScore: input.deltaResult?.comparabilityScore,
-                    subdims: subdims
-                )
-            )
+            payloads[domain] = composeDomain(input: input, domain: domain, language: language)
         }
         return payloads
     }
 
-    // MARK: - Observation helpers
+    /// Engine-provided safe payload the app substitutes when `validate()` fails
+    /// (EXECUTION_SPEC safety pipeline). Pass the failing payload as `base` to
+    /// preserve its scoreCard / monthKey / calcLevel metadata.
+    public func safeFallbackPayload(
+        domain: String,
+        language: String,
+        base: SemanticPayload? = nil
+    ) -> SemanticPayload {
+        let lang = templates.resolveLanguage(language)
+        let f = templates.fallback
+        return SemanticPayload(
+            domain: domain,
+            monthKey: base?.monthKey ?? "",
+            calcLevel: base?.calcLevel ?? .L1,
+            confidence: base?.confidence ?? "low",
+            confidenceReasons: [],
+            language: lang,
+            observations: [],
+            interpretation: Interpretation(
+                pattern: templates.localized(f.interpretationPattern, language: lang),
+                trigger: templates.localized(f.interpretationTrigger, language: lang),
+                cost: templates.localized(f.interpretationCost, language: lang)
+            ),
+            blindspot: templates.localized(f.blindspot, language: lang),
+            actionToday: templates.localized(f.actionToday, language: lang),
+            actionWeek: templates.localized(f.actionWeek, language: lang),
+            prompt: templates.localized(f.prompt, language: lang),
+            safetyNotes: templates.domains[domain]
+                .map { templates.localizedList($0.safetyNotes, language: lang) }
+                ?? [],
+            explainability: [],
+            scoreCard: base?.scoreCard
+                ?? ScoreCard(totalScore: 0, grade: "", delta: nil, comparabilityScore: nil, subdims: [:])
+        )
+    }
 
-    private func displayName(for signalId: String, bundle: ContentTemplates.LanguageBundle) -> String {
-        if let named = bundle.signalNames[signalId] {
-            return named
+    // MARK: - Per-domain composition
+
+    private func composeDomain(input: ContentInput, domain: String, language: String) -> SemanticPayload {
+        let score = input.scoringResult.domainScores[domain] ?? Self.defaultScore
+        let template = templates.domains[domain]
+        let displayName = template
+            .map { templates.localized($0.displayName, language: language) }
+            .flatMap { $0.isBlank ? nil : $0 }
+            ?? domain
+        let domainExplain = input.scoringResult.explainability.filter { $0.mapping.contains(domain) }
+        let delta = input.deltaResult?.domainDeltas[domain]
+
+        func text(_ field: [String: LocalizedText]?) -> String {
+            guard let field else { return "" }
+            return templates.bucketText(field, score: score, language: language)
+                .replacingOccurrences(of: Self.domainPlaceholder, with: displayName)
         }
-        // Fallback: prettify the id the same way the Android composer does.
-        return signalId
-            .replacingOccurrences(of: "PALM_", with: "")
-            .replacingOccurrences(of: "ASTRO_", with: "")
-            .replacingOccurrences(of: "_", with: " ")
-            .lowercased()
-            .split(separator: " ")
-            .map { $0.prefix(1).uppercased() + $0.dropFirst() }
+
+        return SemanticPayload(
+            domain: domain,
+            monthKey: input.monthKey,
+            calcLevel: input.calcLevel,
+            confidence: input.scoringResult.confidence,
+            confidenceReasons: input.scoringResult.confidenceReasons,
+            language: language,
+            observations: domainExplain.prefix(Self.maxObservations).map { observation(entry: $0, language: language) },
+            interpretation: Interpretation(
+                pattern: text(template?.interpretation.pattern),
+                trigger: text(template?.interpretation.trigger),
+                cost: text(template?.interpretation.cost)
+            ),
+            blindspot: text(template?.blindspot),
+            actionToday: text(template?.actionToday),
+            actionWeek: text(template?.actionWeek),
+            prompt: text(template?.prompt),
+            safetyNotes: template
+                .map { templates.localizedList($0.safetyNotes, language: language) }
+                ?? [],
+            explainability: domainExplain,
+            scoreCard: ScoreCard(
+                totalScore: score,
+                grade: input.scoringResult.grade,
+                delta: delta,
+                comparabilityScore: input.deltaResult?.comparabilityScore,
+                subdims: input.scoringResult.subdimScores.filter { $0.key.hasPrefix("\(domain).") }
+            )
+        )
+    }
+
+    private func observation(entry: ExplainEntry, language: String) -> Observation {
+        let template = templates.observations[entry.signalId]
+        let displayName = template
+            .map { templates.localized($0.displayName, language: language) }
+            .flatMap { $0.isBlank ? nil : $0 }
+            ?? humanize(entry.signalId)
+        let evidence = template
+            .map { templates.localized($0.evidenceSummary, language: language) }
+            .flatMap { $0.isBlank ? nil : $0 }
+            ?? templates.localized(templates.observationFallbackEvidence, language: language)
+        return Observation(signalId: entry.signalId, displayName: displayName, evidenceSummary: evidence)
+    }
+
+    /// Stable-key transformation for unknown signal ids (no display copy in code).
+    private func humanize(_ signalId: String) -> String {
+        var id = Substring(signalId)
+        if id.hasPrefix("PALM_") { id = id.dropFirst("PALM_".count) }
+        if id.hasPrefix("ASTRO_") { id = id.dropFirst("ASTRO_".count) }
+        return id.split(separator: "_")
+            .map { part -> String in
+                let lower = part.lowercased()
+                return lower.prefix(1).uppercased() + lower.dropFirst()
+            }
             .joined(separator: " ")
     }
+}
 
-    /// Buckets a signed contribution into the localized evidence phrases
-    /// (same thresholds as the Android composer: 3 strong / 1.5 moderate).
-    private func evidenceSummary(for contribution: Double, bundle: ContentTemplates.LanguageBundle) -> String {
-        let direction = contribution > 0 ? "positive" : "attention"
-        let strength: String
-        switch abs(contribution) {
-        case let v where v > 3: strength = "strong"
-        case let v where v > 1.5: strength = "moderate"
-        default: strength = "subtle"
-        }
-        let key = "\(direction)_\(strength)"
-        return bundle.evidence[key] ?? key
-    }
+extension String {
+    /// Kotlin `isBlank()` parity: empty or whitespace-only.
+    var isBlank: Bool { allSatisfy { $0.isWhitespace } }
 }

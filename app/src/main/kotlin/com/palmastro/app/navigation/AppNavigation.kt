@@ -7,8 +7,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.palmastro.app.ui.detail.DomainDetailScreen
+import com.palmastro.app.ui.explainability.EXPLAINABILITY_ROUTE
+import com.palmastro.app.ui.explainability.ExplainabilityScreen
+import com.palmastro.app.ui.explainability.explainabilityRoute
 import com.palmastro.app.ui.history.HistoryScreen
 import com.palmastro.app.ui.journal.JournalScreen
+import com.palmastro.app.ui.legal.LEGAL_ROUTE
+import com.palmastro.app.ui.legal.LegalViewerScreen
+import com.palmastro.app.ui.legal.legalRoute
 import com.palmastro.app.ui.onboarding.OnboardingScreen
 import com.palmastro.app.ui.results.ResultsScreen
 import com.palmastro.app.ui.scan.ScanScreen
@@ -83,6 +89,7 @@ fun AppNavigation(
                         popUpTo(0) { inclusive = true }
                     }
                 },
+                onOpenLegal = { docType -> navController.navigate(legalRoute(docType)) },
             )
         }
         composable(
@@ -97,6 +104,25 @@ fun AppNavigation(
             DomainDetailScreen(
                 onBack = { navController.popBackStack() },
                 onJournalClick = { navController.navigate("journal/$monthKey?domain=$domain") },
+                onExplainabilityClick = { navController.navigate(explainabilityRoute(domain, monthKey)) },
+            )
+        }
+        composable(
+            route = EXPLAINABILITY_ROUTE,
+            arguments = listOf(
+                navArgument("domain") { type = NavType.StringType },
+                navArgument("monthKey") { type = NavType.StringType },
+            ),
+        ) {
+            ExplainabilityScreen(onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = LEGAL_ROUTE,
+            arguments = listOf(navArgument("docType") { type = NavType.StringType }),
+        ) { entry ->
+            LegalViewerScreen(
+                docType = entry.arguments?.getString("docType") ?: com.palmastro.app.ui.legal.LEGAL_DOC_PRIVACY,
+                onBack = { navController.popBackStack() },
             )
         }
         composable(Route.History.path) {

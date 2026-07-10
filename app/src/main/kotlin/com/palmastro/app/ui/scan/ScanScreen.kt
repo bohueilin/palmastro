@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
+import com.palmastro.app.share.ScanError
 import com.palmastro.app.viewmodel.ScanViewModel
 import com.palmastro.contracts.Angle
 
@@ -138,7 +139,7 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
         !hasPermission -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         state.modelDownloading -> ModelDownloadingScreen()
         state.modelError != null -> ErrorScreen(
-            kind = if (state.modelError.orEmpty().contains("corrupt", ignoreCase = true)) ScanErrorKind.MODEL_CORRUPT else ScanErrorKind.MODEL_DOWNLOAD_FAILED,
+            kind = if (state.modelError == ScanError.MODEL_CORRUPT) ScanErrorKind.MODEL_CORRUPT else ScanErrorKind.MODEL_DOWNLOAD_FAILED,
             onAction = { viewModel.retryModelDownload() },
         )
         !state.modelReady -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -149,7 +150,7 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
             totalAngles = Angle.entries.size,
             completedCount = state.completedAngles.size,
             isCapturing = state.isCapturing,
-            coachingHintKey = state.coachingHint,
+            coachingHintKey = state.coachingHintKey,
             showFlash = state.showFlash,
             reduceMotion = reduceMotion,
             imageCapture = viewModel.imageCapture,

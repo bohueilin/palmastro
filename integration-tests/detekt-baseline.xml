@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>MaxLineLength:BoundaryTest.kt$BoundaryTest$assertEquals("ASTRO_SUN_CAPRICORN", astroEngine.compute(LocalDate.of(1988, 12, 31), null, null, null).signals.first { it.signalId.startsWith("ASTRO_SUN_") }.signalId)</ID>
+    <ID>MaxLineLength:BoundaryTest.kt$BoundaryTest$assertEquals("ASTRO_SUN_CAPRICORN", astroEngine.compute(LocalDate.of(1995, 1, 1), null, null, null).signals.first { it.signalId.startsWith("ASTRO_SUN_") }.signalId)</ID>
+    <ID>MaxLineLength:BoundaryTest.kt$BoundaryTest$assertEquals("ASTRO_SUN_PISCES", astroEngine.compute(LocalDate.of(2000, 2, 29), null, null, null).signals.first { it.signalId.startsWith("ASTRO_SUN_") }.signalId)</ID>
+    <ID>MaxLineLength:BoundaryTest.kt$BoundaryTest$val input = ScoringInput(makePalmResult(makePalmFeatures("clear")), astroEngine.compute(LocalDate.of(1990, 6, 15), null, null, null), UserContext(Hand.RIGHT, false), "1.0.0")</ID>
+    <ID>MaxLineLength:BoundaryTest.kt$BoundaryTest$val r = scoringEngine.score(ScoringInput(makePalmResult(makePalmFeatures("clear")), AstroResult(CalcLevel.L1, emptyList(), "1.0.0"), UserContext(Hand.RIGHT, false), "1.0.0"))</ID>
+    <ID>MaxLineLength:BoundaryTest.kt$BoundaryTest$val r = scoringEngine.score(ScoringInput(makePalmResult(makePalmFeatures("faint"), "low", 0.3f), AstroResult(CalcLevel.L1, emptyList(), "1.0.0"), UserContext(Hand.RIGHT, false), "1.0.0"))</ID>
+    <ID>MaxLineLength:BoundaryTest.kt$BoundaryTest$val s = qualityGate.scoreFrame(0f, 0f, 0f, 0f, 0f)</ID>
+    <ID>MaxLineLength:BoundaryTest.kt$BoundaryTest$val s = qualityGate.scoreFrame(1f, 1f, 1f, 1f, 1f)</ID>
+    <ID>UnusedImports:FullPipelineTest.kt$import com.palmastro.contracts.interfaces.SafetyCheckResult</ID>
+    <ID>WildcardImport:BoundaryTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:FullPipelineTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ParityFixtureGeneratorTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ParityFixtureGeneratorTest.kt$import kotlinx.serialization.json.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

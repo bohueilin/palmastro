@@ -19,6 +19,16 @@ import kotlin.test.assertTrue
 
 class FullPipelineTest {
 
+    private fun syntheticPalmMetrics(seed: Float = 0f) = PalmMetrics(
+        landmarks = List(21) { i -> LandmarkPoint(0.25f + (i % 5) * 0.1f + seed, 0.15f + (i / 5) * 0.16f, 0f) },
+        lineRegions = listOf(
+            LineRegionMetrics("headline", contrast = 0.82f, continuity = 0.9f, meanIntensity = 0.45f),
+            LineRegionMetrics("heartline", contrast = 0.78f, continuity = 0.86f, meanIntensity = 0.5f),
+            LineRegionMetrics("lifeline", contrast = 0.8f, continuity = 0.9f, meanIntensity = 0.44f),
+            LineRegionMetrics("fateline", contrast = 0.72f, continuity = 0.82f, meanIntensity = 0.5f),
+        ),
+    )
+
     @Test
     fun `full pipeline - scan to rendered report`() {
         // 1. Scan quality gate
@@ -30,7 +40,7 @@ class FullPipelineTest {
         assertTrue(angleResult.passed)
 
         // 2. Build scan session summary (simulating 7 angles all passing)
-        val bestFrames = Angle.entries.associateWith { BestFrameResult(it, 0, scores, null) }
+        val bestFrames = Angle.entries.associateWith { BestFrameResult(it, 0, scores, null, syntheticPalmMetrics()) }
         val scanSummary = ScanSessionSummary("session-1", Hand.RIGHT, bestFrames, scores.composite, 0.9f, 25000, 7)
 
         // 3. Extract palm features
@@ -87,10 +97,10 @@ class FullPipelineTest {
         val astroEngine = AstroEngineImpl()
 
         val bestFrames80 = Angle.entries.associateWith {
-            BestFrameResult(it, 0, QualityScores(0.8f, 0.8f, 0.8f, 0.8f, 0.8f, 80), null)
+            BestFrameResult(it, 0, QualityScores(0.8f, 0.8f, 0.8f, 0.8f, 0.8f, 80), null, syntheticPalmMetrics())
         }
         val bestFrames85 = Angle.entries.associateWith {
-            BestFrameResult(it, 0, QualityScores(0.85f, 0.85f, 0.85f, 0.85f, 0.85f, 85), null)
+            BestFrameResult(it, 0, QualityScores(0.85f, 0.85f, 0.85f, 0.85f, 0.85f, 85), null, syntheticPalmMetrics(0.005f))
         }
 
         val palm1 = featureExtractor.extract(bestFrames80, Hand.RIGHT)
@@ -116,16 +126,16 @@ class FullPipelineTest {
         val emitter = AnalyticsEmitterImpl { name, props -> events.add(name to props) }
 
         emitter.emit("scan_complete", mapOf(
-            "quality" to 80,
+            "value" to 80,
             "palm_feature_vector" to listOf(0.1, 0.2, 0.3, 0.4),
-            "hand" to "right",
+            "angle" to "front",
             "file" to "/data/scan/frame01.jpg"
         ))
 
         assertEquals(1, events.size)
         val props = events[0].second
-        assertEquals(80, props["quality"])
-        assertEquals("right", props["hand"])
+        assertEquals(80, props["value"])
+        assertEquals("front", props["angle"])
         assertTrue("palm_feature_vector" !in props)
         assertTrue("file" !in props)
     }

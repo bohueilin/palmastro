@@ -1,0 +1,334 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$xi &lt; 0 || yi &lt; 0 || xi &gt;= width || yi &gt;= height</ID>
+    <ID>CyclomaticComplexMethod:DomainDetailScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DomainDetailScreen( onBack: () -&gt; Unit, onJournalClick: () -&gt; Unit = {}, onExplainabilityClick: () -&gt; Unit = {}, viewModel: DomainDetailViewModel = hiltViewModel(), )</ID>
+    <ID>CyclomaticComplexMethod:OnboardingScreen.kt$@Composable private fun SummaryStep(state: OnboardingState, onNext: () -&gt; Unit)</ID>
+    <ID>CyclomaticComplexMethod:OnboardingScreen.kt$private fun zodiacFor(month: Int, day: Int): Pair&lt;Int, String&gt;</ID>
+    <ID>CyclomaticComplexMethod:ScanScreen.kt$@Composable fun ScanScreen(onComplete: () -&gt; Unit, viewModel: ScanViewModel = hiltViewModel())</ID>
+    <ID>EmptyElseBlock:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$if (lm.x() &lt; minX) minX = lm.x()</ID>
+    <ID>EmptyElseBlock:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$if (lm.y() &lt; minY) minY = lm.y()</ID>
+    <ID>EmptyElseBlock:OnboardingScreen.kt$if (loc != null) viewModel.setBirthPlace(loc.name, loc.lat, loc.lon)</ID>
+    <ID>ForEachOnRange:OnboardingScreen.kt$0..23</ID>
+    <ID>ForEachOnRange:OnboardingScreen.kt$0..59</ID>
+    <ID>ForEachOnRange:OnboardingScreen.kt$1..12</ID>
+    <ID>ForEachOnRange:OnboardingScreen.kt$1..31</ID>
+    <ID>ForEachOnRange:OnboardingScreen.kt$currentYear downTo 1930</ID>
+    <ID>LongMethod:AppNavigation.kt$@Composable fun AppNavigation( hasProfile: Boolean, deepLink: DeepLinkDestination? = null, onDeepLinkConsumed: () -&gt; Unit = {}, )</ID>
+    <ID>LongMethod:DomainDetailScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DomainDetailScreen( onBack: () -&gt; Unit, onJournalClick: () -&gt; Unit = {}, onExplainabilityClick: () -&gt; Unit = {}, viewModel: DomainDetailViewModel = hiltViewModel(), )</ID>
+    <ID>LongMethod:ExplainabilityScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ExplainabilityScreen( onBack: () -&gt; Unit, viewModel: DomainDetailViewModel = hiltViewModel(), )</ID>
+    <ID>LongMethod:JournalScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun JournalScreen( onBack: () -&gt; Unit, viewModel: JournalViewModel = hiltViewModel(), )</ID>
+    <ID>LongMethod:LandmarkOverlay.kt$@Composable fun ScanningOverlay(isScanning: Boolean, modifier: Modifier = Modifier)</ID>
+    <ID>LongMethod:OnboardingScreen.kt$@Composable fun OnboardingScreen(onComplete: () -&gt; Unit, viewModel: OnboardingViewModel = hiltViewModel())</ID>
+    <ID>LongMethod:OnboardingScreen.kt$@Composable private fun BirthdayStep(existing: LocalDate?, onConfirm: (LocalDate) -&gt; Unit)</ID>
+    <ID>LongMethod:OnboardingScreen.kt$@Composable private fun SummaryStep(state: OnboardingState, onNext: () -&gt; Unit)</ID>
+    <ID>LongMethod:ResultsScreen.kt$@Composable private fun DomainCardItem(card: DomainCard, onClick: () -&gt; Unit)</ID>
+    <ID>LongMethod:ResultsScreen.kt$@Composable private fun HeroCard(monthKey: String, grade: String, confidence: String, topDomain: String?, scanQualityScore: Int)</ID>
+    <ID>LongMethod:ResultsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ResultsScreen( onScanClick: () -&gt; Unit, onSettingsClick: () -&gt; Unit, onDomainClick: (String, String) -&gt; Unit, onHistoryClick: () -&gt; Unit, viewModel: ResultsViewModel = hiltViewModel(), )</ID>
+    <ID>LongMethod:ScanScreen.kt$@Composable private fun CaptureScreen( currentAngleIndex: Int, totalAngles: Int, completedCount: Int, isCapturing: Boolean, coachingHintKey: String?, showFlash: Boolean, reduceMotion: Boolean, imageCapture: androidx.camera.core.ImageCapture, onCapture: () -&gt; Unit, onRetake: () -&gt; Unit, )</ID>
+    <ID>LongMethod:ScanViewModel.kt$ScanViewModel$@VisibleForTesting internal fun runPipeline()</ID>
+    <ID>LongMethod:SettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen( onBack: () -&gt; Unit, onWipeComplete: () -&gt; Unit, onOpenLegal: (String) -&gt; Unit = {}, viewModel: SettingsViewModel = hiltViewModel(), )</ID>
+    <ID>LongParameterList:ScanScreen.kt$( currentAngleIndex: Int, totalAngles: Int, completedCount: Int, isCapturing: Boolean, coachingHintKey: String?, showFlash: Boolean, reduceMotion: Boolean, imageCapture: androidx.camera.core.ImageCapture, onCapture: () -&gt; Unit, onRetake: () -&gt; Unit, )</ID>
+    <ID>LongParameterList:ScanViewModel.kt$ScanViewModel$( @ApplicationContext private val appContext: Context, private val userRepository: UserRepository, private val resultRepository: ResultRepository, private val qualityGate: QualityGate, private val palmFeatureExtractor: PalmFeatureExtractor, private val astroEngine: AstroEngine, private val scoringEngine: ScoringEngine, private val deltaEngine: DeltaEngine, private val contentComposer: ContentComposerImpl, private val safetyFilter: SafetyFilterImpl, private val analytics: AnalyticsEmitter, private val featureFlags: FeatureFlags, private val analyzerFactory: ImageQualityAnalyzerFactory, @IoDispatcher private val ioDispatcher: CoroutineDispatcher, )</ID>
+    <ID>LoopWithTooManyJumpStatements:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$for</ID>
+    <ID>MagicNumber:DatabaseKeyManager.kt$DatabaseKeyManager$128</ID>
+    <ID>MagicNumber:DatabaseKeyManager.kt$DatabaseKeyManager$256</ID>
+    <ID>MagicNumber:DatabaseKeyManager.kt$DatabaseKeyManager$32</ID>
+    <ID>MagicNumber:DeepLinkHandler.kt$DeepLinkHandler$12</ID>
+    <ID>MagicNumber:DeepLinkHandler.kt$DeepLinkHandler$2020</ID>
+    <ID>MagicNumber:DeepLinkHandler.kt$DeepLinkHandler$2100</ID>
+    <ID>MagicNumber:DomainDetailScreen.kt$35</ID>
+    <ID>MagicNumber:DomainDetailScreen.kt$50</ID>
+    <ID>MagicNumber:DomainDetailScreen.kt$65</ID>
+    <ID>MagicNumber:DomainDetailScreen.kt$80</ID>
+    <ID>MagicNumber:ExplainabilityScreen.kt$0.05f</ID>
+    <ID>MagicNumber:FirebaseAnalyticsSink.kt$FirebaseAnalyticsSink$25</ID>
+    <ID>MagicNumber:FirebaseAnalyticsSink.kt$FirebaseAnalyticsSink$40</ID>
+    <ID>MagicNumber:GradePalette.kt$0xFF1565C0</ID>
+    <ID>MagicNumber:GradePalette.kt$0xFF2E7D32</ID>
+    <ID>MagicNumber:GradePalette.kt$0xFF64B5F6</ID>
+    <ID>MagicNumber:GradePalette.kt$0xFF81C784</ID>
+    <ID>MagicNumber:GradePalette.kt$0xFF9A4E00</ID>
+    <ID>MagicNumber:GradePalette.kt$0xFFC62828</ID>
+    <ID>MagicNumber:GradePalette.kt$0xFFEF9A9A</ID>
+    <ID>MagicNumber:GradePalette.kt$0xFFFFB74D</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.08f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.12f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.14f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.15f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.1f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.35f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.3f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.45f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.4f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.7f</ID>
+    <ID>MagicNumber:HandOverlay.kt$0.8f</ID>
+    <ID>MagicNumber:HandOverlay.kt$24f</ID>
+    <ID>MagicNumber:HandOverlay.kt$5</ID>
+    <ID>MagicNumber:HandOverlay.kt$6</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$0.02f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$0.05f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$0.114f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$0.18f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$0.20f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$0.299f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$0.2f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$0.30f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$0.587f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$127f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$13</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$17</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$1e-3f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$21</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$240</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$255f</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$3.0</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$4</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$5</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$500.0</ID>
+    <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$9</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.02f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.04f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.08f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.12f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.15f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.1f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.24f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.2f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.3f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.4f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.75f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.85f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0.9f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0xFF4CAF50</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$0xFF7E57C2</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$1.2f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$1000</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$2000</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$3.14f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$3f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$4f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$5</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$5f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$6</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$6f</ID>
+    <ID>MagicNumber:LandmarkOverlay.kt$800</ID>
+    <ID>MagicNumber:ModelManager.kt$ModelManager$1000L</ID>
+    <ID>MagicNumber:ModelManager.kt$ModelManager$120_000</ID>
+    <ID>MagicNumber:ModelManager.kt$ModelManager$15_000</ID>
+    <ID>MagicNumber:ModelManager.kt$ModelManager$60_000</ID>
+    <ID>MagicNumber:ModelManager.kt$ModelManager$8192</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$0.9f</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$1.1f</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$1.3f</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$10</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$11</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$12</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$15</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$18</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$19</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$1930</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$1990</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$20</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$21</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$22</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$23</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$3</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$31</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$4</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$5</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$59</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$6</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$7</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$8</ID>
+    <ID>MagicNumber:OnboardingScreen.kt$9</ID>
+    <ID>MagicNumber:PalmAstroApp.kt$PalmAstroApp$6</ID>
+    <ID>MagicNumber:ResultsScreen.kt$0.7f</ID>
+    <ID>MagicNumber:ScanViewModel.kt$ScanViewModel$200</ID>
+    <ID>MagicNumber:ScanViewModel.kt$ScanViewModel$60</ID>
+    <ID>MagicNumber:SettingsViewModel.kt$SettingsViewModel$30</ID>
+    <ID>MagicNumber:ShareAuditLogger.kt$ShareAuditLogger$200</ID>
+    <ID>MagicNumber:ShareAuditLogger.kt$ShareAuditLogger$500</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$12f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$14f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$160f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$16f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$20f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$22f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$240f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$24f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$28f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$3</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$30f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$32f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$36f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$38f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$40f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$4f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$56f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$60f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$64f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$70f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$80f</ID>
+    <ID>MagicNumber:ShareCardRenderer.kt$ShareCardRenderer$8f</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$ActionChip(label = stringResource(R.string.detail_today), text = payload.actionToday, containerColor = MaterialTheme.colorScheme.primaryContainer)</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$ActionChip(label = stringResource(R.string.detail_week), text = payload.actionWeek, containerColor = MaterialTheme.colorScheme.secondaryContainer)</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$Card</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$Icon(Icons.Outlined.School, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$Text(gradeDisplayName(payload.scoreCard.grade), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = gc)</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), color = MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$Text(stringResource(R.string.detail_how_improve), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$Text(stringResource(R.string.detail_score_points, score), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$Text(stringResource(R.string.detail_understanding_score), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp)</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$Text(stringResource(tierRes), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = tierColor, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$state.isLoading -&gt; Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator() }</ID>
+    <ID>MaxLineLength:DomainDetailScreen.kt$val analysisLine = stringResource(R.string.share_analysis_label, ShareHelper.truncate(payloadForShare?.interpretation?.pattern.orEmpty(), 100))</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$Card</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$Icon(Icons.Outlined.Balance, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$Icon(Icons.Outlined.Shield, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$Row</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$Text("$BASELINE_SCORE", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$Text(domainDisplayName(state.domain), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$Text(stringResource(R.string.explain_baseline_desc), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$Text(stringResource(R.string.explain_confidence_reasons), fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$Text(stringResource(R.string.explain_feature_coverage, (state.featureCoverage * 100).roundToInt()), fontSize = 14.sp, lineHeight = 22.sp)</ID>
+    <ID>MaxLineLength:ExplainabilityScreen.kt$state.isLoading -&gt; Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator() }</ID>
+    <ID>MaxLineLength:HistoryScreen.kt$Row</ID>
+    <ID>MaxLineLength:HistoryScreen.kt$Text("$score", fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.width(36.dp).padding(start = 8.dp).clearAndSetSemantics {})</ID>
+    <ID>MaxLineLength:HistoryScreen.kt$Text(gradeText, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = gc, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))</ID>
+    <ID>MaxLineLength:HistoryScreen.kt$else</ID>
+    <ID>MaxLineLength:HistoryScreen.kt$state.isLoading -&gt; Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator() }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$(0..23).forEach { h -&gt; DropdownMenuItem(text = { Text("${h.toString().padStart(2, '0')}:00") }, onClick = { selHour = h; hourExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$(0..59).forEach { m -&gt; DropdownMenuItem(text = { Text(":${m.toString().padStart(2, '0')}") }, onClick = { selMinute = m; minuteExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$(1..31).forEach { d -&gt; DropdownMenuItem(text = { Text("$d") }, onClick = { selDay = d; dayExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$(currentYear downTo 1930).forEach { y -&gt; DropdownMenuItem(text = { Text("$y") }, onClick = { selYear = y; yearExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$Button</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$Card</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$DropdownMenuItem(text = { Text(stringResource(R.string.ob_birth_place_unknown)) }, onClick = { selectedLocation = null; searchQuery = ""; locExpanded = false }, modifier = Modifier.heightIn(min = 48.dp))</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$Image(painter = painterResource(resId), contentDescription = null, modifier = Modifier.fillMaxSize().padding(12.dp), contentScale = ContentScale.Fit)</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$OnboardingSteps.HAND -&gt; HandStatusStep(state.dominantHand, state.relationshipStatus, viewModel::setHand, viewModel::setRelationshipStatus, canProceed = viewModel.canProceedFrom(OnboardingSteps.HAND)) { viewModel.nextStep() }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$OnboardingSteps.NAME -&gt; NameStep(state.name, state.gender, viewModel::setName, viewModel::setGender) { viewModel.nextStep() }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$OptionRow(selected = selected == "healing", label = stringResource(R.string.ob_tone_gentle), description = stringResource(R.string.ob_tone_gentle_desc)) { onSelect("healing") }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$OptionRow(selected = selected == "roast_safe", label = stringResource(R.string.ob_tone_direct), description = stringResource(R.string.ob_tone_direct_desc)) { onSelect("roast_safe") }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$OptionRow(selected = selected == "scientific", label = stringResource(R.string.ob_tone_analytical), description = stringResource(R.string.ob_tone_analytical_desc)) { onSelect("scientific") }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$OptionRow(selected = selected == AppLanguage.ENGLISH, label = stringResource(R.string.ob_language_english)) { onSelect(AppLanguage.ENGLISH) }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$OptionRow(selected = selected == AppLanguage.SYSTEM, label = stringResource(R.string.ob_language_system)) { onSelect(AppLanguage.SYSTEM) }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$OptionRow(selected = selected == AppLanguage.TRADITIONAL_CHINESE, label = stringResource(R.string.ob_language_traditional_chinese)) { onSelect(AppLanguage.TRADITIONAL_CHINESE) }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$OutlinedButton</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$Row</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$Surface</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$Text(stringResource(R.string.app_name), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$Text(value, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End, modifier = Modifier.padding(start = 12.dp))</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$filtered.take(8).forEach { loc -&gt; DropdownMenuItem(text = { Text(loc.name) }, onClick = { selectedLocation = loc; searchQuery = ""; locExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$if (state.hasBirthTime &amp;&amp; state.hasBirthPlace) stringResource(R.string.ob_summary_l2) else stringResource(R.string.ob_summary_l1)</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$onContinue = { h, m, loc -&gt; viewModel.setBirthTime(h, m); if (loc != null) viewModel.setBirthPlace(loc.name, loc.lat, loc.lon); viewModel.nextStep() }</ID>
+    <ID>MaxLineLength:OnboardingScreen.kt$val filtered = remember(searchQuery) { if (searchQuery.isBlank()) locations else locations.filter { it.name.contains(searchQuery, ignoreCase = true) } }</ID>
+    <ID>MaxLineLength:OnboardingViewModel.kt$OnboardingViewModel$fun setBirthPlace(name: String, lat: Double, lon: Double)</ID>
+    <ID>MaxLineLength:OnboardingViewModel.kt$OnboardingViewModel$fun setBirthTime(hour: Int, minute: Int)</ID>
+    <ID>MaxLineLength:OnboardingViewModel.kt$OnboardingViewModel$fun setBirthday(date: LocalDate)</ID>
+    <ID>MaxLineLength:ResultsScreen.kt$IconButton(onClick = onSettingsClick) { Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.common_settings)) }</ID>
+    <ID>MaxLineLength:ResultsScreen.kt$OutlinedButton</ID>
+    <ID>MaxLineLength:ResultsScreen.kt$state.isLoading -&gt; Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator() }</ID>
+    <ID>MaxLineLength:ResultsScreen.kt$title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) }</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Box</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Column</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.scan_retake), tint = Color.White)</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(22.dp))</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Row</ID>
+    <ID>MaxLineLength:ScanScreen.kt$ScanErrorKind$MODEL_DOWNLOAD_FAILED : ScanErrorKind</ID>
+    <ID>MaxLineLength:ScanScreen.kt$ScanErrorKind$PROCESSING_FAILED : ScanErrorKind</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Text(stringResource(R.string.sc_complete_hint), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Text(stringResource(R.string.sc_explainer_subtitle), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Text(stringResource(R.string.sc_tips_subtitle), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Text(stringResource(angleNameRes(currentAngle)), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)</ID>
+    <ID>MaxLineLength:ScanScreen.kt$Text(stringResource(kind.why), fontSize = 15.sp, lineHeight = 21.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt$CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onError)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt$Icon(Icons.Outlined.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))</ID>
+    <ID>MaxLineLength:SettingsScreen.kt$Text(stringResource(R.string.settings_retention_desc), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt$Text(stringResource(R.string.settings_wipe), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error, letterSpacing = 0.5.sp)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt$Text(stringResource(R.string.settings_wipe_confirm_button), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt$Text(stringResource(R.string.settings_wipe_warning), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)</ID>
+    <ID>MaxLineLength:WheelPicker.kt$Text(items[index], fontSize = 15.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:WheelPicker.kt$Text(items[index], fontSize = 18.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary)</ID>
+    <ID>SwallowedException:ScanViewModel.kt$ScanViewModel$e: Exception</ID>
+    <ID>SwallowedException:ScanViewModel.kt$ScanViewModel$t: Throwable</ID>
+    <ID>SwallowedException:SettingsViewModel.kt$SettingsViewModel$e: Exception</ID>
+    <ID>TooManyFunctions:EngineModule.kt$EngineModule</ID>
+    <ID>UnusedImports:AppUpdateHelper.kt$import com.google.android.play.core.appupdate.AppUpdateInfo</ID>
+    <ID>UnusedImports:CrashReportingTest.kt$import kotlin.test.assertFalse</ID>
+    <ID>UnusedImports:DeepLinkHandlerTest.kt$import kotlin.test.assertTrue</ID>
+    <ID>UnusedImports:LandmarkOverlay.kt$import androidx.compose.ui.graphics.drawscope.DrawScope</ID>
+    <ID>UnusedImports:ResultsScreen.kt$import android.content.Context</ID>
+    <ID>UnusedImports:ShareAuditLogger.kt$import java.time.ZoneOffset</ID>
+    <ID>WildcardImport:AppNavigation.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:ContentVersionMigrator.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ContentVersionMigratorTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ContentVersionMigratorTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:DatabaseModule.kt$import com.palmastro.data.dao.*</ID>
+    <ID>WildcardImport:DomainDetailScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:DomainDetailScreen.kt$import androidx.compose.material.icons.outlined.*</ID>
+    <ID>WildcardImport:DomainDetailScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:DomainDetailScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:DomainDetailViewModel.kt$import kotlinx.coroutines.flow.*</ID>
+    <ID>WildcardImport:DomainDetailViewModelTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:DomainDetailViewModelTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:DomainDetailViewModelTest.kt$import kotlinx.coroutines.test.*</ID>
+    <ID>WildcardImport:DomainDetailViewModelTest.kt$import org.junit.jupiter.api.*</ID>
+    <ID>WildcardImport:EngineModule.kt$import com.palmastro.contracts.interfaces.*</ID>
+    <ID>WildcardImport:ExplainabilityScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:ExplainabilityScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:HistoryScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:HistoryScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:HistoryScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:HistoryViewModel.kt$import kotlinx.coroutines.flow.*</ID>
+    <ID>WildcardImport:HistoryViewModelTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:HistoryViewModelTest.kt$import kotlinx.coroutines.test.*</ID>
+    <ID>WildcardImport:HistoryViewModelTest.kt$import org.junit.jupiter.api.*</ID>
+    <ID>WildcardImport:JournalScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:JournalScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:JournalScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:JournalViewModel.kt$import kotlinx.coroutines.flow.*</ID>
+    <ID>WildcardImport:JournalViewModelTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:JournalViewModelTest.kt$import kotlinx.coroutines.test.*</ID>
+    <ID>WildcardImport:JournalViewModelTest.kt$import org.junit.jupiter.api.*</ID>
+    <ID>WildcardImport:LandmarkOverlay.kt$import androidx.compose.animation.core.*</ID>
+    <ID>WildcardImport:LegalViewerScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:MainActivity.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:OnboardingScreen.kt$import androidx.compose.animation.*</ID>
+    <ID>WildcardImport:OnboardingScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:OnboardingScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:OnboardingScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:OnboardingViewModel.kt$import kotlinx.coroutines.flow.*</ID>
+    <ID>WildcardImport:OnboardingViewModelTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:OnboardingViewModelTest.kt$import kotlinx.coroutines.test.*</ID>
+    <ID>WildcardImport:OnboardingViewModelTest.kt$import org.junit.jupiter.api.*</ID>
+    <ID>WildcardImport:ResultsScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:ResultsScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:ResultsScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:ResultsViewModel.kt$import kotlinx.coroutines.flow.*</ID>
+    <ID>WildcardImport:ResultsViewModelTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ResultsViewModelTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:ResultsViewModelTest.kt$import kotlinx.coroutines.test.*</ID>
+    <ID>WildcardImport:ResultsViewModelTest.kt$import org.junit.jupiter.api.*</ID>
+    <ID>WildcardImport:ScanScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:ScanScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:ScanScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:ScanViewModel.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ScanViewModelTest.kt$import com.palmastro.contracts.*</ID>
+    <ID>WildcardImport:ScanViewModelTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:ScanViewModelTest.kt$import kotlinx.coroutines.test.*</ID>
+    <ID>WildcardImport:SettingsScreen.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:SettingsScreen.kt$import androidx.compose.material.icons.outlined.*</ID>
+    <ID>WildcardImport:SettingsScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:SettingsScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:SettingsViewModel.kt$import kotlinx.coroutines.flow.*</ID>
+    <ID>WildcardImport:SettingsViewModelTest.kt$import io.mockk.*</ID>
+    <ID>WildcardImport:SettingsViewModelTest.kt$import kotlinx.coroutines.test.*</ID>
+    <ID>WildcardImport:SettingsViewModelTest.kt$import org.junit.jupiter.api.*</ID>
+    <ID>WildcardImport:ShareCardRenderer.kt$import android.graphics.*</ID>
+    <ID>WildcardImport:Theme.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:WheelPicker.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:WheelPicker.kt$import androidx.compose.runtime.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

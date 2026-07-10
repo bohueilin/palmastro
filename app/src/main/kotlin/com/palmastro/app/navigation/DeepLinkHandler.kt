@@ -1,7 +1,6 @@
 package com.palmastro.app.navigation
 
 import android.content.Intent
-import android.net.Uri
 
 sealed class DeepLinkDestination {
     data object Home : DeepLinkDestination()
@@ -16,21 +15,22 @@ object DeepLinkHandler {
     private val VALID_DOMAINS = setOf("career", "wealth", "family", "health")
     private val MONTH_KEY_PATTERN = Regex("""\d{4}-\d{2}""")
 
-    fun parse(intent: Intent?): DeepLinkDestination? {
-        val uri = intent?.data ?: return null
-        if (uri.scheme != "palmastro") return null
-        return parseUri(uri)
-    }
+    fun parse(intent: Intent?): DeepLinkDestination? = parse(intent?.dataString)
 
-    private fun parseUri(uri: Uri): DeepLinkDestination? {
-        return when (uri.host) {
-            "results" -> {
-                val monthKey = uri.getQueryParameter("monthKey")?.takeIf { isValidMonthKey(it) }
-                DeepLinkDestination.Results(monthKey)
-            }
+    /** Pure-string parser so deep-link logic stays JVM unit-testable (no android.net.Uri). */
+    fun parse(raw: String?): DeepLinkDestination? {
+        if (raw == null || !raw.startsWith("palmastro://")) return null
+        val rest = raw.removePrefix("palmastro://")
+        val host = rest.substringBefore('?').substringBefore('/')
+        val params = rest.substringAfter('?', "")
+            .split('&')
+            .filter { it.contains('=') }
+            .associate { it.substringBefore('=') to it.substringAfter('=') }
+        return when (host) {
+            "results" -> DeepLinkDestination.Results(params["monthKey"]?.takeIf { isValidMonthKey(it) })
             "domain" -> {
-                val domain = uri.getQueryParameter("domain")?.takeIf { it in VALID_DOMAINS } ?: return null
-                val monthKey = uri.getQueryParameter("monthKey")?.takeIf { isValidMonthKey(it) } ?: return null
+                val domain = params["domain"]?.takeIf { it in VALID_DOMAINS } ?: return null
+                val monthKey = params["monthKey"]?.takeIf { isValidMonthKey(it) } ?: return null
                 DeepLinkDestination.DomainDetail(domain, monthKey)
             }
             "scan" -> DeepLinkDestination.Scan
