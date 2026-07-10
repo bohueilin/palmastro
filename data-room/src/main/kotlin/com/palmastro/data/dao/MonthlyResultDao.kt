@@ -23,4 +23,7 @@ interface MonthlyResultDao {
 
     @Query("UPDATE monthly_result SET scanImagePath = ''")
     suspend fun clearAllScanImagePaths()
+
+    @Query("UPDATE monthly_result SET scanImagePath = '' WHERE monthKey = :monthKey")
+    suspend fun clearScanImagePathForMonth(monthKey: String)
 }

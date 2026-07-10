@@ -1,10 +1,27 @@
+# Release Build — produces the Play Store AAB (primary) and a release APK (secondary).
+#
+# Play App Signing (PRD §35 item 10):
+#   This project is enrolled in Google Play App Signing. The local keystore at
+#   keystore/palmastro-upload.jks — referenced by keystore.properties, neither of
+#   which is committed — is the UPLOAD key only. Google Play holds the actual app
+#   signing key and re-signs every artifact it distributes. If the upload key is
+#   ever lost or compromised, request an upload-key reset in the Play Console;
+#   users and the app signing key are unaffected.
+#
+#   CI runners do not have keystore.properties, so artifacts built here are
+#   UNSIGNED (app/build.gradle.kts logs a warning and skips the signing config).
+#   Sign locally with the upload key, or provision keystore.properties + the
+#   keystore from CI secrets, before uploading to the Play Console.
 name: Release Build
 
 on:
   workflow_dispatch:
     inputs:
-      version:
+      versionName:
         description: 'Version name (e.g. 0.2.0)'
+        required: true
+      versionCode:
+        description: 'Version code (integer; must increase for every Play upload)'
         required: true
 
 jobs:
@@ -27,10 +44,25 @@ jobs:
           restore-keys: gradle-
       - name: Run all tests
         run: ./gradlew test --no-daemon
-      - name: Build release APK
-        run: ./gradlew :app:assembleRelease --no-daemon
+      - name: Build release AAB
+        run: >-
+          ./gradlew :app:bundleRelease
+          -PversionCode=${{ github.event.inputs.versionCode }}
+          -PversionName=${{ github.event.inputs.versionName }}
+          --no-daemon
+      - name: Upload release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-aab-${{ github.event.inputs.versionName }}
+          path: app/build/outputs/bundle/release/*.aab
+      - name: Build release APK (secondary artifact)
+        run: >-
+          ./gradlew :app:assembleRelease
+          -PversionCode=${{ github.event.inputs.versionCode }}
+          -PversionName=${{ github.event.inputs.versionName }}
+          --no-daemon
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk-${{ github.event.inputs.version }}
+          name: release-apk-${{ github.event.inputs.versionName }}
           path: app/build/outputs/apk/release/*.apk

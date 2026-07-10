@@ -67,4 +67,13 @@ class JournalViewModel @Inject constructor(
             load()
         }
     }
+
+    /** Deletes one entry and refreshes the list without clobbering in-progress edits. */
+    fun deleteEntry(id: String) {
+        viewModelScope.launch {
+            journalRepository.deleteEntry(id)
+            val entries = journalRepository.getByMonth(monthKey)
+            _state.update { it.copy(existingEntries = entries) }
+        }
+    }
 }

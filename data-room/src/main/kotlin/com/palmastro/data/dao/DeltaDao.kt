@@ -11,6 +11,9 @@ interface DeltaDao {
     @Query("SELECT * FROM delta WHERE currentMonthKey = :monthKey")
     suspend fun getByMonth(monthKey: String): DeltaEntity?
 
+    @Query("DELETE FROM delta WHERE currentMonthKey = :monthKey")
+    suspend fun deleteByMonth(monthKey: String)
+
     @Query("DELETE FROM delta")
     suspend fun deleteAll()
 }

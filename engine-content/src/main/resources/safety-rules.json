@@ -1,0 +1,264 @@
+{
+  "version": "2.0.0",
+  "categories": [
+    {
+      "id": "medical_diagnosis",
+      "zh": [
+        "診斷",
+        "诊断",
+        "確診",
+        "确诊",
+        "糖尿病",
+        "癌症",
+        "病症",
+        "高血壓",
+        "高血压",
+        "心臟病",
+        "心脏病",
+        "憂鬱症",
+        "抑郁症",
+        "焦慮症",
+        "焦虑症",
+        "你有病"
+      ],
+      "en": [
+        "diagnos\\w*",
+        "you (have|are showing signs of) (a |an )?(disease|illness|condition|disorder)",
+        "you have (diabetes|cancer|depression|anxiety)",
+        "you suffer from",
+        "clinical",
+        "prognosis",
+        "malignant",
+        "terminal (illness|condition)"
+      ]
+    },
+    {
+      "id": "treatment",
+      "zh": [
+        "治療方案",
+        "治疗方案",
+        "服用",
+        "藥物",
+        "药物",
+        "處方",
+        "处方",
+        "停藥",
+        "停药",
+        "用藥",
+        "用药"
+      ],
+      "en": [
+        "treatment plans?",
+        "take (your )?medications?",
+        "stop taking",
+        "prescri(be|bed|bes|ption|ptions)",
+        "medications?",
+        "dosage",
+        "cures?",
+        "medical advice",
+        "remedy for"
+      ]
+    },
+    {
+      "id": "disease_prediction",
+      "zh": [
+        "你會生病",
+        "你会生病",
+        "將患病",
+        "将患病",
+        "必生病",
+        "預示疾病",
+        "预示疾病",
+        "此紋代表疾病",
+        "此纹代表疾病",
+        "會得病",
+        "会得病"
+      ],
+      "en": [
+        "you will (get|become|fall) (sick|ill)",
+        "you will (get|develop) (a )?(disease|cancer|diabetes|illness)",
+        "disease prediction",
+        "this line means illness",
+        "signs? of illness"
+      ]
+    },
+    {
+      "id": "investment_advice",
+      "zh": [
+        "買入",
+        "买入",
+        "賣出",
+        "卖出",
+        "買進",
+        "买进",
+        "放空",
+        "股票",
+        "期貨",
+        "期货",
+        "基金推薦",
+        "基金推荐",
+        "投資建議",
+        "投资建议",
+        "抄底",
+        "加倉",
+        "加仓"
+      ],
+      "en": [
+        "investment advice",
+        "financial advice",
+        "buy stocks?",
+        "sell stocks?",
+        "buy (this|that|the) (stock|fund|coin|crypto)",
+        "trading signals?",
+        "insider tips?",
+        "pump and dump",
+        "short sell(ing)?",
+        "time the market"
+      ]
+    },
+    {
+      "id": "guaranteed_money",
+      "zh": [
+        "保證獲利",
+        "保证获利",
+        "穩賺",
+        "稳赚",
+        "保證收益",
+        "保证收益",
+        "一定會發財",
+        "一定会发财",
+        "必定致富",
+        "保證回報",
+        "保证回报",
+        "年化收益"
+      ],
+      "en": [
+        "guaranteed (returns?|profits?|income|gains?)",
+        "get rich( quick)?",
+        "you will (become|be|get) rich",
+        "risk[- ]free (returns?|profits?)",
+        "sure win",
+        "double your money",
+        "can'?t lose"
+      ]
+    },
+    {
+      "id": "fear_fate_claims",
+      "zh": [
+        "註定失敗",
+        "注定失败",
+        "厄運",
+        "厄运",
+        "詛咒",
+        "诅咒",
+        "劫數",
+        "劫数",
+        "大凶",
+        "在劫難逃",
+        "在劫难逃",
+        "必有大難",
+        "必有大难",
+        "你的命不好",
+        "天生註定",
+        "天生注定"
+      ],
+      "en": [
+        "you are doomed",
+        "doomed to (fail|failure)",
+        "you (are|have been) cursed",
+        "your fate is sealed",
+        "nothing can save you",
+        "disaster (will|is going to) (strike|come)",
+        "bad luck will follow",
+        "you will die",
+        "destined to fail"
+      ]
+    },
+    {
+      "id": "self_harm",
+      "zh": [
+        "自殘",
+        "自残",
+        "自殺",
+        "自杀",
+        "傷害自己",
+        "伤害自己",
+        "輕生",
+        "轻生",
+        "了結自己",
+        "了结自己",
+        "活不下去",
+        "不如死"
+      ],
+      "en": [
+        "hurt yourself",
+        "harm yourself",
+        "kill yourself",
+        "end your life",
+        "end it all",
+        "self[- ]harm",
+        "not worth living",
+        "better off dead"
+      ]
+    },
+    {
+      "id": "profanity",
+      "zh": [
+        "幹你",
+        "干你",
+        "操你",
+        "他媽的",
+        "他妈的",
+        "媽的",
+        "妈的",
+        "混蛋",
+        "王八蛋",
+        "去死",
+        "滾開",
+        "滚开"
+      ],
+      "en": [
+        "fuck\\w*",
+        "shit(ty)?",
+        "bitch(es)?",
+        "assholes?",
+        "bastards?",
+        "dumbass",
+        "damn you"
+      ]
+    },
+    {
+      "id": "identity_attack",
+      "zh": [
+        "你很爛",
+        "你很烂",
+        "你沒救",
+        "你没救",
+        "廢物",
+        "废物",
+        "白痴",
+        "沒用",
+        "没用",
+        "失敗者",
+        "失败者",
+        "你完了",
+        "放棄吧",
+        "放弃吧",
+        "你不行",
+        "笨蛋",
+        "魯蛇",
+        "鲁蛇"
+      ],
+      "en": [
+        "you are (worthless|hopeless|stupid|pathetic|useless)",
+        "you'?re (worthless|hopeless|stupid|pathetic|useless)",
+        "give up",
+        "losers?",
+        "you deserve (to fail|nothing)",
+        "you will never (succeed|amount to anything)",
+        "waste of (space|time|life)",
+        "you (are|were born) a failure"
+      ]
+    }
+  ]
+}

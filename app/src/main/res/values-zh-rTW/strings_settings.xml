@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings + Legal viewer strings (ui-results agent), Taiwan Traditional Chinese. -->
+<resources>
+    <string name="settings_tone_analytical">理性分析</string>
+    <string name="settings_tone_gentle">溫柔陪伴</string>
+    <string name="settings_tone_direct">直白坦率</string>
+
+    <string name="settings_language_label">語言</string>
+    <string name="settings_language_system">跟隨系統</string>
+
+    <string name="settings_reminder_permission_note">提醒功能會使用通知，開啟時 Android 會詢問你的通知權限。</string>
+
+    <string name="settings_section_privacy">隱私</string>
+    <string name="settings_section_legal">法律與支援</string>
+    <string name="settings_privacy_policy">隱私權政策</string>
+    <string name="settings_terms">服務條款</string>
+    <string name="settings_support">聯絡客服</string>
+    <string name="settings_support_error">找不到電子郵件 App，請寫信到 %1$s</string>
+
+    <string name="settings_section_about">關於</string>
+    <string name="settings_about_desc">掌紋星象的所有分析都在你的裝置上完成，掃描內容絕不會離開你的手機。</string>
+    <string name="settings_version">版本 %1$s（%2$d）</string>
+
+    <string name="settings_wipe_error_title">刪除資料失敗</string>
+    <string name="settings_wipe_error_message">刪除資料時發生錯誤，請再試一次。</string>
+
+    <string name="legal_privacy_title">隱私權政策</string>
+    <string name="legal_terms_title">服務條款</string>
+    <string name="legal_load_error">無法載入這份文件。</string>
+</resources>

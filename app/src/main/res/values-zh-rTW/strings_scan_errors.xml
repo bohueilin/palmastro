@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 掃描流程錯誤訊息。Owned by scan-pipeline agent. -->
+<resources>
+    <string name="scan_error_model_download_failed">無法下載分析模型,請確認網路連線後再試一次。</string>
+    <string name="scan_error_model_corrupt">分析模型下載不完整,請點選「重試」重新下載。</string>
+    <string name="scan_error_processing_failed">分析過程發生問題,請再試一次。</string>
+    <string name="scan_error_retry">重試</string>
+</resources>

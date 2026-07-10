@@ -2,6 +2,11 @@ package com.palmastro.app.share
 
 import android.graphics.*
 
+/**
+ * Renders share cards as bitmaps (PRD 13.7): no palm imagery, watermark/brand included,
+ * no raw sensitive data. All user-visible text is injected by the calling composable so
+ * cards follow the app locale — this object never hardcodes user-facing copy.
+ */
 object ShareCardRenderer {
 
     private const val CARD_WIDTH = 1080
@@ -20,14 +25,20 @@ object ShareCardRenderer {
         "Watchout" to Color.parseColor("#D32F2F"),
     )
 
-    private val gradeNamesZh = mapOf(
-        "Growing" to "Growing", "Stable" to "Stable", "Building" to "Building", "Watchout" to "Watch Out",
+    /** Localized labels resolved via string resources by the calling composable. */
+    data class CardLabels(
+        val analysis: String,
+        val actions: String,
+        val reflection: String,
+        val watermark: String,
     )
 
     data class SummaryData(
+        val headerTitle: String,
         val monthKey: String,
         val grade: String,
-        val confidence: String,
+        val gradeDisplay: String,
+        val confidenceLine: String,
         val domains: List<DomainScore>,
     )
 
@@ -38,22 +49,23 @@ object ShareCardRenderer {
     )
 
     data class DomainDetailData(
-        val displayName: String,
+        val headerTitle: String,
         val score: Int,
         val grade: String,
+        val gradeDisplay: String,
         val interpretation: String,
         val actionToday: String,
         val prompt: String,
     )
 
-    fun renderSummaryCard(data: SummaryData): Bitmap {
+    fun renderSummaryCard(data: SummaryData, labels: CardLabels): Bitmap {
         val bodyHeight = 60f + data.domains.size * 70f + 40f
         val totalHeight = (HEADER_HEIGHT + bodyHeight + FOOTER_HEIGHT).toInt()
         val bitmap = Bitmap.createBitmap(CARD_WIDTH, totalHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
         drawBackground(canvas, totalHeight)
-        drawHeader(canvas, "PalmAstro — Monthly Report")
+        drawHeader(canvas, data.headerTitle)
 
         var y = HEADER_HEIGHT + PADDING
 
@@ -62,11 +74,10 @@ object ShareCardRenderer {
             textSize = 36f
             typeface = Typeface.DEFAULT_BOLD
         }
-        val gradeText = gradeNamesZh[data.grade] ?: data.grade
         canvas.drawCircle(PADDING + 12f, y + 12f, 12f, Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = gradeColors[data.grade] ?: Color.GRAY
         })
-        canvas.drawText(gradeText, PADDING + 36f, y + 24f, gradePaint)
+        canvas.drawText(data.gradeDisplay, PADDING + 36f, y + 24f, gradePaint)
 
         val monthPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#666666")
@@ -92,10 +103,9 @@ object ShareCardRenderer {
             canvas.drawText(domain.displayName, PADDING, y + 28f, namePaint)
 
             scorePaint.color = gradeColors[domain.grade] ?: Color.GRAY
-            val scoreText = "${domain.score}"
-            canvas.drawText(scoreText, PADDING + 120f, y + 28f, scorePaint)
+            canvas.drawText("${domain.score}", PADDING + 160f, y + 28f, scorePaint)
 
-            val barLeft = PADDING + 200f
+            val barLeft = PADDING + 240f
             val barRight = CARD_WIDTH - PADDING
             val barTop = y + 14f
             val barBottom = y + 30f
@@ -114,13 +124,13 @@ object ShareCardRenderer {
             color = Color.parseColor("#888888")
             textSize = 24f
         }
-        canvas.drawText("Confidence: ${data.confidence}", PADDING, y + 24f, confPaint)
+        canvas.drawText(data.confidenceLine, PADDING, y + 24f, confPaint)
 
-        drawFooter(canvas, totalHeight)
+        drawFooter(canvas, totalHeight, labels.watermark)
         return bitmap
     }
 
-    fun renderDomainDetailCard(data: DomainDetailData): Bitmap {
+    fun renderDomainDetailCard(data: DomainDetailData, labels: CardLabels): Bitmap {
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 28f }
         val interpLines = wrapText(data.interpretation, textPaint, CARD_WIDTH - PADDING * 2, 3)
         val actionLines = wrapText(data.actionToday, textPaint, CARD_WIDTH - PADDING * 2, 2)
@@ -136,7 +146,7 @@ object ShareCardRenderer {
         val canvas = Canvas(bitmap)
 
         drawBackground(canvas, totalHeight)
-        drawHeader(canvas, "PalmAstro — ${data.displayName}")
+        drawHeader(canvas, data.headerTitle)
 
         var y = HEADER_HEIGHT + PADDING
 
@@ -148,24 +158,23 @@ object ShareCardRenderer {
         }
         canvas.drawText("${data.score}", PADDING, y + 56f, bigScorePaint)
 
-        val gradeLabel = gradeNamesZh[data.grade] ?: data.grade
         val gradeLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = scoreColor
             textSize = 30f
             typeface = Typeface.DEFAULT_BOLD
         }
-        canvas.drawText(gradeLabel, PADDING + bigScorePaint.measureText("${data.score}") + 16f, y + 56f, gradeLabelPaint)
+        canvas.drawText(data.gradeDisplay, PADDING + bigScorePaint.measureText("${data.score}") + 16f, y + 56f, gradeLabelPaint)
         y += 80f
 
-        y = drawSection(canvas, "Analysis", interpLines, y)
-        y = drawSection(canvas, "Action Items", actionLines, y)
+        y = drawSection(canvas, labels.analysis, interpLines, y)
+        y = drawSection(canvas, labels.actions, actionLines, y)
 
         val sectionPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#5E35B1")
             textSize = 24f
             typeface = Typeface.DEFAULT_BOLD
         }
-        canvas.drawText("Reflection", PADDING, y + 20f, sectionPaint)
+        canvas.drawText(labels.reflection, PADDING, y + 20f, sectionPaint)
         y += 36f
 
         val boxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -184,7 +193,7 @@ object ShareCardRenderer {
             py += 38f
         }
 
-        drawFooter(canvas, totalHeight)
+        drawFooter(canvas, totalHeight, labels.watermark)
         return bitmap
     }
 
@@ -214,14 +223,13 @@ object ShareCardRenderer {
         canvas.drawText(title, PADDING, HEADER_HEIGHT / 2 + 14f, titlePaint)
     }
 
-    private fun drawFooter(canvas: Canvas, totalHeight: Int) {
+    private fun drawFooter(canvas: Canvas, totalHeight: Int, watermark: String) {
         val footerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#AAAAAA")
             textSize = 22f
         }
-        val text = "palmastro.app"
-        val x = (CARD_WIDTH - footerPaint.measureText(text)) / 2
-        canvas.drawText(text, x, totalHeight - 20f, footerPaint)
+        val x = (CARD_WIDTH - footerPaint.measureText(watermark)) / 2
+        canvas.drawText(watermark, x, totalHeight - 20f, footerPaint)
     }
 
     private fun drawSection(canvas: Canvas, header: String, lines: List<String>, startY: Float): Float {

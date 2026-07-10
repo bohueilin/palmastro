@@ -52,4 +52,16 @@ object DeepLinkHandler {
 
     fun buildDomainLink(domain: String, monthKey: String): String =
         "palmastro://domain?domain=$domain&monthKey=$monthKey"
+
+    /** Maps a parsed deep-link destination to its navigation route. */
+    fun routeFor(destination: DeepLinkDestination): String = when (destination) {
+        is DeepLinkDestination.Home -> "results"
+        is DeepLinkDestination.Results ->
+            destination.monthKey?.let { "results?monthKey=$it" } ?: "results"
+        is DeepLinkDestination.DomainDetail ->
+            "domain_detail/${destination.domain}/${destination.monthKey}"
+        is DeepLinkDestination.Scan -> "scan"
+        is DeepLinkDestination.History -> "history"
+        is DeepLinkDestination.Settings -> "settings"
+    }
 }

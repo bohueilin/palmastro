@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Pre-scan explainer (PRD 13.2 step 1) -->
+    <string name="sc_explainer_title">掃描之前</string>
+    <string name="sc_explainer_subtitle">掌紋掃描會進行的事</string>
+    <string name="sc_explainer_point_angles">您將從 7 個角度拍攝手掌，每個角度呈現不同的紋路與輪廓細節。</string>
+    <string name="sc_explainer_point_quality">每張照片都會經過品質檢查，如果模糊或太暗，我們會引導您重拍。</string>
+    <string name="sc_explainer_point_private">所有分析都在您的裝置上完成，手掌不會被用來辨識您的身分。</string>
+    <string name="sc_explainer_next">看看拍攝小訣竅</string>
+
+    <!-- Lighting / positioning tips (PRD 13.2 step 2) -->
+    <string name="sc_tips_title">光線與擺放位置</string>
+    <string name="sc_tips_subtitle">三個小訣竅，讓掃描一次到位</string>
+    <string name="sc_tips_light">選擇柔和均勻的光線，避免陽光直射或強光造成反光。</string>
+    <string name="sc_tips_position">手掌攤平、手指微微張開，讓手掌填滿畫面上的引導框。</string>
+    <string name="sc_tips_steady">保持手和手機穩定，需要的話可以把手肘靠在桌上。</string>
+    <string name="sc_tips_start">開始掃描</string>
+
+    <!-- Capture chrome -->
+    <string name="sc_capture_progress_desc">已完成 %1$d 個角度，共 %2$d 個</string>
+
+    <!-- Coaching hints — keys returned by CoachingHints.keyFor -->
+    <string name="coach_blur">請保持不動，等待畫面穩定</string>
+    <string name="coach_glare">請避開直射光源</string>
+    <string name="coach_low_light">光線不足，請移到較明亮的地方</string>
+    <string name="coach_over_exposure">畫面太亮，請遠離強光</string>
+    <string name="coach_low_coverage">請將整個手掌放進引導框內</string>
+    <string name="coach_pose_unstable">請保持手掌穩定</string>
+    <string name="coach_hand_not_detected">未偵測到手掌，請將手放入畫面中</string>
+    <string name="coach_generic">再試一次這個角度吧</string>
+
+    <!-- Completion (PRD 13.2 step 6) -->
+    <string name="sc_complete_title">掃描完成</string>
+    <string name="sc_complete_body">7 個角度都拍好了，正在分析您的手掌…</string>
+    <string name="sc_complete_hint">分析在您的裝置上進行，可能需要一點時間</string>
+    <string name="sc_complete_announce">掃描完成，正在分析您的手掌。</string>
+    <string name="sc_complete_icon">掃描完成</string>
+
+    <!-- Errors: what / why / next -->
+    <string name="sc_err_download_what">無法下載分析模型</string>
+    <string name="sc_err_download_why">掌紋分析模型需要一次性下載，剛才的連線中斷了。</string>
+    <string name="sc_err_download_next">請確認網路連線後，再重試下載。</string>
+    <string name="sc_err_download_action">重試下載</string>
+    <string name="sc_err_corrupt_what">分析模型需要修復</string>
+    <string name="sc_err_corrupt_why">下載的模型檔未通過完整性檢查，無法安全使用。</string>
+    <string name="sc_err_corrupt_next">請重新下載模型，這會替換損壞的檔案。</string>
+    <string name="sc_err_corrupt_action">重新下載模型</string>
+    <string name="sc_err_processing_what">分析未能完成</string>
+    <string name="sc_err_processing_why">處理拍攝的照片時發生問題，您的資料沒有受到影響。</string>
+    <string name="sc_err_processing_next">請返回並重新掃描，通常改善光線就能解決。</string>
+    <string name="sc_err_processing_action">重新掃描</string>
+
+    <!-- Reminder notification (worker) -->
+    <string name="sc_reminder_notif_title">每月手掌檢視時間</string>
+    <string name="sc_reminder_notif_body">本月的新解讀可以開始建立了，打開掌紋星象進行掃描吧。</string>
+</resources>

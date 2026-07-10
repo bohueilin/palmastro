@@ -4,8 +4,14 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,16 +19,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import com.palmastro.app.R
+import com.palmastro.app.viewmodel.OnboardingState
+import com.palmastro.app.viewmodel.OnboardingSteps
 import com.palmastro.app.viewmodel.OnboardingViewModel
 import java.time.LocalDate
 import java.time.Month
@@ -47,17 +57,21 @@ private val locations = listOf(
     Location("Sydney, Australia", -33.869, 151.209),
 )
 
-private fun getZodiac(month: Int, day: Int): Pair<String, String> = when {
-    (month == 3 && day >= 21) || (month == 4 && day <= 19) -> "Aries" to "♈"
-    (month == 4 && day >= 20) || (month == 5 && day <= 20) -> "Taurus" to "♉"
-    (month == 5 && day >= 21) || (month == 6 && day <= 20) -> "Gemini" to "♊"
-    (month == 6 && day >= 21) || (month == 7 && day <= 22) -> "Cancer" to "♋"
-    (month == 7 && day >= 23) || (month == 8 && day <= 22) -> "Leo" to "♌"
-    (month == 8 && day >= 23) || (month == 9 && day <= 22) -> "Virgo" to "♍"
-    (month == 9 && day >= 23) || (month == 10 && day <= 22) -> "Libra" to "♎"
-    (month == 10 && day >= 23) || (month == 11 && day <= 21) -> "Scorpio" to "♏"
-    (month == 11 && day >= 22) || (month == 12 && day <= 21) -> "Sagittarius" to "♐"
-    else -> "Capricorn" to "♑"
+/** Localized zodiac: string resource id + symbol. */
+private fun zodiacFor(month: Int, day: Int): Pair<Int, String> = when {
+    (month == 3 && day >= 21) || (month == 4 && day <= 19) -> R.string.ob_zodiac_aries to "♈"
+    (month == 4 && day >= 20) || (month == 5 && day <= 20) -> R.string.ob_zodiac_taurus to "♉"
+    (month == 5 && day >= 21) || (month == 6 && day <= 20) -> R.string.ob_zodiac_gemini to "♊"
+    (month == 6 && day >= 21) || (month == 7 && day <= 22) -> R.string.ob_zodiac_cancer to "♋"
+    (month == 7 && day >= 23) || (month == 8 && day <= 22) -> R.string.ob_zodiac_leo to "♌"
+    (month == 8 && day >= 23) || (month == 9 && day <= 22) -> R.string.ob_zodiac_virgo to "♍"
+    (month == 9 && day >= 23) || (month == 10 && day <= 22) -> R.string.ob_zodiac_libra to "♎"
+    (month == 10 && day >= 23) || (month == 11 && day <= 21) -> R.string.ob_zodiac_scorpio to "♏"
+    (month == 11 && day >= 22) || (month == 12 && day <= 21) -> R.string.ob_zodiac_sagittarius to "♐"
+    (month == 12 && day >= 22) || (month == 1 && day <= 19) -> R.string.ob_zodiac_capricorn to "♑"
+    (month == 1 && day >= 20) || (month == 2 && day <= 18) -> R.string.ob_zodiac_aquarius to "♒"
+    (month == 2 && day >= 19) || (month == 3 && day <= 20) -> R.string.ob_zodiac_pisces to "♓"
+    else -> R.string.ob_zodiac_capricorn to "♑"
 }
 
 @Composable
@@ -67,23 +81,60 @@ fun OnboardingScreen(onComplete: () -> Unit, viewModel: OnboardingViewModel = hi
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Spacer(Modifier.height(16.dp))
-            Column(modifier = Modifier.padding(horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("PalmAstro", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.height(12.dp))
-                LinearProgressIndicator(progress = { (state.step + 1).toFloat() / 6f }, modifier = Modifier.fillMaxWidth().height(3.dp).clip(RoundedCornerShape(2.dp)), color = MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.outlineVariant)
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (state.step > 0) {
+                    IconButton(onClick = { viewModel.prevStep() }, modifier = Modifier.size(48.dp)) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.ob_back))
+                    }
+                } else {
+                    Spacer(Modifier.size(48.dp))
+                }
+                Column(modifier = Modifier.weight(1f).padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(stringResource(R.string.app_name), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.height(8.dp))
+                    val progressDesc = stringResource(R.string.ob_progress, state.step + 1, OnboardingSteps.TOTAL)
+                    LinearProgressIndicator(
+                        progress = { (state.step + 1).toFloat() / OnboardingSteps.TOTAL },
+                        modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp))
+                            .semantics { contentDescription = progressDesc },
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                }
+                Spacer(Modifier.size(48.dp))
             }
             Spacer(Modifier.height(12.dp))
 
-            AnimatedContent(targetState = state.step, transitionSpec = { slideInHorizontally { it } + fadeIn() togetherWith slideOutHorizontally { -it } + fadeOut() }, label = "step") { step ->
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
+            AnimatedContent(
+                targetState = state.step,
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                label = "step",
+            ) { step ->
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
                     when (step) {
-                        0 -> NameGenderStep(state.name, state.gender, { viewModel.setName(it) }, { viewModel.setGender(it) }, { viewModel.nextStep() })
-                        1 -> BirthdayStep { viewModel.setBirthday(it); viewModel.nextStep() }
-                        2 -> HandStatusStep(state.dominantHand, state.relationshipStatus, { viewModel.setHand(it) }, { viewModel.setRelationshipStatus(it) }, { viewModel.nextStep() })
-                        3 -> BirthDetailsStep(onSkip = { viewModel.skipBirthDetails(); viewModel.nextStep() }, onContinue = { h, m, loc -> viewModel.setBirthTime(h, m); if (loc != null) viewModel.setBirthPlace(loc.name, loc.lat, loc.lon); viewModel.nextStep() })
-                        4 -> ToneStep(state.tone, { viewModel.setTone(it) }, { viewModel.nextStep() })
-                        5 -> ReviewStep(state, { viewModel.completeOnboarding() })
+                        OnboardingSteps.WELCOME -> WelcomeStep { viewModel.nextStep() }
+                        OnboardingSteps.PRIVACY -> PrivacyStep { viewModel.nextStep() }
+                        OnboardingSteps.NAME -> NameStep(state.name, state.gender, viewModel::setName, viewModel::setGender) { viewModel.nextStep() }
+                        OnboardingSteps.BIRTHDAY -> BirthdayStep(state.birthday) { viewModel.setBirthday(it); viewModel.nextStep() }
+                        OnboardingSteps.HAND -> HandStatusStep(state.dominantHand, state.relationshipStatus, viewModel::setHand, viewModel::setRelationshipStatus, canProceed = viewModel.canProceedFrom(OnboardingSteps.HAND)) { viewModel.nextStep() }
+                        OnboardingSteps.BIRTH_DETAILS -> BirthDetailsStep(
+                            onSkip = { viewModel.skipBirthDetails(); viewModel.nextStep() },
+                            onContinue = { h, m, loc -> viewModel.setBirthTime(h, m); if (loc != null) viewModel.setBirthPlace(loc.name, loc.lat, loc.lon); viewModel.nextStep() },
+                        )
+                        OnboardingSteps.TONE -> ToneStep(state.tone, viewModel::setTone) { viewModel.nextStep() }
+                        OnboardingSteps.LANGUAGE -> LanguageStep(state.language, onSelect = { code ->
+                            viewModel.setLanguage(code)
+                            AppLanguage.apply(code)
+                        }) { viewModel.nextStep() }
+                        OnboardingSteps.SUMMARY -> SummaryStep(state) { viewModel.nextStep() }
+                        OnboardingSteps.CAMERA -> CameraEducationStep(enabled = viewModel.canComplete()) { viewModel.completeOnboarding() }
                     }
                 }
             }
@@ -93,7 +144,7 @@ fun OnboardingScreen(onComplete: () -> Unit, viewModel: OnboardingViewModel = hi
 
 @Composable
 private fun Illustration(resId: Int) {
-    Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().height(180.dp)) {
+    Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().height(160.dp)) {
         Image(painter = painterResource(resId), contentDescription = null, modifier = Modifier.fillMaxSize().padding(12.dp), contentScale = ContentScale.Fit)
     }
     Spacer(Modifier.height(16.dp))
@@ -101,7 +152,7 @@ private fun Illustration(resId: Int) {
 
 @Composable
 private fun Title(title: String, subtitle: String) {
-    Text(title, fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+    Text(title, fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
     Spacer(Modifier.height(6.dp))
     Text(subtitle, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
     Spacer(Modifier.height(24.dp))
@@ -109,7 +160,9 @@ private fun Title(title: String, subtitle: String) {
 
 @Composable
 private fun MainButton(text: String, enabled: Boolean = true, onClick: () -> Unit) {
-    Button(onClick = onClick, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(14.dp), enabled = enabled) { Text(text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold) }
+    Button(onClick = onClick, modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp), shape = RoundedCornerShape(14.dp), enabled = enabled) {
+        Text(text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+    }
     Spacer(Modifier.height(16.dp))
 }
 
@@ -119,56 +172,159 @@ private fun Label(text: String) {
     Spacer(Modifier.height(10.dp))
 }
 
-// ── Step 0: Name + Gender ──
 @Composable
-private fun NameGenderStep(name: String, gender: String?, onName: (String) -> Unit, onGender: (String) -> Unit, onNext: () -> Unit) {
-    Illustration(R.drawable.img_onboarding_welcome)
-    Title("Welcome!", "Let's personalize your experience")
-    OutlinedTextField(value = name, onValueChange = onName, label = { Text("Your name") }, placeholder = { Text("Enter your name") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), singleLine = true)
-    Spacer(Modifier.height(20.dp))
-    Label("I am")
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        listOf("female" to "Female", "male" to "Male", "other" to "Other").forEach { (key, label) ->
-            FilterChip(selected = gender == key, onClick = { onGender(key) }, label = { Text(label) }, modifier = Modifier.weight(1f))
-        }
+private fun BulletPoint(text: String) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.Top) {
+        Icon(
+            Icons.Filled.CheckCircle, contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp),
+        )
+        Spacer(Modifier.width(10.dp))
+        Text(text, fontSize = 15.sp, lineHeight = 21.sp, modifier = Modifier.weight(1f))
     }
-    Spacer(Modifier.height(32.dp))
-    MainButton("Next", enabled = name.isNotBlank()) { onNext() }
 }
 
-// ── Step 1: Birthday (dropdown selectors — reliable) ──
+/**
+ * Radio-style option row with full TalkBack semantics:
+ * Role.RadioButton, selected state, stateDescription, min 48dp target.
+ */
 @Composable
-private fun BirthdayStep(onConfirm: (LocalDate) -> Unit) {
-    var selMonth by remember { mutableStateOf(6) }
-    var selDay by remember { mutableStateOf(15) }
-    var selYear by remember { mutableStateOf(1990) }
+private fun OptionRow(
+    selected: Boolean,
+    label: String,
+    description: String? = null,
+    onSelect: () -> Unit,
+) {
+    val selectedDesc = stringResource(R.string.common_selected)
+    val unselectedDesc = stringResource(R.string.common_unselected)
+    Surface(
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(14.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
+            .semantics { stateDescription = if (selected) selectedDesc else unselectedDesc },
+    ) {
+        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(selected = selected, onClick = null)
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(label, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                if (description != null) {
+                    Text(description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+// ── Step: Welcome / value proposition ──
+@Composable
+private fun WelcomeStep(onNext: () -> Unit) {
+    Illustration(R.drawable.img_onboarding_welcome)
+    Title(stringResource(R.string.ob_welcome_title), stringResource(R.string.ob_welcome_subtitle))
+    Text(stringResource(R.string.ob_welcome_body), fontSize = 15.sp, lineHeight = 22.sp, textAlign = TextAlign.Center)
+    Spacer(Modifier.height(32.dp))
+    MainButton(stringResource(R.string.ob_next)) { onNext() }
+}
+
+// ── Step: Privacy promise (PRD 12.1) ──
+@Composable
+private fun PrivacyStep(onNext: () -> Unit) {
+    Icon(
+        Icons.Filled.Lock,
+        contentDescription = stringResource(R.string.ob_privacy_icon),
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.size(56.dp),
+    )
+    Spacer(Modifier.height(16.dp))
+    Title(stringResource(R.string.ob_privacy_title), stringResource(R.string.ob_privacy_subtitle))
+    Column(modifier = Modifier.fillMaxWidth()) {
+        BulletPoint(stringResource(R.string.ob_privacy_point_on_device))
+        BulletPoint(stringResource(R.string.ob_privacy_point_no_biometric))
+        BulletPoint(stringResource(R.string.ob_privacy_point_reflection))
+        BulletPoint(stringResource(R.string.ob_privacy_point_delete))
+    }
+    Spacer(Modifier.height(28.dp))
+    MainButton(stringResource(R.string.ob_next)) { onNext() }
+}
+
+// ── Step: Name (clearly optional) + gender (optional) ──
+@Composable
+private fun NameStep(name: String, gender: String?, onName: (String) -> Unit, onGender: (String) -> Unit, onNext: () -> Unit) {
+    Illustration(R.drawable.img_onboarding_welcome)
+    Title(stringResource(R.string.ob_name_title), stringResource(R.string.ob_name_subtitle))
+    OutlinedTextField(
+        value = name, onValueChange = onName,
+        label = { Text(stringResource(R.string.ob_name_label)) },
+        placeholder = { Text(stringResource(R.string.ob_name_placeholder)) },
+        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), singleLine = true,
+    )
+    Spacer(Modifier.height(20.dp))
+    Label(stringResource(R.string.ob_gender_label))
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.selectableGroup()) {
+        listOf(
+            "female" to stringResource(R.string.ob_gender_female),
+            "male" to stringResource(R.string.ob_gender_male),
+            "other" to stringResource(R.string.ob_gender_other),
+        ).forEach { (key, label) ->
+            OptionRow(selected = gender == key, label = label) { onGender(key) }
+        }
+    }
+    Spacer(Modifier.height(28.dp))
+    // Name is optional: never gate on it.
+    MainButton(stringResource(R.string.ob_next)) { onNext() }
+}
+
+// ── Step: Birthday (required, localized pickers) ──
+@Composable
+private fun BirthdayStep(existing: LocalDate?, onConfirm: (LocalDate) -> Unit) {
+    var selMonth by remember { mutableStateOf(existing?.monthValue ?: 6) }
+    var selDay by remember { mutableStateOf(existing?.dayOfMonth ?: 15) }
+    var selYear by remember { mutableStateOf(existing?.year ?: 1990) }
     var monthExpanded by remember { mutableStateOf(false) }
     var dayExpanded by remember { mutableStateOf(false) }
     var yearExpanded by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var errorRes by remember { mutableStateOf<Int?>(null) }
     val currentYear = LocalDate.now().year
-    val (zodiacName, zodiacEmoji) = getZodiac(selMonth, selDay)
+    val locale = Locale.getDefault()
+    val (zodiacRes, zodiacEmoji) = zodiacFor(selMonth, selDay)
 
     Illustration(R.drawable.img_onboarding_birthday)
-    Title("Birthday", "Used for astrological calculations")
+    Title(stringResource(R.string.ob_birthday_title), stringResource(R.string.ob_birthday_subtitle))
 
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
         Box(modifier = Modifier.weight(1.3f)) {
-            OutlinedButton(onClick = { monthExpanded = true }, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(12.dp)) { Text(Month.of(selMonth).getDisplayName(TextStyle.SHORT, Locale.ENGLISH)) }
+            OutlinedButton(
+                onClick = { monthExpanded = true },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+                shape = RoundedCornerShape(12.dp),
+            ) { Text("${stringResource(R.string.ob_birthday_month)}: ${Month.of(selMonth).getDisplayName(TextStyle.SHORT, locale)}") }
             DropdownMenu(expanded = monthExpanded, onDismissRequest = { monthExpanded = false }) {
-                (1..12).forEach { m -> DropdownMenuItem(text = { Text(Month.of(m).getDisplayName(TextStyle.FULL, Locale.ENGLISH)) }, onClick = { selMonth = m; monthExpanded = false }) }
+                (1..12).forEach { m ->
+                    DropdownMenuItem(
+                        text = { Text(Month.of(m).getDisplayName(TextStyle.FULL, locale)) },
+                        onClick = { selMonth = m; monthExpanded = false },
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    )
+                }
             }
         }
-        Box(modifier = Modifier.weight(0.8f)) {
-            OutlinedButton(onClick = { dayExpanded = true }, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(12.dp)) { Text("$selDay") }
+        Box(modifier = Modifier.weight(0.9f)) {
+            OutlinedButton(onClick = { dayExpanded = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = RoundedCornerShape(12.dp)) {
+                Text("${stringResource(R.string.ob_birthday_day)}: $selDay")
+            }
             DropdownMenu(expanded = dayExpanded, onDismissRequest = { dayExpanded = false }) {
-                (1..31).forEach { d -> DropdownMenuItem(text = { Text("$d") }, onClick = { selDay = d; dayExpanded = false }) }
+                (1..31).forEach { d -> DropdownMenuItem(text = { Text("$d") }, onClick = { selDay = d; dayExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }
             }
         }
-        Box(modifier = Modifier.weight(1f)) {
-            OutlinedButton(onClick = { yearExpanded = true }, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(12.dp)) { Text("$selYear") }
+        Box(modifier = Modifier.weight(1.1f)) {
+            OutlinedButton(onClick = { yearExpanded = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = RoundedCornerShape(12.dp)) {
+                Text("${stringResource(R.string.ob_birthday_year)}: $selYear")
+            }
             DropdownMenu(expanded = yearExpanded, onDismissRequest = { yearExpanded = false }) {
-                (currentYear downTo 1930).forEach { y -> DropdownMenuItem(text = { Text("$y") }, onClick = { selYear = y; yearExpanded = false }) }
+                (currentYear downTo 1930).forEach { y -> DropdownMenuItem(text = { Text("$y") }, onClick = { selYear = y; yearExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }
             }
         }
     }
@@ -176,40 +332,62 @@ private fun BirthdayStep(onConfirm: (LocalDate) -> Unit) {
     Spacer(Modifier.height(16.dp))
     Surface(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f), shape = RoundedCornerShape(14.dp)) {
         Row(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-            Text(zodiacEmoji, fontSize = 28.sp); Spacer(Modifier.width(10.dp))
-            Column { Text(zodiacName, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary); Text("Your zodiac sign", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            Text(zodiacEmoji, fontSize = 28.sp)
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text(stringResource(zodiacRes), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.ob_zodiac_caption), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
-    if (error != null) { Spacer(Modifier.height(8.dp)); Text(error!!, color = MaterialTheme.colorScheme.error, fontSize = 14.sp) }
+    errorRes?.let {
+        Spacer(Modifier.height(8.dp))
+        Text(stringResource(it), color = MaterialTheme.colorScheme.error, fontSize = 14.sp)
+    }
     Spacer(Modifier.height(24.dp))
-    MainButton("Next") {
-        try { val d = LocalDate.of(selYear, selMonth, selDay); if (d.isAfter(LocalDate.now())) error = "Birthday can't be in the future" else { error = null; onConfirm(d) } } catch (_: Exception) { error = "Invalid date combination" }
+    MainButton(stringResource(R.string.ob_next)) {
+        try {
+            val d = LocalDate.of(selYear, selMonth, selDay)
+            if (d.isAfter(LocalDate.now())) errorRes = R.string.ob_birthday_future
+            else { errorRes = null; onConfirm(d) }
+        } catch (_: Exception) {
+            errorRes = R.string.ob_birthday_invalid
+        }
     }
 }
 
-// ── Step 2: Hand + Status ──
+// ── Step: Dominant hand (explicit, required) + relationship (optional) ──
 @Composable
-private fun HandStatusStep(hand: String, status: String?, onHand: (String) -> Unit, onStatus: (String) -> Unit, onNext: () -> Unit) {
+private fun HandStatusStep(
+    hand: String?,
+    status: String?,
+    onHand: (String) -> Unit,
+    onStatus: (String) -> Unit,
+    canProceed: Boolean,
+    onNext: () -> Unit,
+) {
     Illustration(R.drawable.img_onboarding_hands)
-    Title("About You", "A few more details")
-    Label("Dominant hand")
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-        listOf("left" to "🤚 Left", "right" to "✋ Right").forEach { (key, label) ->
-            FilterChip(selected = hand == key, onClick = { onHand(key) }, label = { Text(label, fontSize = 15.sp) }, modifier = Modifier.weight(1f).height(48.dp))
-        }
+    Title(stringResource(R.string.ob_hand_title), stringResource(R.string.ob_hand_subtitle))
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.selectableGroup()) {
+        OptionRow(selected = hand == "left", label = stringResource(R.string.ob_hand_left)) { onHand("left") }
+        OptionRow(selected = hand == "right", label = stringResource(R.string.ob_hand_right)) { onHand("right") }
     }
     Spacer(Modifier.height(20.dp))
-    Label("Relationship status")
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        listOf("single" to "Single", "relationship" to "In a relationship", "married" to "Married").forEach { (key, label) ->
-            FilterChip(selected = status == key, onClick = { onStatus(key) }, label = { Text(label) }, modifier = Modifier.fillMaxWidth())
+    Label(stringResource(R.string.ob_status_label))
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.selectableGroup()) {
+        listOf(
+            "single" to stringResource(R.string.ob_status_single),
+            "relationship" to stringResource(R.string.ob_status_relationship),
+            "married" to stringResource(R.string.ob_status_married),
+        ).forEach { (key, label) ->
+            OptionRow(selected = status == key, label = label) { onStatus(key) }
         }
     }
-    Spacer(Modifier.height(32.dp))
-    MainButton("Next") { onNext() }
+    Spacer(Modifier.height(28.dp))
+    MainButton(stringResource(R.string.ob_next), enabled = canProceed) { onNext() }
 }
 
-// ── Step 3: Birth Details (dropdown selectors) ──
+// ── Step: Birth details (optional) ──
 @Composable
 private fun BirthDetailsStep(onSkip: () -> Unit, onContinue: (Int, Int, Location?) -> Unit) {
     var selHour by remember { mutableStateOf(12) }
@@ -222,80 +400,164 @@ private fun BirthDetailsStep(onSkip: () -> Unit, onContinue: (Int, Int, Location
     val filtered = remember(searchQuery) { if (searchQuery.isBlank()) locations else locations.filter { it.name.contains(searchQuery, ignoreCase = true) } }
 
     Illustration(R.drawable.img_onboarding_birth_details)
-    Title("Birth Details", "Optional — unlocks L2 precision")
+    Title(stringResource(R.string.ob_birth_details_title), stringResource(R.string.ob_birth_details_subtitle))
 
-    Label("Time of birth")
+    Label(stringResource(R.string.ob_birth_time_label))
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
         Box(modifier = Modifier.weight(1f)) {
-            OutlinedButton(onClick = { hourExpanded = true }, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(12.dp)) { Text("${selHour.toString().padStart(2, '0')}h") }
+            OutlinedButton(onClick = { hourExpanded = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = RoundedCornerShape(12.dp)) {
+                Text("${stringResource(R.string.ob_birth_hour)}: ${selHour.toString().padStart(2, '0')}")
+            }
             DropdownMenu(expanded = hourExpanded, onDismissRequest = { hourExpanded = false }) {
-                (0..23).forEach { h -> DropdownMenuItem(text = { Text("${h.toString().padStart(2, '0')}:00") }, onClick = { selHour = h; hourExpanded = false }) }
+                (0..23).forEach { h -> DropdownMenuItem(text = { Text("${h.toString().padStart(2, '0')}:00") }, onClick = { selHour = h; hourExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }
             }
         }
         Box(modifier = Modifier.weight(1f)) {
-            OutlinedButton(onClick = { minuteExpanded = true }, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(12.dp)) { Text("${selMinute.toString().padStart(2, '0')}m") }
+            OutlinedButton(onClick = { minuteExpanded = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = RoundedCornerShape(12.dp)) {
+                Text("${stringResource(R.string.ob_birth_minute)}: ${selMinute.toString().padStart(2, '0')}")
+            }
             DropdownMenu(expanded = minuteExpanded, onDismissRequest = { minuteExpanded = false }) {
-                (0..59).forEach { m -> DropdownMenuItem(text = { Text(":${m.toString().padStart(2, '0')}") }, onClick = { selMinute = m; minuteExpanded = false }) }
+                (0..59).forEach { m -> DropdownMenuItem(text = { Text(":${m.toString().padStart(2, '0')}") }, onClick = { selMinute = m; minuteExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }
             }
         }
     }
 
     Spacer(Modifier.height(16.dp))
-    Label("Place of birth")
+    Label(stringResource(R.string.ob_birth_place_label))
     Box {
-        OutlinedTextField(value = selectedLocation?.name ?: searchQuery, onValueChange = { searchQuery = it; selectedLocation = null; locExpanded = true }, label = { Text("Search city...") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), singleLine = true)
+        OutlinedTextField(
+            value = selectedLocation?.name ?: searchQuery,
+            onValueChange = { searchQuery = it; selectedLocation = null; locExpanded = true },
+            label = { Text(stringResource(R.string.ob_birth_place_search)) },
+            modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), singleLine = true,
+        )
         DropdownMenu(expanded = locExpanded && filtered.isNotEmpty(), onDismissRequest = { locExpanded = false }) {
-            DropdownMenuItem(text = { Text("Other / Unknown") }, onClick = { selectedLocation = null; searchQuery = ""; locExpanded = false })
-            filtered.take(8).forEach { loc -> DropdownMenuItem(text = { Text(loc.name) }, onClick = { selectedLocation = loc; searchQuery = ""; locExpanded = false }) }
+            DropdownMenuItem(text = { Text(stringResource(R.string.ob_birth_place_unknown)) }, onClick = { selectedLocation = null; searchQuery = ""; locExpanded = false }, modifier = Modifier.heightIn(min = 48.dp))
+            filtered.take(8).forEach { loc -> DropdownMenuItem(text = { Text(loc.name) }, onClick = { selectedLocation = loc; searchQuery = ""; locExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }
         }
     }
 
     Spacer(Modifier.height(28.dp))
-    MainButton("Confirm") { onContinue(selHour, selMinute, selectedLocation) }
-    TextButton(onClick = onSkip, modifier = Modifier.fillMaxWidth()) { Text("Skip this step") }
+    MainButton(stringResource(R.string.ob_birth_details_confirm)) { onContinue(selHour, selMinute, selectedLocation) }
+    TextButton(onClick = onSkip, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+        Text(stringResource(R.string.ob_birth_details_skip))
+    }
     Spacer(Modifier.height(16.dp))
 }
 
-// ── Step 4: Tone ──
+// ── Step: Tone (PRD 45 display names) ──
 @Composable
 private fun ToneStep(selected: String, onSelect: (String) -> Unit, onNext: () -> Unit) {
     Illustration(R.drawable.img_onboarding_tone)
-    Title("Your Style", "How should we talk to you?")
-    data class T(val key: String, val emoji: String, val label: String, val desc: String)
-    val tones = listOf(T("scientific", "🔬", "Scientific", "Objective, data-driven"), T("healing", "🌿", "Healing", "Warm, encouraging"), T("roast_safe", "🔥", "Straight Talk", "Direct but safe"))
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        tones.forEach { tone ->
-            Card(onClick = { onSelect(tone.key) }, colors = CardDefaults.cardColors(containerColor = if (selected == tone.key) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)), shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
-                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(tone.emoji, fontSize = 28.sp); Spacer(Modifier.width(14.dp))
-                    Column(modifier = Modifier.weight(1f)) { Text(tone.label, fontSize = 16.sp, fontWeight = FontWeight.SemiBold); Text(tone.desc, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    if (selected == tone.key) Text("✓", fontSize = 20.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
+    Title(stringResource(R.string.ob_tone_title), stringResource(R.string.ob_tone_subtitle))
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.selectableGroup()) {
+        OptionRow(selected = selected == "scientific", label = stringResource(R.string.ob_tone_analytical), description = stringResource(R.string.ob_tone_analytical_desc)) { onSelect("scientific") }
+        OptionRow(selected = selected == "healing", label = stringResource(R.string.ob_tone_gentle), description = stringResource(R.string.ob_tone_gentle_desc)) { onSelect("healing") }
+        OptionRow(selected = selected == "roast_safe", label = stringResource(R.string.ob_tone_direct), description = stringResource(R.string.ob_tone_direct_desc)) { onSelect("roast_safe") }
     }
     Spacer(Modifier.height(28.dp))
-    MainButton("Next") { onNext() }
+    MainButton(stringResource(R.string.ob_next)) { onNext() }
 }
 
-// ── Step 5: Review ──
+// ── Step: Language selection ──
 @Composable
-private fun ReviewStep(state: com.palmastro.app.viewmodel.OnboardingState, onComplete: () -> Unit) {
-    val (zodiacName, zodiacEmoji) = getZodiac(state.birthdayMonth, state.birthdayDay)
+private fun LanguageStep(selected: String, onSelect: (String) -> Unit, onNext: () -> Unit) {
+    Title(stringResource(R.string.ob_language_title), stringResource(R.string.ob_language_subtitle))
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.selectableGroup()) {
+        OptionRow(selected = selected == AppLanguage.SYSTEM, label = stringResource(R.string.ob_language_system)) { onSelect(AppLanguage.SYSTEM) }
+        OptionRow(selected = selected == AppLanguage.ENGLISH, label = stringResource(R.string.ob_language_english)) { onSelect(AppLanguage.ENGLISH) }
+        OptionRow(selected = selected == AppLanguage.TRADITIONAL_CHINESE, label = stringResource(R.string.ob_language_traditional_chinese)) { onSelect(AppLanguage.TRADITIONAL_CHINESE) }
+    }
+    Spacer(Modifier.height(28.dp))
+    MainButton(stringResource(R.string.ob_next)) { onNext() }
+}
+
+// ── Step: Summary ──
+@Composable
+private fun SummaryStep(state: OnboardingState, onNext: () -> Unit) {
+    val (zodiacRes, zodiacEmoji) = zodiacFor(state.birthdayMonth, state.birthdayDay)
+    val locale = Locale.getDefault()
     Illustration(R.drawable.img_onboarding_ready)
-    Title("All Set!", "Review your details")
+    Title(stringResource(R.string.ob_summary_title), stringResource(R.string.ob_summary_subtitle))
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)), shape = RoundedCornerShape(16.dp)) {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            if (state.name.isNotBlank()) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Name", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text(state.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
-            state.gender?.let { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Gender", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text(it.replaceFirstChar { c -> c.uppercase() }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold) } }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Hand", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text(state.dominantHand.replaceFirstChar { it.uppercase() }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Birthday", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text("${Month.of(state.birthdayMonth).getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${state.birthdayDay}, ${state.birthdayYear}", fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Zodiac", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text("$zodiacEmoji $zodiacName", fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
-            state.relationshipStatus?.let { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Status", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text(it.replaceFirstChar { c -> c.uppercase() }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold) } }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Style", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text(state.tone.replaceFirstChar { it.uppercase() }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Analysis", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text(if (state.hasBirthTime) "L2 (detailed)" else "L1 (standard)", fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
+            SummaryRow(stringResource(R.string.ob_summary_name), state.name.ifBlank { stringResource(R.string.ob_summary_not_set) })
+            SummaryRow(
+                stringResource(R.string.ob_summary_gender),
+                when (state.gender) {
+                    "female" -> stringResource(R.string.ob_gender_female)
+                    "male" -> stringResource(R.string.ob_gender_male)
+                    "other" -> stringResource(R.string.ob_gender_other)
+                    else -> stringResource(R.string.ob_summary_not_set)
+                },
+            )
+            SummaryRow(
+                stringResource(R.string.ob_summary_hand),
+                when (state.dominantHand) {
+                    "left" -> stringResource(R.string.ob_hand_left)
+                    "right" -> stringResource(R.string.ob_hand_right)
+                    else -> stringResource(R.string.ob_summary_not_set)
+                },
+            )
+            SummaryRow(
+                stringResource(R.string.ob_summary_birthday),
+                "${Month.of(state.birthdayMonth).getDisplayName(TextStyle.FULL, locale)} ${state.birthdayDay}, ${state.birthdayYear}",
+            )
+            SummaryRow(stringResource(R.string.ob_summary_zodiac), "$zodiacEmoji ${stringResource(zodiacRes)}")
+            SummaryRow(
+                stringResource(R.string.ob_summary_status),
+                when (state.relationshipStatus) {
+                    "single" -> stringResource(R.string.ob_status_single)
+                    "relationship" -> stringResource(R.string.ob_status_relationship)
+                    "married" -> stringResource(R.string.ob_status_married)
+                    else -> stringResource(R.string.ob_summary_not_set)
+                },
+            )
+            SummaryRow(
+                stringResource(R.string.ob_summary_tone),
+                when (state.tone) {
+                    "healing" -> stringResource(R.string.ob_tone_gentle)
+                    "roast_safe" -> stringResource(R.string.ob_tone_direct)
+                    else -> stringResource(R.string.ob_tone_analytical)
+                },
+            )
+            SummaryRow(
+                stringResource(R.string.ob_summary_language),
+                when (state.language) {
+                    AppLanguage.ENGLISH -> stringResource(R.string.ob_language_english)
+                    AppLanguage.TRADITIONAL_CHINESE -> stringResource(R.string.ob_language_traditional_chinese)
+                    else -> stringResource(R.string.ob_language_system)
+                },
+            )
+            SummaryRow(
+                stringResource(R.string.ob_summary_analysis),
+                if (state.hasBirthTime && state.hasBirthPlace) stringResource(R.string.ob_summary_l2) else stringResource(R.string.ob_summary_l1),
+            )
         }
     }
     Spacer(Modifier.height(28.dp))
-    MainButton("Get Started") { onComplete() }
+    MainButton(stringResource(R.string.ob_next)) { onNext() }
+}
+
+@Composable
+private fun SummaryRow(label: String, value: String) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End, modifier = Modifier.padding(start = 12.dp))
+    }
+}
+
+// ── Step: Camera permission education (permission itself is requested on the scan screen) ──
+@Composable
+private fun CameraEducationStep(enabled: Boolean, onStart: () -> Unit) {
+    Illustration(R.drawable.img_onboarding_hands)
+    Title(stringResource(R.string.ob_camera_title), stringResource(R.string.ob_camera_subtitle))
+    Text(stringResource(R.string.ob_camera_body), fontSize = 15.sp, lineHeight = 22.sp, textAlign = TextAlign.Center)
+    Spacer(Modifier.height(16.dp))
+    Column(modifier = Modifier.fillMaxWidth()) {
+        BulletPoint(stringResource(R.string.ob_camera_point_local))
+        BulletPoint(stringResource(R.string.ob_camera_point_denied))
+    }
+    Spacer(Modifier.height(28.dp))
+    MainButton(stringResource(R.string.ob_camera_start), enabled = enabled) { onStart() }
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Results dashboard + History screen strings (ui-results agent). -->
+<resources>
+    <string name="results_welcome_title">Welcome to PalmAstro</string>
+    <string name="results_welcome_desc">Scan your palm to discover insights about your career, wealth, family, and health.</string>
+    <string name="results_date_pattern" translatable="true">MMMM yyyy</string>
+    <string name="results_theme_growing">A month of growth — %1$s is leading the way</string>
+    <string name="results_theme_stable">A steady month — %1$s is your anchor</string>
+    <string name="results_theme_building">A building month — keep investing in %1$s</string>
+    <string name="results_theme_watchout">A month to watch — give %1$s extra care</string>
+    <string name="results_scan_quality_chip">Scan quality %1$d/100</string>
+    <string name="results_confidence_high">High</string>
+    <string name="results_confidence_med">Medium</string>
+    <string name="results_confidence_low">Low</string>
+    <string name="results_delta_up">Up %1$d from last month</string>
+    <string name="results_delta_down">Down %1$d from last month</string>
+    <string name="results_delta_flat">Same as last month</string>
+    <string name="results_card_confidence">Confidence %1$s</string>
+    <string name="results_safety_title">For Personal Reflection</string>
+    <string name="results_safety_body">PalmAstro is for self-growth and entertainment. Not medical, financial, or professional advice. All analysis runs on your device.</string>
+
+    <string name="history_empty_title">No scans yet</string>
+    <string name="history_empty_desc">Your monthly readings will appear here after your first palm scan.</string>
+    <string name="history_delta_desc">%1$s changed by %2$d compared to the previous month</string>
+</resources>

@@ -1,6 +1,5 @@
 package com.palmastro.app.viewmodel
 
-import com.palmastro.data.entities.UserProfileEntity
 import com.palmastro.data.repository.UserRepository
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.*
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -28,36 +28,33 @@ class OnboardingViewModelTest {
 
     private fun createViewModel() = OnboardingViewModel(userRepository)
 
+    // ── Initial state / no silent defaults ──
+
     @Test
-    fun `initial state starts at step 0 with right hand`() {
+    fun `initial state starts at welcome with no dominant hand chosen`() {
         val vm = createViewModel()
-        assertEquals(0, vm.state.value.step)
-        assertEquals("right", vm.state.value.dominantHand)
+        assertEquals(OnboardingSteps.WELCOME, vm.state.value.step)
+        assertNull(vm.state.value.dominantHand)
+        assertEquals("system", vm.state.value.language)
         assertFalse(vm.state.value.isComplete)
     }
 
     @Test
-    fun `setHand updates dominant hand`() {
+    fun `setHand records explicit choice`() {
         val vm = createViewModel()
         vm.setHand("left")
         assertEquals("left", vm.state.value.dominantHand)
     }
 
-    @Test
-    fun `setBirthday stores date`() {
-        val vm = createViewModel()
-        val date = LocalDate.of(1990, 6, 15)
-        vm.setBirthday(date)
-        assertEquals(date, vm.state.value.birthday)
-    }
+    // ── Step navigation ──
 
     @Test
-    fun `nextStep increments step`() {
+    fun `nextStep increments and clamps at last step`() {
         val vm = createViewModel()
         vm.nextStep()
         assertEquals(1, vm.state.value.step)
-        vm.nextStep()
-        assertEquals(2, vm.state.value.step)
+        repeat(OnboardingSteps.TOTAL + 3) { vm.nextStep() }
+        assertEquals(OnboardingSteps.TOTAL - 1, vm.state.value.step)
     }
 
     @Test
@@ -65,7 +62,114 @@ class OnboardingViewModelTest {
         val vm = createViewModel()
         vm.prevStep()
         assertEquals(0, vm.state.value.step)
+        vm.nextStep(); vm.nextStep(); vm.prevStep()
+        assertEquals(1, vm.state.value.step)
     }
+
+    // ── Required field gating ──
+
+    @Test
+    fun `cannot proceed past birthday step without a birthday`() {
+        val vm = createViewModel()
+        assertFalse(vm.canProceedFrom(OnboardingSteps.BIRTHDAY))
+        vm.setBirthday(LocalDate.of(1990, 6, 15))
+        assertTrue(vm.canProceedFrom(OnboardingSteps.BIRTHDAY))
+    }
+
+    @Test
+    fun `cannot proceed past hand step without an explicit hand choice`() {
+        val vm = createViewModel()
+        assertFalse(vm.canProceedFrom(OnboardingSteps.HAND))
+        vm.setHand("right")
+        assertTrue(vm.canProceedFrom(OnboardingSteps.HAND))
+    }
+
+    @Test
+    fun `optional steps never gate`() {
+        val vm = createViewModel()
+        assertTrue(vm.canProceedFrom(OnboardingSteps.WELCOME))
+        assertTrue(vm.canProceedFrom(OnboardingSteps.PRIVACY))
+        assertTrue(vm.canProceedFrom(OnboardingSteps.NAME))
+        assertTrue(vm.canProceedFrom(OnboardingSteps.BIRTH_DETAILS))
+        assertTrue(vm.canProceedFrom(OnboardingSteps.TONE))
+        assertTrue(vm.canProceedFrom(OnboardingSteps.LANGUAGE))
+    }
+
+    @Test
+    fun `name is optional and does not block proceeding or completion`() {
+        val vm = createViewModel()
+        vm.setBirthday(LocalDate.of(1990, 6, 15))
+        vm.setHand("right")
+        assertTrue(vm.canProceedFrom(OnboardingSteps.NAME))
+        assertTrue(vm.canComplete())
+    }
+
+    // ── Completion guards ──
+
+    @Test
+    fun `completeOnboarding without birthday does nothing`() = runTest {
+        val vm = createViewModel()
+        vm.setHand("right")
+        vm.completeOnboarding()
+        assertFalse(vm.state.value.isComplete)
+        coVerify(exactly = 0) { userRepository.save(any()) }
+    }
+
+    @Test
+    fun `completeOnboarding without hand does nothing`() = runTest {
+        val vm = createViewModel()
+        vm.setBirthday(LocalDate.of(1990, 6, 15))
+        vm.completeOnboarding()
+        assertFalse(vm.state.value.isComplete)
+        coVerify(exactly = 0) { userRepository.save(any()) }
+    }
+
+    @Test
+    fun `completeOnboarding saves profile with required fields and sets isComplete`() = runTest {
+        val vm = createViewModel()
+        vm.setBirthday(LocalDate.of(1990, 3, 21))
+        vm.setHand("left")
+        vm.setTone("roast_safe")
+        vm.completeOnboarding()
+        assertTrue(vm.state.value.isComplete)
+        coVerify(exactly = 1) {
+            userRepository.save(match {
+                it.dominantHand == "left" && it.tone == "roast_safe" && it.calcLevel == "L1"
+            })
+        }
+    }
+
+    @Test
+    fun `blank name is saved as null`() = runTest {
+        val vm = createViewModel()
+        vm.setBirthday(LocalDate.of(1990, 3, 21))
+        vm.setHand("right")
+        vm.setName("   ")
+        vm.completeOnboarding()
+        coVerify(exactly = 1) { userRepository.save(match { it.name == null }) }
+    }
+
+    @Test
+    fun `language selection is persisted to the profile`() = runTest {
+        val vm = createViewModel()
+        vm.setBirthday(LocalDate.of(1990, 3, 21))
+        vm.setHand("right")
+        vm.setLanguage("zh-TW")
+        vm.completeOnboarding()
+        assertEquals("zh-TW", vm.state.value.language)
+        coVerify(exactly = 1) { userRepository.save(match { it.language == "zh-TW" }) }
+    }
+
+    @Test
+    fun `default language is system when never touched`() = runTest {
+        val vm = createViewModel()
+        vm.setBirthday(LocalDate.of(1990, 3, 21))
+        vm.setHand("right")
+        vm.completeOnboarding()
+        coVerify(exactly = 1) { userRepository.save(match { it.language == "system" }) }
+    }
+
+    // ── Optional detail behavior ──
 
     @Test
     fun `setBirthTime sets hasBirthTime flag`() {
@@ -95,24 +199,20 @@ class OnboardingViewModelTest {
     }
 
     @Test
+    fun `full birth details produce L2 calc level`() = runTest {
+        val vm = createViewModel()
+        vm.setBirthday(LocalDate.of(1990, 3, 21))
+        vm.setHand("right")
+        vm.setBirthTime(8, 30)
+        vm.setBirthPlace("Taipei, Taiwan", 25.033, 121.565)
+        vm.completeOnboarding()
+        coVerify(exactly = 1) { userRepository.save(match { it.calcLevel == "L2" }) }
+    }
+
+    @Test
     fun `setTone updates tone`() {
         val vm = createViewModel()
         vm.setTone("healing")
         assertEquals("healing", vm.state.value.tone)
-    }
-
-    @Test
-    fun `completeOnboarding saves profile and sets isComplete`() = runTest {
-        val vm = createViewModel()
-        vm.setBirthday(LocalDate.of(1990, 3, 21))
-        vm.setHand("left")
-        vm.setTone("roast_safe")
-        vm.completeOnboarding()
-        assertTrue(vm.state.value.isComplete)
-        coVerify(exactly = 1) {
-            userRepository.save(match {
-                it.dominantHand == "left" && it.tone == "roast_safe" && it.calcLevel == "L1"
-            })
-        }
     }
 }

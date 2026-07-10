@@ -52,12 +52,21 @@ class ModelsTest {
 
     @Test
     fun `PalmFeatureResult carries confidence level`() {
+        val features = PalmFeatures(
+            headlinePresent = true, heartlinePresent = true, lifelinePresent = true, fatelinePresent = false,
+            headlineShape = "curved", heartlineShape = "straight", lifelineShape = "curved", fatelineShape = "none",
+            headlineClarity = "clear", heartlineClarity = "medium", lifelineClarity = "clear", fatelineClarity = "faint",
+            headlineLength = "long", fatelineLength = "short",
+            venusMountDensity = "medium", jupiterMountDensity = "low", saturnMountDensity = "medium",
+            minorLineDensity = "low"
+        )
         val pfr = PalmFeatureResult(
-            features = mapOf("headline_present" to true, "headline_shape" to "curved"),
+            features = features,
             featureCoverage = 0.85f, confidence = "high", extractorVersion = "1.0.0"
         )
         assertEquals("high", pfr.confidence)
         assertEquals(0.85f, pfr.featureCoverage)
+        assertEquals("curved", pfr.features.headlineShape)
     }
 
     @Test

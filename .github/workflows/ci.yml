@@ -78,3 +78,13 @@ jobs:
           restore-keys: gradle-
       - name: Run detekt
         run: ./gradlew detekt --no-daemon
+      # Android Lint gates the build (no baseline): release-blocking issues must be
+      # fixed, not accumulated.
+      - name: Run Android Lint
+        run: ./gradlew :app:lintDebug --no-daemon
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-*.html

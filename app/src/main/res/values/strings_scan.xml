@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Pre-scan explainer (PRD 13.2 step 1) -->
+    <string name="sc_explainer_title">Before you scan</string>
+    <string name="sc_explainer_subtitle">What a palm scan involves</string>
+    <string name="sc_explainer_point_angles">You will capture your palm from 7 angles. Each angle reveals different line and shape details.</string>
+    <string name="sc_explainer_point_quality">Each photo is quality-checked. If one is blurry or dark, we will coach you to retake it.</string>
+    <string name="sc_explainer_point_private">Everything is analyzed on your device. Your palm is never used to identify you.</string>
+    <string name="sc_explainer_next">Show me the tips</string>
+
+    <!-- Lighting / positioning tips (PRD 13.2 step 2) -->
+    <string name="sc_tips_title">Lighting and positioning</string>
+    <string name="sc_tips_subtitle">Three quick tips for a clean scan</string>
+    <string name="sc_tips_light">Find soft, even light. Avoid direct sun or harsh lamps that cause glare.</string>
+    <string name="sc_tips_position">Hold your palm flat, fingers slightly apart, filling the on-screen guide.</string>
+    <string name="sc_tips_steady">Keep your hand and phone steady. Rest your elbow on a table if it helps.</string>
+    <string name="sc_tips_start">Start scanning</string>
+
+    <!-- Capture chrome -->
+    <string name="sc_capture_progress_desc">%1$d of %2$d angles captured</string>
+
+    <!-- Coaching hints — keys returned by CoachingHints.keyFor -->
+    <string name="coach_blur">Hold still until the image stabilizes</string>
+    <string name="coach_glare">Avoid direct light sources</string>
+    <string name="coach_low_light">Not enough light — move somewhere brighter</string>
+    <string name="coach_over_exposure">Too bright — move away from the light</string>
+    <string name="coach_low_coverage">Place your entire palm within the guide</string>
+    <string name="coach_pose_unstable">Keep your palm steady</string>
+    <string name="coach_hand_not_detected">No palm detected — place your hand in the frame</string>
+    <string name="coach_generic">Let’s try that angle again</string>
+
+    <!-- Completion (PRD 13.2 step 6) -->
+    <string name="sc_complete_title">Scan complete</string>
+    <string name="sc_complete_body">All 7 angles captured. Analyzing your palm now…</string>
+    <string name="sc_complete_hint">This runs on your device and may take a moment</string>
+    <string name="sc_complete_announce">Scan complete. Analyzing your palm.</string>
+    <string name="sc_complete_icon">Scan complete</string>
+
+    <!-- Errors: what / why / next -->
+    <string name="sc_err_download_what">Couldn’t download the analysis model</string>
+    <string name="sc_err_download_why">The palm analysis model needs a one-time download, and the connection was interrupted.</string>
+    <string name="sc_err_download_next">Check your internet connection, then retry the download.</string>
+    <string name="sc_err_download_action">Retry download</string>
+    <string name="sc_err_corrupt_what">The analysis model needs to be repaired</string>
+    <string name="sc_err_corrupt_why">The downloaded model file didn’t pass its integrity check, so it can’t be used safely.</string>
+    <string name="sc_err_corrupt_next">Redownload the model — this replaces the damaged file.</string>
+    <string name="sc_err_corrupt_action">Redownload model</string>
+    <string name="sc_err_processing_what">Analysis didn’t finish</string>
+    <string name="sc_err_processing_why">Something went wrong while processing your captured images. Your data was not changed.</string>
+    <string name="sc_err_processing_next">Go back and scan again. Better lighting usually helps.</string>
+    <string name="sc_err_processing_action">Scan again</string>
+
+    <!-- Reminder notification (worker) -->
+    <string name="sc_reminder_notif_title">Monthly palm check-in</string>
+    <string name="sc_reminder_notif_body">Your new monthly reading is ready to be created. Open PalmAstro to scan.</string>
+</resources>

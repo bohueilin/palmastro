@@ -68,7 +68,7 @@ class FullPipelineTest {
         for (tone in Tone.entries) {
             val report = renderer.render(payloads["career"]!!, tone)
             assertEquals("career", report.domain)
-            assertTrue(report.htmlZh.isNotBlank())
+            assertTrue(report.text.isNotBlank())
         }
     }
 

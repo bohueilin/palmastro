@@ -13,21 +13,51 @@ sealed class ModelSource {
     data object NotAvailable : ModelSource()
 }
 
+/**
+ * Typed scan-pipeline error surfaced to the UI. The ViewModel exposes ONLY these
+ * (never raw exception messages); the scan screen maps each case to a string
+ * resource (see strings_scan_errors.xml) via [key].
+ */
+sealed class ScanError(val key: String, val retryable: Boolean) {
+    /** Model could not be downloaded (offline, server error, timeout). */
+    data object MODEL_DOWNLOAD_FAILED : ScanError("scan_error_model_download_failed", true)
+
+    /** Model file failed checksum verification or the landmarker refused to load it. */
+    data object MODEL_CORRUPT : ScanError("scan_error_model_corrupt", true)
+
+    /** Capture/inference pipeline failed after the model was ready. */
+    data object PROCESSING_FAILED : ScanError("scan_error_processing_failed", true)
+}
+
+/** Carrier so [Result]-based APIs can transport a typed [ScanError]. */
+class ScanErrorException(val scanError: ScanError, message: String) : Exception(message)
+
 object ModelManager {
+    /**
+     * Pinned MediaPipe hand_landmarker (0.10.9 era) float16 model, asset version 1.
+     * NEVER point this at ".../latest/..." — the checksum below is for this exact asset.
+     */
     private const val MODEL_URL =
-        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task"
+        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+
+    /**
+     * SHA-256 of the pinned asset above, computed 2026-07-09 from the canonical URL
+     * (7,819,105 bytes). Downloaded files failing this check are deleted (MODEL_CORRUPT).
+     */
+    internal const val EXPECTED_SHA256 =
+        "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1"
+
     private const val ASSET_PATH = "models/hand_landmarker.task"
     private const val MODEL_DIR = "models"
     private const val MODEL_FILE = "hand_landmarker.task"
     private const val MIN_SIZE_BYTES = 1_000_000L
     private const val MAX_RETRIES = 3
 
-    private val EXPECTED_SHA256: String? = null
-
     private val downloading = AtomicBoolean(false)
 
     fun isModelReady(context: Context): Boolean {
-        return hasAssetModel(context) || getModelFile(context).let { it.exists() && it.length() > MIN_SIZE_BYTES }
+        return hasAssetModel(context) ||
+            getModelFile(context).let { it.exists() && it.length() > MIN_SIZE_BYTES }
     }
 
     fun getModelSource(context: Context): ModelSource {
@@ -41,7 +71,9 @@ object ModelManager {
 
     fun downloadModel(context: Context): Result<File> {
         if (!downloading.compareAndSet(false, true)) {
-            return Result.failure(IllegalStateException("Download already in progress"))
+            return Result.failure(
+                ScanErrorException(ScanError.MODEL_DOWNLOAD_FAILED, "Download already in progress")
+            )
         }
         return try {
             downloadWithRetry(context)
@@ -50,11 +82,25 @@ object ModelManager {
         }
     }
 
+    /**
+     * Verifies the downloaded model against [EXPECTED_SHA256]. Bundled asset models are
+     * trusted (they ship inside the signed APK). On mismatch the corrupt file is deleted
+     * so the next [downloadModel] starts clean.
+     */
     fun verifyModelIntegrity(context: Context): Boolean {
-        val expected = EXPECTED_SHA256 ?: return true
+        if (hasAssetModel(context)) return true
         val file = getModelFile(context)
         if (!file.exists()) return false
-        return sha256(file).equals(expected, ignoreCase = true)
+        val ok = sha256(file).equals(EXPECTED_SHA256, ignoreCase = true)
+        if (!ok) file.delete()
+        return ok
+    }
+
+    /** Removes the downloaded model file (corrupt-model recovery path). */
+    fun deleteDownloadedModel(context: Context) {
+        val dir = File(context.filesDir, MODEL_DIR)
+        File(dir, MODEL_FILE).delete()
+        File(dir, "$MODEL_FILE.tmp").delete()
     }
 
     private fun hasAssetModel(context: Context): Boolean {
@@ -71,11 +117,22 @@ object ModelManager {
             val result = attemptDownload(context)
             if (result.isSuccess) return result
             lastError = result.exceptionOrNull()
+            // A checksum mismatch is not transient network flakiness; retrying the same
+            // bytes is still worthwhile once (CDN edge corruption), so keep the loop,
+            // but preserve the typed error for the caller.
             if (attempt < MAX_RETRIES) {
                 Thread.sleep(1000L * (1 shl (attempt - 1)))
             }
         }
-        return Result.failure(lastError ?: IllegalStateException("Download failed after $MAX_RETRIES attempts"))
+        return Result.failure(
+            when (lastError) {
+                is ScanErrorException -> lastError
+                else -> ScanErrorException(
+                    ScanError.MODEL_DOWNLOAD_FAILED,
+                    lastError?.message ?: "Download failed after $MAX_RETRIES attempts"
+                )
+            }
+        )
     }
 
     private fun attemptDownload(context: Context): Result<File> = runCatching {
@@ -86,7 +143,7 @@ object ModelManager {
         val lock = File(dir, "$MODEL_FILE.lock")
 
         if (lock.exists() && System.currentTimeMillis() - lock.lastModified() < 120_000) {
-            error("Another process is downloading the model")
+            throw ScanErrorException(ScanError.MODEL_DOWNLOAD_FAILED, "Another download in progress")
         }
         lock.createNewFile()
 
@@ -99,7 +156,9 @@ object ModelManager {
             try {
                 val responseCode = conn.responseCode
                 if (responseCode != HttpURLConnection.HTTP_OK) {
-                    error("HTTP $responseCode from model server")
+                    throw ScanErrorException(
+                        ScanError.MODEL_DOWNLOAD_FAILED, "HTTP $responseCode from model server"
+                    )
                 }
                 conn.inputStream.use { input ->
                     tmp.outputStream().use { output ->
@@ -111,21 +170,25 @@ object ModelManager {
             }
 
             if (tmp.length() < MIN_SIZE_BYTES) {
+                val size = tmp.length()
                 tmp.delete()
-                error("Downloaded file too small: ${tmp.length()} bytes")
+                throw ScanErrorException(
+                    ScanError.MODEL_DOWNLOAD_FAILED, "Downloaded file too small: $size bytes"
+                )
             }
 
-            EXPECTED_SHA256?.let { expected ->
-                val actual = sha256(tmp)
-                if (!actual.equals(expected, ignoreCase = true)) {
-                    tmp.delete()
-                    error("SHA-256 mismatch: expected=$expected actual=$actual")
-                }
+            val actual = sha256(tmp)
+            if (!actual.equals(EXPECTED_SHA256, ignoreCase = true)) {
+                tmp.delete()
+                throw ScanErrorException(
+                    ScanError.MODEL_CORRUPT,
+                    "SHA-256 mismatch: expected=$EXPECTED_SHA256 actual=$actual"
+                )
             }
 
             if (target.exists()) target.delete()
             if (!tmp.renameTo(target)) {
-                error("Failed to rename tmp file to target")
+                throw ScanErrorException(ScanError.MODEL_DOWNLOAD_FAILED, "Failed to move model into place")
             }
 
             target

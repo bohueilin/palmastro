@@ -25,9 +25,25 @@ sealed class Route(val path: String) {
 }
 
 @Composable
-fun AppNavigation(hasProfile: Boolean) {
+fun AppNavigation(
+    hasProfile: Boolean,
+    deepLink: DeepLinkDestination? = null,
+    onDeepLinkConsumed: () -> Unit = {},
+) {
     val navController = rememberNavController()
     val startRoute = if (hasProfile) "results" else Route.Onboarding.path
+
+    // Deep links only navigate once a profile exists; otherwise onboarding stays in front.
+    LaunchedEffect(deepLink, hasProfile) {
+        if (deepLink != null) {
+            if (hasProfile) {
+                navController.navigate(DeepLinkHandler.routeFor(deepLink)) {
+                    launchSingleTop = true
+                }
+            }
+            onDeepLinkConsumed()
+        }
+    }
 
     NavHost(navController = navController, startDestination = startRoute) {
         composable(Route.Onboarding.path) {

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Share card + preview dialog strings (ui-results agent), Taiwan Traditional Chinese. -->
+<resources>
+    <string name="share_preview_title">預覽分享卡片</string>
+    <string name="share_preview_share">分享</string>
+    <string name="share_preview_image_desc">即將分享的卡片預覽</string>
+    <string name="share_card_analysis">分析</string>
+    <string name="share_card_actions">行動建議</string>
+    <string name="share_card_reflection">反思</string>
+</resources>

@@ -8,10 +8,11 @@ import kotlin.test.assertTrue
 class ScoringPropertyTest {
     private val engine = ScoringEngineImpl()
 
-    private val shapes = listOf("curved", "straight", "unclear", "faint")
-    private val clarities = listOf("clear", "moderate", "faint")
+    // Extractor v2 vocabulary.
+    private val shapes = listOf("curved", "straight", "unclear")
+    private val clarities = listOf("clear", "medium", "faint", "broken", "thin", "unclear")
     private val lengths = listOf("long", "medium", "short")
-    private val densities = listOf("med", "low")
+    private val densities = listOf("high", "med", "low")
     private val confidences = listOf("high", "med", "low")
 
     private fun randomPalmFeatures(rng: kotlin.random.Random) = PalmFeatures(
@@ -27,16 +28,20 @@ class ScoringPropertyTest {
     )
 
     private fun randomInput(rng: kotlin.random.Random): ScoringInput {
-        val signalNames = listOf("ASTRO_SUN_FIRE", "ASTRO_SATURN_STRONG", "ASTRO_JUPITER_STRONG", "ASTRO_SUN_ARIES")
+        val signalNames = listOf(
+            "ASTRO_SUN_FIRE", "ASTRO_SUN_EARTH", "ASTRO_SUN_AIR", "ASTRO_SUN_WATER",
+            "ASTRO_SUN_CARDINAL", "ASTRO_SUN_FIXED", "ASTRO_SUN_MUTABLE",
+            "ASTRO_MOON_WATER", "ASTRO_ASC_FIRE", "ASTRO_SUN_ARIES"
+        )
         val signalCount = rng.nextInt(0, 6)
         val astroSignals = (1..signalCount).map {
             AstroSignal(signalNames.random(rng), "+", rng.nextInt(1, 6), confidences.random(rng), "SAFE_GENERAL")
         }
         return ScoringInput(
-            palmFeatures = PalmFeatureResult(randomPalmFeatures(rng), rng.nextFloat().coerceIn(0.1f, 1.0f), confidences.random(rng), "1.0.0"),
-            astroResult = AstroResult(if (rng.nextBoolean()) CalcLevel.L2 else CalcLevel.L1, astroSignals, "1.0.0"),
+            palmFeatures = PalmFeatureResult(randomPalmFeatures(rng), rng.nextFloat().coerceIn(0.1f, 1.0f), confidences.random(rng), "2.0.0"),
+            astroResult = AstroResult(if (rng.nextBoolean()) CalcLevel.L2 else CalcLevel.L1, astroSignals, "2.0.0"),
             userContext = UserContext(if (rng.nextBoolean()) Hand.RIGHT else Hand.LEFT, false),
-            rulesetVersion = "1.0.0"
+            rulesetVersion = "2.0.0"
         )
     }
 
@@ -56,21 +61,26 @@ class ScoringPropertyTest {
         val rng = kotlin.random.Random(999); val input = randomInput(rng); val first = engine.score(input)
         repeat(9) { assertEquals(first, engine.score(input)) }
     }
-    @Test fun `confidence ordering - high ge low for same signals`() {
-        val pf = PalmFeatures(true, true, true, true, "curved", "curved", "curved", "straight", "clear", "clear", "clear", "moderate", "long", "medium", "med", "med", "low", "med")
-        val astro = listOf(AstroSignal("ASTRO_SUN_FIRE", "+", 3, "high", "SAFE_GENERAL"))
-        val high = engine.score(ScoringInput(PalmFeatureResult(pf, 0.9f, "high", "1.0.0"), AstroResult(CalcLevel.L2, astro, "1.0.0"), UserContext(Hand.RIGHT, false), "1.0.0"))
-        val low = engine.score(ScoringInput(PalmFeatureResult(pf, 0.9f, "low", "1.0.0"), AstroResult(CalcLevel.L2, astro, "1.0.0"), UserContext(Hand.RIGHT, false), "1.0.0"))
+    @Test fun `confidence ordering - high ge low for same positive signals`() {
+        val pf = PalmFeatures(true, true, true, true, "curved", "curved", "curved", "straight", "clear", "clear", "clear", "clear", "long", "medium", "med", "med", "low", "med")
+        val astro = listOf(AstroSignal("ASTRO_SUN_FIRE", "+", 2, "high", "SAFE_GENERAL"))
+        val high = engine.score(ScoringInput(PalmFeatureResult(pf, 0.9f, "high", "2.0.0"), AstroResult(CalcLevel.L2, astro, "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))
+        val low = engine.score(ScoringInput(PalmFeatureResult(pf, 0.9f, "low", "2.0.0"), AstroResult(CalcLevel.L2, astro, "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))
         high.domainScores.forEach { (d, hs) -> assertTrue(hs >= low.domainScores[d]!!, "$d: high $hs < low ${low.domainScores[d]}") }
     }
-    @Test fun `baseline with no signals - scores near 50`() {
-        val pf = PalmFeatures(false, false, false, false, "faint", "faint", "faint", "faint", "faint", "faint", "faint", "faint", "short", "short", "low", "low", "low", "low")
-        val r = engine.score(ScoringInput(PalmFeatureResult(pf, 0.1f, "low", "1.0.0"), AstroResult(CalcLevel.L1, emptyList(), "1.0.0"), UserContext(Hand.RIGHT, false), "1.0.0"))
+    @Test fun `negative direction - all-negative palm never exceeds baseline`() {
+        val pf = PalmFeatures(true, true, true, true, "straight", "straight", "straight", "straight", "broken", "thin", "faint", "broken", "short", "short", "low", "low", "low", "high")
+        val r = engine.score(ScoringInput(PalmFeatureResult(pf, 0.9f, "high", "2.0.0"), AstroResult(CalcLevel.L1, emptyList(), "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))
+        r.domainScores.forEach { (d, s) -> assertTrue(s < 50, "$d: $s should be below baseline") }
+    }
+    @Test fun `baseline with no signals - scores exactly 50`() {
+        val pf = PalmFeatures(false, false, false, false, "unclear", "unclear", "unclear", "unclear", "unclear", "unclear", "unclear", "unclear", "short", "short", "low", "low", "low", "low")
+        val r = engine.score(ScoringInput(PalmFeatureResult(pf, 0.1f, "low", "2.0.0"), AstroResult(CalcLevel.L1, emptyList(), "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))
         r.domainScores.forEach { (d, s) -> assertTrue(s in 45..55, "$d: $s not near 50") }
     }
     @Test fun `explainability non-empty when strong signals match`() {
-        val pf = PalmFeatures(true, true, true, true, "curved", "curved", "curved", "straight", "clear", "clear", "clear", "moderate", "long", "medium", "med", "med", "low", "med")
-        val r = engine.score(ScoringInput(PalmFeatureResult(pf, 0.95f, "high", "1.0.0"), AstroResult(CalcLevel.L2, emptyList(), "1.0.0"), UserContext(Hand.RIGHT, false), "1.0.0"))
+        val pf = PalmFeatures(true, true, true, true, "curved", "curved", "curved", "straight", "clear", "clear", "clear", "clear", "long", "medium", "med", "med", "low", "med")
+        val r = engine.score(ScoringInput(PalmFeatureResult(pf, 0.95f, "high", "2.0.0"), AstroResult(CalcLevel.L2, emptyList(), "2.0.0"), UserContext(Hand.RIGHT, false), "2.0.0"))
         assertTrue(r.explainability.isNotEmpty())
     }
     @Test fun `domain coverage - every result has 4 domains`() {
@@ -79,6 +89,6 @@ class ScoringPropertyTest {
     }
     @Test fun `ruleset version preserved`() {
         val rng = kotlin.random.Random(555)
-        repeat(50) { assertEquals("1.0.0", engine.score(randomInput(rng)).rulesetVersion) }
+        repeat(50) { assertEquals("2.0.0", engine.score(randomInput(rng)).rulesetVersion) }
     }
 }

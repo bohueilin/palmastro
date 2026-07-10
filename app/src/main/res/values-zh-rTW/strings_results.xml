@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Results dashboard + History screen strings (ui-results agent), Taiwan Traditional Chinese. -->
+<resources>
+    <string name="results_welcome_title">歡迎使用掌紋星象</string>
+    <string name="results_welcome_desc">掃描你的手掌，探索事業、財富、家庭與健康的洞察。</string>
+    <string name="results_date_pattern">yyyy年M月</string>
+    <string name="results_theme_growing">成長的一個月 — %1$s 表現最亮眼</string>
+    <string name="results_theme_stable">平穩的一個月 — %1$s 是你的定心石</string>
+    <string name="results_theme_building">累積的一個月 — 持續在%1$s上投入</string>
+    <string name="results_theme_watchout">需要留意的一個月 — 多關照%1$s</string>
+    <string name="results_scan_quality_chip">掃描品質 %1$d/100</string>
+    <string name="results_confidence_high">高</string>
+    <string name="results_confidence_med">中</string>
+    <string name="results_confidence_low">低</string>
+    <string name="results_delta_up">比上月上升 %1$d</string>
+    <string name="results_delta_down">比上月下降 %1$d</string>
+    <string name="results_delta_flat">與上月持平</string>
+    <string name="results_card_confidence">信心度%1$s</string>
+    <string name="results_safety_title">僅供個人參考</string>
+    <string name="results_safety_body">掌紋星象僅供自我成長與娛樂用途，並非醫療、財務或專業建議。所有分析都在你的裝置上完成。</string>
+
+    <string name="history_empty_title">還沒有掃描記錄</string>
+    <string name="history_empty_desc">完成第一次掌紋掃描後，你的每月報告會顯示在這裡。</string>
+    <string name="history_delta_desc">%1$s 與上月相比變化 %2$d</string>
+</resources>

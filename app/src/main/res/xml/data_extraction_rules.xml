@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Backup/transfer rules for Android 12+ (android:dataExtractionRules).
+     PalmAstro data is sensitive-by-design (PRD §26/§27): palm-derived data must never
+     leave the device, so ALL app data is excluded from BOTH cloud backup and
+     device-to-device transfer. Belt-and-braces alongside android:allowBackup="false". -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+    </device-transfer>
+</data-extraction-rules>

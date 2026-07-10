@@ -1,9 +1,33 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
+}
+
+// Release signing (PRD §35 item 10). keystore.properties lives at the repo root and is
+// never committed (see keystore.properties.template). The keystore it points to is the
+// Play App Signing UPLOAD key; Google Play holds the actual app signing key.
+// When the file is absent (CI without signing secrets, fresh clones) the release build
+// proceeds UNSIGNED so the pipeline stays green; the resulting artifact cannot be
+// uploaded to Play until it is signed.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        FileInputStream(keystorePropertiesFile).use { load(it) }
+    }
+}
+val hasReleaseSigning = keystorePropertiesFile.exists()
+if (!hasReleaseSigning) {
+    logger.warn(
+        "keystore.properties not found at ${keystorePropertiesFile.path} - " +
+            "release-type builds will be UNSIGNED. Copy keystore.properties.template " +
+            "to keystore.properties and fill in the upload-key credentials to sign.",
+    )
 }
 
 android {
@@ -14,12 +38,28 @@ android {
         applicationId = "com.palmastro.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = (project.findProperty("versionCode") as? String)?.toInt() ?: 1
+        versionName = (project.findProperty("versionName") as? String) ?: "0.1.0"
+        // Launch UI languages only (PRD §43): English + Traditional Chinese.
+        resConfigs("en", "zh-rTW")
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                // storeFile in keystore.properties is relative to the app module dir
+                // (e.g. ../keystore/palmastro-upload.jks -> <repo>/keystore/).
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     composeOptions {
@@ -43,6 +83,28 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+        // PRD §68 build types. Both mirror release (minified, shrunk, signed with the
+        // upload key when available) and stay installable next to production via
+        // distinct application ids.
+        create("closedTest") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".ct"
+            matchingFallbacks += listOf("release")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+        create("partnerDemo") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".demo"
+            matchingFallbacks += listOf("release")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }

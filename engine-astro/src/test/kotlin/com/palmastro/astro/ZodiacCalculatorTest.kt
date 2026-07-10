@@ -67,4 +67,27 @@ class ZodiacCalculatorTest {
         val results = (1..100).map { ZodiacCalculator.sunSign(date) }
         results.forEach { assertEquals(results.first(), it) }
     }
+
+    @Nested
+    inner class SignAtLongitude {
+        private fun signAt(lon: Double): String = ZodiacCalculator.signAtLongitude(lon).first
+
+        @Test fun `0 deg is Aries`() = assertEquals("ARIES", signAt(0.0))
+        @Test fun `29_99 deg is Aries`() = assertEquals("ARIES", signAt(29.99))
+        @Test fun `30 deg is Taurus`() = assertEquals("TAURUS", signAt(30.0))
+        @Test fun `223_28 deg is Scorpio`() = assertEquals("SCORPIO", signAt(223.28))
+        @Test fun `359_9 deg is Pisces`() = assertEquals("PISCES", signAt(359.9))
+        @Test fun `360 deg wraps to Aries`() = assertEquals("ARIES", signAt(360.0))
+        @Test fun `negative longitude wraps`() = assertEquals("PISCES", signAt(-5.0))
+        @Test fun `element and modality follow the sign`() {
+            val (_, sign) = ZodiacCalculator.signAtLongitude(207.24) // Libra
+            assertEquals("air", sign.element)
+            assertEquals("cardinal", sign.modality)
+        }
+        @Test fun `all 12 signs in ecliptic order`() {
+            val expected = listOf("ARIES", "TAURUS", "GEMINI", "CANCER", "LEO", "VIRGO",
+                "LIBRA", "SCORPIO", "SAGITTARIUS", "CAPRICORN", "AQUARIUS", "PISCES")
+            assertEquals(expected, (0 until 12).map { signAt(it * 30.0 + 15.0) })
+        }
+    }
 }

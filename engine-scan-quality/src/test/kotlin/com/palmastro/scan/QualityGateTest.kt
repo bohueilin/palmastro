@@ -60,10 +60,61 @@ class QualityGateTest {
     }
 
     @Test
-    fun `coaching hint returns zh-TW string for fail reason`() {
-        assertEquals("請保持手不動，等畫面穩定", CoachingHints.getHint("blur"))
-        assertEquals("請避免直射光源", CoachingHints.getHint("glare"))
-        assertEquals("光線不足，請移到較亮的地方", CoachingHints.getHint("low_light"))
-        assertEquals("請將手掌完整放入框線內", CoachingHints.getHint("low_coverage"))
+    fun `zero coverage fails with hand_not_detected`() {
+        val noHand = QualityScores(0.2f, 0.3f, 0.3f, 0.0f, 0.3f, 20)
+        val result = gate.evaluateAngle(Angle.FRONT, noHand)
+        assertFalse(result.passed)
+        assertEquals("hand_not_detected", result.failReason)
+    }
+
+    @Test
+    fun `zero coverage fails even when other components would pass the gate`() {
+        // 0.2 * (1.0 * 4) = 80 composite, but there is no hand in frame.
+        val noHand = gate.scoreFrame(blur = 1f, glare = 1f, exposure = 1f, coverage = 0f, stability = 1f)
+        val result = gate.evaluateAngle(Angle.FRONT, noHand)
+        assertFalse(result.passed)
+        assertEquals("hand_not_detected", result.failReason)
+    }
+
+    @Test
+    fun `partial coverage failure stays low_coverage, distinct from hand_not_detected`() {
+        val partial = QualityScores(0.8f, 0.8f, 0.8f, 0.1f, 0.8f, 50)
+        val result = gate.evaluateAngle(Angle.FRONT, partial)
+        assertFalse(result.passed)
+        assertEquals("low_coverage", result.failReason)
+    }
+
+    @Test
+    fun `coaching keys are stable for every fail reason`() {
+        assertEquals("coach_blur", CoachingHints.keyFor("blur"))
+        assertEquals("coach_glare", CoachingHints.keyFor("glare"))
+        assertEquals("coach_low_light", CoachingHints.keyFor("low_light"))
+        assertEquals("coach_over_exposure", CoachingHints.keyFor("over_exposure"))
+        assertEquals("coach_low_light", CoachingHints.keyFor("under_exposure"))
+        assertEquals("coach_low_coverage", CoachingHints.keyFor("low_coverage"))
+        assertEquals("coach_pose_unstable", CoachingHints.keyFor("pose_unstable"))
+        assertEquals("coach_hand_not_detected", CoachingHints.keyFor("hand_not_detected"))
+    }
+
+    @Test
+    fun `unknown fail reason maps to generic coaching key`() {
+        assertEquals("coach_generic", CoachingHints.keyFor("something_new"))
+    }
+
+    @Test
+    fun `every gate fail reason has a non-generic coaching key`() {
+        val reasons = listOf("blur", "glare", "low_light", "low_coverage", "pose_unstable", "hand_not_detected")
+        reasons.forEach { reason ->
+            assertTrue(CoachingHints.keyFor(reason) != "coach_generic", "missing key for $reason")
+        }
+    }
+
+    @Test
+    fun `reference hint text exists for fail reasons`() {
+        assertEquals("Hold still until the image stabilizes", CoachingHints.getHint("blur"))
+        assertEquals("Avoid direct light sources", CoachingHints.getHint("glare"))
+        assertEquals("Place your entire palm within the guide", CoachingHints.getHint("low_coverage"))
+        assertEquals("No palm detected — place your hand in the frame", CoachingHints.getHint("hand_not_detected"))
+        assertEquals("Please try again", CoachingHints.getHint("something_new"))
     }
 }

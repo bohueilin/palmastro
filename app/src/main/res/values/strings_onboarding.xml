@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared chrome -->
+    <string name="ob_back">Back</string>
+    <string name="ob_next">Next</string>
+    <string name="ob_progress">Step %1$d of %2$d</string>
+
+    <!-- Step: Welcome / value proposition -->
+    <string name="ob_welcome_title">Welcome to PalmAstro</string>
+    <string name="ob_welcome_subtitle">Monthly reflection, grounded in your palm and your stars</string>
+    <string name="ob_welcome_body">Scan your palm once a month and get a calm, structured read on career, wealth, family, and health — with clear reasons behind every insight.</string>
+
+    <!-- Step: Privacy promise (PRD 12.1) -->
+    <string name="ob_privacy_title">Our privacy promise</string>
+    <string name="ob_privacy_subtitle">Before we start, here is how your data is treated</string>
+    <string name="ob_privacy_point_on_device">Palm images are analyzed on your device. They are not uploaded to any server.</string>
+    <string name="ob_privacy_point_no_biometric">PalmAstro never identifies you from your palm. Nothing here is a biometric ID.</string>
+    <string name="ob_privacy_point_reflection">Results are for reflection and entertainment — never medical, financial, or legal advice.</string>
+    <string name="ob_privacy_point_delete">You can delete everything at any time from Settings.</string>
+    <string name="ob_privacy_icon">Privacy shield</string>
+
+    <!-- Step: Name (optional) -->
+    <string name="ob_name_title">What should we call you?</string>
+    <string name="ob_name_subtitle">This is optional — you can skip it</string>
+    <string name="ob_name_label">Display name (optional)</string>
+    <string name="ob_name_placeholder">Enter a name, or leave blank</string>
+    <string name="ob_gender_label">I am (optional)</string>
+    <string name="ob_gender_female">Female</string>
+    <string name="ob_gender_male">Male</string>
+    <string name="ob_gender_other">Other</string>
+
+    <!-- Step: Birthday -->
+    <string name="ob_birthday_title">Your birthday</string>
+    <string name="ob_birthday_subtitle">Required — used for astrological calculations</string>
+    <string name="ob_birthday_month">Month</string>
+    <string name="ob_birthday_day">Day</string>
+    <string name="ob_birthday_year">Year</string>
+    <string name="ob_birthday_future">Birthday can’t be in the future</string>
+    <string name="ob_birthday_invalid">That date doesn’t exist — please check it</string>
+    <string name="ob_zodiac_caption">Your zodiac sign</string>
+
+    <!-- Zodiac names -->
+    <string name="ob_zodiac_aries">Aries</string>
+    <string name="ob_zodiac_taurus">Taurus</string>
+    <string name="ob_zodiac_gemini">Gemini</string>
+    <string name="ob_zodiac_cancer">Cancer</string>
+    <string name="ob_zodiac_leo">Leo</string>
+    <string name="ob_zodiac_virgo">Virgo</string>
+    <string name="ob_zodiac_libra">Libra</string>
+    <string name="ob_zodiac_scorpio">Scorpio</string>
+    <string name="ob_zodiac_sagittarius">Sagittarius</string>
+    <string name="ob_zodiac_capricorn">Capricorn</string>
+    <string name="ob_zodiac_aquarius">Aquarius</string>
+    <string name="ob_zodiac_pisces">Pisces</string>
+
+    <!-- Step: Dominant hand + relationship -->
+    <string name="ob_hand_title">Your dominant hand</string>
+    <string name="ob_hand_subtitle">Required — we scan your dominant hand</string>
+    <string name="ob_hand_left">Left hand</string>
+    <string name="ob_hand_right">Right hand</string>
+    <string name="ob_status_label">Relationship status (optional)</string>
+    <string name="ob_status_single">Single</string>
+    <string name="ob_status_relationship">In a relationship</string>
+    <string name="ob_status_married">Married</string>
+
+    <!-- Step: Birth details (optional) -->
+    <string name="ob_birth_details_title">Birth time and place</string>
+    <string name="ob_birth_details_subtitle">Optional — unlocks more precise (L2) astrology</string>
+    <string name="ob_birth_time_label">Time of birth</string>
+    <string name="ob_birth_hour">Hour</string>
+    <string name="ob_birth_minute">Minute</string>
+    <string name="ob_birth_place_label">Place of birth</string>
+    <string name="ob_birth_place_search">Search city…</string>
+    <string name="ob_birth_place_unknown">Other / Unknown</string>
+    <string name="ob_birth_details_confirm">Confirm</string>
+    <string name="ob_birth_details_skip">Skip this step</string>
+
+    <!-- Step: Tone (PRD 45 display names) -->
+    <string name="ob_tone_title">Your reading style</string>
+    <string name="ob_tone_subtitle">How should PalmAstro talk to you?</string>
+    <string name="ob_tone_analytical">Analytical</string>
+    <string name="ob_tone_analytical_desc">Objective and data-driven</string>
+    <string name="ob_tone_gentle">Gentle</string>
+    <string name="ob_tone_gentle_desc">Warm and encouraging</string>
+    <string name="ob_tone_direct">Direct</string>
+    <string name="ob_tone_direct_desc">Straightforward, but always safe</string>
+
+    <!-- Step: Language -->
+    <string name="ob_language_title">Language</string>
+    <string name="ob_language_subtitle">Choose the language for the app</string>
+    <string name="ob_language_system">System default</string>
+    <string name="ob_language_english">English</string>
+    <string name="ob_language_traditional_chinese">繁體中文</string>
+
+    <!-- Step: Summary -->
+    <string name="ob_summary_title">All set!</string>
+    <string name="ob_summary_subtitle">Review your details</string>
+    <string name="ob_summary_name">Name</string>
+    <string name="ob_summary_gender">Gender</string>
+    <string name="ob_summary_hand">Dominant hand</string>
+    <string name="ob_summary_birthday">Birthday</string>
+    <string name="ob_summary_zodiac">Zodiac</string>
+    <string name="ob_summary_status">Status</string>
+    <string name="ob_summary_tone">Style</string>
+    <string name="ob_summary_language">Language</string>
+    <string name="ob_summary_analysis">Analysis</string>
+    <string name="ob_summary_l2">L2 (detailed)</string>
+    <string name="ob_summary_l1">L1 (standard)</string>
+    <string name="ob_summary_not_set">Not set</string>
+
+    <!-- Step: Camera permission education -->
+    <string name="ob_camera_title">About camera access</string>
+    <string name="ob_camera_subtitle">One last thing before your first scan</string>
+    <string name="ob_camera_body">To read your palm, PalmAstro needs to use the camera. On the next screen, Android will ask for camera permission.</string>
+    <string name="ob_camera_point_local">Photos are processed on your device and are used only for palm analysis.</string>
+    <string name="ob_camera_point_denied">If you decline, you can still browse the app and enable the camera later in Settings.</string>
+    <string name="ob_camera_start">Start my first scan</string>
+</resources>

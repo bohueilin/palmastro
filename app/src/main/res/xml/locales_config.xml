@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Per-app language support (Android 13+). Launch UI languages only (PRD §43):
+     English + Traditional Chinese. Keep in sync with resConfigs in app/build.gradle.kts. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="zh-TW" />
+</locale-config>

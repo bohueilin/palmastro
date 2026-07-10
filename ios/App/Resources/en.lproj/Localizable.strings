@@ -1,0 +1,166 @@
+/* PalmAstro iOS — English strings. Every user-visible string goes through
+   this table (PRD §44: no hardcoded strings in launch screens). */
+
+/* Tabs */
+"tab_results" = "Results";
+"tab_journal" = "Journal";
+"tab_settings" = "Settings";
+
+/* Common */
+"common_back" = "Back";
+"common_next" = "Next";
+"common_close" = "Close";
+"common_done" = "Done";
+"common_cancel" = "Cancel";
+
+/* Onboarding */
+"onboarding_progress_a11y" = "Onboarding progress";
+"onboarding_welcome_title" = "Welcome to PalmAstro";
+"onboarding_welcome_body" = "A calm monthly check-in that reads your palm and birth chart on this device, then turns them into reflections and small actions across career, wealth, family, and health.";
+"onboarding_welcome_disclaimer" = "For self-reflection and entertainment. Not medical, financial, or legal advice, and never a prediction.";
+"onboarding_privacy_title" = "Our privacy promise";
+"onboarding_privacy_on_device" = "Your palm is analyzed on this device only.";
+"onboarding_privacy_retention" = "Raw scan images are kept at most 24 hours — or not at all.";
+"onboarding_privacy_no_upload" = "Nothing sensitive is uploaded. No account is required.";
+"onboarding_privacy_delete_all" = "One tap deletes everything, permanently.";
+"onboarding_name_title" = "What should we call you?";
+"onboarding_optional_hint" = "Optional — you can skip this.";
+"onboarding_name_placeholder" = "Display name";
+"onboarding_birthday_title" = "Your birthday";
+"onboarding_birthday_why" = "Required — it anchors your astrological reading.";
+"onboarding_birthday_label" = "Birthday";
+"onboarding_birthday_confirm" = "This date is correct";
+"onboarding_hand_title" = "Dominant hand";
+"onboarding_hand_why" = "Required — we read your dominant hand for the most stable signals.";
+"hand_left" = "Left";
+"hand_right" = "Right";
+"onboarding_relationship_title" = "Relationship status";
+"relationship_prefer_not" = "Prefer not to say";
+"relationship_single" = "Single";
+"relationship_partnered" = "In a relationship";
+"relationship_married" = "Married";
+"onboarding_birthtime_title" = "Birth time and place";
+"onboarding_birthtime_why" = "Optional — adds moon and rising sign detail (L2). Without it you get a birthday-only (L1) reading.";
+"onboarding_birthtime_known" = "I know my birth time";
+"onboarding_birthtime_label" = "Birth time";
+"onboarding_birthplace_lat" = "Birthplace latitude (e.g. 25.03)";
+"onboarding_birthplace_lon" = "Birthplace longitude (e.g. 121.56)";
+"onboarding_birthtime_l1_note" = "No problem — your reading will use birthday-only mode and say so clearly.";
+"onboarding_tone_title" = "How should readings sound?";
+"tone_analytical" = "Analytical";
+"tone_gentle" = "Gentle";
+"tone_direct" = "Direct";
+"onboarding_language_title" = "Reading language";
+"language_system" = "Match system language";
+"language_english" = "English";
+"language_traditional_chinese" = "繁體中文 (Traditional Chinese)";
+"onboarding_summary_title" = "Review your details";
+"onboarding_summary_l1_mode" = "Birthday-only mode";
+"onboarding_summary_not_set" = "Not set";
+"onboarding_summary_note" = "You can change any of these later in Settings.";
+"onboarding_camera_title" = "About the palm scan";
+"onboarding_camera_local" = "Frames are processed by this phone. Nothing is uploaded.";
+"onboarding_camera_angles" = "You'll capture your palm from seven short angles.";
+"onboarding_camera_permission" = "Camera access is requested only when you start scanning.";
+"onboarding_camera_denied_note" = "If you decline, you can still browse the app and grant access later from Settings.";
+"onboarding_scan_entry_title" = "Ready when you are";
+"onboarding_scan_entry_body" = "Find even lighting, hold your phone steady, and open your palm.";
+"onboarding_start_scan" = "Start my first scan";
+"onboarding_scan_later" = "Explore first, scan later";
+
+/* Scan */
+"scan_processing" = "Reading your palm…";
+"scan_permission_denied_title" = "Camera access needed";
+"scan_permission_denied_body" = "PalmAstro needs the camera to scan your palm. Everything is processed on this device. You can grant access in Settings.";
+"scan_open_settings" = "Open Settings";
+"scan_angle_front" = "Hold your palm flat, facing the camera";
+"scan_angle_left_tilt" = "Tilt your palm slightly to the left";
+"scan_angle_right_tilt" = "Tilt your palm slightly to the right";
+"scan_angle_near" = "Move your palm a little closer";
+"scan_angle_far" = "Move your palm a little farther away";
+"scan_angle_up_tilt" = "Tilt your fingertips slightly toward you";
+"scan_angle_down_tilt" = "Tilt your fingertips slightly away from you";
+"coach_blur" = "Hold still until the image stabilizes";
+"coach_glare" = "Avoid direct light sources";
+"coach_low_light" = "Not enough light — move somewhere brighter";
+"coach_over_exposure" = "Too bright — move away from the light";
+"coach_under_exposure" = "Not enough light — move somewhere brighter";
+"coach_low_coverage" = "Place your entire palm within the guide";
+"coach_pose_unstable" = "Keep your palm steady";
+"coach_hand_not_detected" = "No palm detected — place your hand in the frame";
+"coach_generic" = "Please try again";
+
+/* Results */
+"results_title" = "Your Reading";
+"results_new_scan" = "New scan";
+"results_month_label" = "Month";
+"results_confidence_label" = "Confidence";
+"results_disclaimer" = "PalmAstro supports self-reflection. It does not predict the future and offers no medical or financial advice.";
+"results_empty_title" = "No reading yet";
+"results_empty_body" = "Scan your palm to get your first monthly reading.";
+"results_start_first_scan" = "Scan my palm";
+"results_delta_up_a11y" = "Improved since last month";
+"results_delta_down_a11y" = "Lower than last month";
+"domain_career" = "Career";
+"domain_wealth" = "Wealth";
+"domain_family" = "Family";
+"domain_health" = "Health";
+"confidence_high" = "High confidence";
+"confidence_med" = "Medium confidence";
+"confidence_low" = "Low confidence";
+
+/* Domain detail */
+"detail_confidence_reasons_title" = "Why this confidence level";
+"confidence_reason_scan_quality_low" = "Scan quality was low";
+"confidence_reason_low_feature_coverage" = "Not all palm features were captured";
+"confidence_reason_missing_birth_time" = "Birth time not provided (birthday-only mode)";
+"confidence_reason_safety_fallback" = "Content was replaced by a safety fallback";
+"detail_interpretation_header" = "This month";
+"detail_observations_header" = "What we observed";
+"detail_blindspot_header" = "Blindspot";
+"detail_actions_header" = "Small actions";
+"detail_prompt_header" = "Reflection";
+"detail_journal_placeholder" = "Write a private note…";
+"detail_journal_save" = "Save to journal";
+"detail_journal_saved" = "Saved";
+"detail_why_button" = "Why this reading?";
+
+/* Explainability */
+"explain_title" = "Why this reading";
+"explain_calc_level_label" = "Astrology detail";
+"explain_calc_level_l1" = "Birthday only (L1)";
+"explain_calc_level_l2" = "Birthday + time + place (L2)";
+"explain_no_signals" = "No individual signals were strong enough to list. Your reading uses baseline values.";
+"explain_signals_header" = "Contributing signals";
+"explain_footer_disclaimer" = "Signals are categorical observations, weighted by a versioned ruleset. They are not measurements of your future.";
+"explain_signal_positive_a11y" = "Positive signal";
+"explain_signal_negative_a11y" = "Attention signal";
+
+/* Journal */
+"journal_title" = "Journal";
+"journal_empty_title" = "No entries yet";
+"journal_empty_body" = "Reflections you save from a reading appear here. They stay on this device.";
+
+/* Settings */
+"settings_title" = "Settings";
+"settings_section_preferences" = "Preferences";
+"settings_language" = "Reading language";
+"settings_tone" = "Tone";
+"settings_dominant_hand" = "Dominant hand";
+"settings_section_privacy" = "Privacy";
+"settings_retain_raw_media" = "Keep raw scans for 24 hours";
+"settings_reminders" = "Monthly scan reminder";
+"settings_retention_footer" = "When off, raw scan images are discarded immediately after processing. Derived readings stay on this device either way.";
+"settings_section_legal" = "Legal";
+"settings_privacy_policy" = "Privacy Policy";
+"settings_terms" = "Terms of Service";
+"settings_delete_all" = "Delete all my data";
+"settings_delete_all_footer" = "Removes every reading, journal entry, profile detail, and scan from this device, and resets the anonymous install identifier.";
+"settings_delete_confirm_title" = "Delete everything?";
+"settings_delete_confirm_continue" = "Continue";
+"settings_delete_confirm_message" = "This permanently deletes all readings, journal entries, and your profile from this device.";
+"settings_delete_final_title" = "This cannot be undone";
+"settings_delete_final_confirm" = "Delete everything";
+"settings_delete_final_message" = "Are you sure? There is no backup and no way to recover this data.";
+"settings_deleted_title" = "All data deleted";
+"legal_missing_placeholder" = "This document will be included in the release build.";

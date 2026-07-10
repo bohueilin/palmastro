@@ -52,7 +52,7 @@ class ScoringEngineImpl(
         val reasons = buildConfidenceReasons(input)
 
         val sortedExplain = explainability
-            .distinctBy { "${it.signalId}-${it.mappingZh}" }
+            .distinctBy { "${it.signalId}-${it.mapping}" }
             .sortedByDescending { kotlin.math.abs(it.contribution) }
 
         return ScoringResult(

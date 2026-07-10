@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scan pipeline error strings. Owned by scan-pipeline agent.
+     Keys match ScanError.key (com.palmastro.app.share.ScanError). -->
+<resources>
+    <string name="scan_error_model_download_failed">We couldn\'t download the analysis model. Check your internet connection and try again.</string>
+    <string name="scan_error_model_corrupt">The analysis model didn\'t download correctly. Tap Retry to download it again.</string>
+    <string name="scan_error_processing_failed">Something went wrong while analyzing your scan. Please try again.</string>
+    <string name="scan_error_retry">Retry</string>
+</resources>

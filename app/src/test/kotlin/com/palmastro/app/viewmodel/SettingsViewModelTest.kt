@@ -48,6 +48,22 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun `setLanguage updates state and persists language on profile`() = runTest {
+        val vm = createViewModel()
+        vm.setLanguage("zh-TW")
+        assertEquals("zh-TW", vm.state.value.language)
+        coVerify { userRepository.save(match { it.language == "zh-TW" }) }
+    }
+
+    @Test
+    fun `setLanguage system persists system choice`() = runTest {
+        val vm = createViewModel()
+        vm.setLanguage("system")
+        assertEquals("system", vm.state.value.language)
+        coVerify { userRepository.save(match { it.language == "system" }) }
+    }
+
+    @Test
     fun `setReminders updates state and saves`() = runTest {
         val vm = createViewModel()
         vm.setReminders("off")
@@ -76,7 +92,28 @@ class SettingsViewModelTest {
         val vm = createViewModel()
         vm.deleteAllData()
         assertTrue(vm.state.value.isWipeComplete)
+        assertFalse(vm.state.value.wipeError)
         coVerify(exactly = 1) { wipeManager.deleteAllData() }
+    }
+
+    @Test
+    fun `deleteAllData failure sets wipeError instead of completing`() = runTest {
+        coEvery { wipeManager.deleteAllData() } throws RuntimeException("disk failure")
+        val vm = createViewModel()
+        vm.deleteAllData()
+        assertTrue(vm.state.value.wipeError)
+        assertFalse(vm.state.value.isWipeComplete)
+        assertFalse(vm.state.value.isWiping)
+    }
+
+    @Test
+    fun `dismissWipeError clears the error flag`() = runTest {
+        coEvery { wipeManager.deleteAllData() } throws RuntimeException("disk failure")
+        val vm = createViewModel()
+        vm.deleteAllData()
+        assertTrue(vm.state.value.wipeError)
+        vm.dismissWipeError()
+        assertFalse(vm.state.value.wipeError)
     }
 
     @Test

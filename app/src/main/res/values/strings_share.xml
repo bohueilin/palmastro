@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Share card + preview dialog strings (ui-results agent). -->
+<resources>
+    <string name="share_preview_title">Preview share card</string>
+    <string name="share_preview_share">Share</string>
+    <string name="share_preview_image_desc">Preview of the card that will be shared</string>
+    <string name="share_card_analysis">Analysis</string>
+    <string name="share_card_actions">Action Items</string>
+    <string name="share_card_reflection">Reflection</string>
+    <string name="share_watermark" translatable="false">palmastro.app</string>
+</resources>

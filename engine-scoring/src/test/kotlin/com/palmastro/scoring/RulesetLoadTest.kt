@@ -8,7 +8,7 @@ class RulesetLoadTest {
     @Test fun `fromJson parses default JSON resource`() {
         val json = Ruleset::class.java.getResourceAsStream("/default-ruleset.json")!!.bufferedReader().readText()
         val r = Ruleset.fromJson(json)
-        assertEquals("1.0.0", r.version); assertEquals(7, r.signals.size); assertEquals(4, r.gradeThresholds.size)
+        assertEquals("2.0.0", r.version); assertEquals(24, r.signals.size); assertEquals(4, r.gradeThresholds.size)
     }
     @Test fun `toJson then fromJson roundtrip`() {
         val original = Ruleset.default(); val restored = Ruleset.fromJson(Ruleset.toJson(original))

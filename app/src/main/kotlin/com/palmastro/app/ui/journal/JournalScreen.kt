@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
+import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.viewmodel.JournalViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,6 +26,7 @@ fun JournalScreen(
     viewModel: JournalViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    var entryIdPendingDelete by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -46,7 +49,7 @@ fun JournalScreen(
         ) {
             if (state.domain != null) {
                 Text(
-                    state.domain!!,
+                    domainDisplayName(state.domain!!),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium,
@@ -101,11 +104,19 @@ fun JournalScreen(
 
             Button(
                 onClick = { viewModel.save() },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                 enabled = state.text.isNotBlank() && !state.isSaved,
             ) { Text(stringResource(R.string.journal_save)) }
 
-            if (state.existingEntries.isNotEmpty()) {
+            if (state.existingEntries.isEmpty()) {
+                Spacer(Modifier.height(24.dp))
+                Text(
+                    stringResource(R.string.journal_empty),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 20.sp,
+                )
+            } else {
                 Spacer(Modifier.height(24.dp))
                 Text(
                     stringResource(R.string.journal_title),
@@ -118,15 +129,54 @@ fun JournalScreen(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            if (entry.domain != null) {
-                                Text(entry.domain.orEmpty(), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        Row(modifier = Modifier.padding(start = 12.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.Top) {
+                            Column(modifier = Modifier.weight(1f).padding(vertical = 8.dp)) {
+                                Text(
+                                    entry.domain?.let { domainDisplayName(it) } ?: stringResource(R.string.journal_general_entry),
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                                Spacer(Modifier.height(2.dp))
+                                Text(entry.text, fontSize = 14.sp, lineHeight = 20.sp)
                             }
-                            Text(entry.text, fontSize = 14.sp, lineHeight = 20.sp)
+                            IconButton(
+                                onClick = { entryIdPendingDelete = entry.id },
+                                modifier = Modifier.size(48.dp),
+                            ) {
+                                Icon(
+                                    Icons.Outlined.Delete,
+                                    contentDescription = stringResource(R.string.journal_delete),
+                                    tint = MaterialTheme.colorScheme.error,
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    entryIdPendingDelete?.let { pendingId ->
+        AlertDialog(
+            onDismissRequest = { entryIdPendingDelete = null },
+            title = { Text(stringResource(R.string.journal_delete_confirm_title), fontWeight = FontWeight.SemiBold) },
+            text = { Text(stringResource(R.string.journal_delete_confirm_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteEntry(pendingId)
+                        entryIdPendingDelete = null
+                    },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                ) {
+                    Text(stringResource(R.string.journal_delete), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { entryIdPendingDelete = null }, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
     }
 }

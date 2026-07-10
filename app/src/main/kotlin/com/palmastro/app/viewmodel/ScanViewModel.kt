@@ -1,39 +1,55 @@
 package com.palmastro.app.viewmodel
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.palmastro.astro.AstroEngineImpl
+import com.palmastro.app.config.FeatureFlags
+import com.palmastro.app.di.IoDispatcher
+import com.palmastro.app.share.ModelManager
+import com.palmastro.app.share.ScanError
+import com.palmastro.app.share.ScanErrorException
+import com.palmastro.app.ui.scan.ImageQualityAnalyzer
+import com.palmastro.app.ui.scan.ImageQualityAnalyzerFactory
 import com.palmastro.content.ContentComposerImpl
 import com.palmastro.content.SafetyFilterImpl
 import com.palmastro.contracts.*
+import com.palmastro.contracts.interfaces.AnalyticsEmitter
+import com.palmastro.contracts.interfaces.AstroEngine
+import com.palmastro.contracts.interfaces.DeltaEngine
+import com.palmastro.contracts.interfaces.PalmFeatureExtractor
+import com.palmastro.contracts.interfaces.QualityGate
+import com.palmastro.contracts.interfaces.ScoringEngine
 import com.palmastro.data.entities.MonthlyResultEntity
 import com.palmastro.data.repository.ResultRepository
 import com.palmastro.data.repository.UserRepository
-import com.palmastro.palm.PalmFeatureExtractorImpl
 import com.palmastro.scan.CoachingHints
-import com.palmastro.scan.QualityGateImpl
-import com.palmastro.scoring.DeltaEngineImpl
-import com.palmastro.scoring.ScoringEngineImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import android.graphics.BitmapFactory
-import com.palmastro.app.ui.scan.ImageQualityAnalyzer
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
+import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 data class ScanState(
     val currentAngleIndex: Int = 0,
@@ -41,12 +57,15 @@ data class ScanState(
     val isCapturing: Boolean = false,
     val isProcessing: Boolean = false,
     val isComplete: Boolean = false,
-    val error: String? = null,
-    val coachingHint: String? = null,
+    /** Transient pipeline error; UI maps [ScanError.key] to a string resource. */
+    val error: ScanError? = null,
+    /** Coaching hint key from CoachingHints.keyFor (coach_blur, coach_glare, ...). */
+    val coachingHintKey: String? = null,
     val showFlash: Boolean = false,
     val modelReady: Boolean = false,
     val modelDownloading: Boolean = false,
-    val modelError: String? = null,
+    /** Blocking model-acquisition error; UI shows retry via [retryModelDownload]. */
+    val modelError: ScanError? = null,
 )
 
 @HiltViewModel
@@ -54,41 +73,61 @@ class ScanViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val userRepository: UserRepository,
     private val resultRepository: ResultRepository,
+    private val qualityGate: QualityGate,
+    private val palmFeatureExtractor: PalmFeatureExtractor,
+    private val astroEngine: AstroEngine,
+    private val scoringEngine: ScoringEngine,
+    private val deltaEngine: DeltaEngine,
+    private val contentComposer: ContentComposerImpl,
+    private val safetyFilter: SafetyFilterImpl,
+    private val analytics: AnalyticsEmitter,
+    private val featureFlags: FeatureFlags,
+    private val analyzerFactory: ImageQualityAnalyzerFactory,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ScanState())
     val state = _state.asStateFlow()
 
     private val angles = Angle.entries
-    private val qualityGate = QualityGateImpl()
     private val capturedPaths = mutableMapOf<Angle, String>()
     private val qualityResults = mutableMapOf<Angle, QualityScores>()
+    private val palmMetricsByAngle = mutableMapOf<Angle, PalmMetrics?>()
     private var analyzer: ImageQualityAnalyzer? = null
+    private var scanStartEmitted = false
+    private var scanStartTimeMs = 0L
 
-    val imageCapture: ImageCapture = ImageCapture.Builder()
-        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-        .build()
+    private val json = Json { encodeDefaults = true }
+
+    // Lazy: CameraX objects cannot be constructed on the JVM, and the UI only needs
+    // this once the preview is bound.
+    val imageCapture: ImageCapture by lazy {
+        ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .build()
+    }
 
     init {
         checkAndDownloadModel()
     }
 
     private fun checkAndDownloadModel() {
-        if (com.palmastro.app.share.ModelManager.isModelReady(appContext)) {
+        if (ModelManager.isModelReady(appContext)) {
             initAnalyzer()
             return
         }
         _state.update { it.copy(modelDownloading = true, modelError = null) }
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                com.palmastro.app.share.ModelManager.downloadModel(appContext)
+            val result = withContext(ioDispatcher) {
+                ModelManager.downloadModel(appContext)
             }
             result.fold(
                 onSuccess = { initAnalyzer() },
-                onFailure = {
+                onFailure = { t ->
                     _state.update {
                         it.copy(
                             modelDownloading = false,
-                            modelError = "Analysis model needed — check your internet connection",
+                            modelError = (t as? ScanErrorException)?.scanError
+                                ?: ScanError.MODEL_DOWNLOAD_FAILED,
                         )
                     }
                 },
@@ -97,9 +136,19 @@ class ScanViewModel @Inject constructor(
     }
 
     private fun initAnalyzer() {
-        val source = com.palmastro.app.share.ModelManager.getModelSource(appContext)
-        analyzer = ImageQualityAnalyzer(appContext, source)
-        _state.update { it.copy(modelReady = true, modelDownloading = false, modelError = null) }
+        try {
+            val source = ModelManager.getModelSource(appContext)
+            analyzer = analyzerFactory.create(appContext, source)
+            _state.update { it.copy(modelReady = true, modelDownloading = false, modelError = null) }
+        } catch (t: Throwable) {
+            // Landmarker refused the model file (truncated/corrupt): delete the download
+            // so retry fetches fresh bytes, and surface a typed corrupt-model state.
+            ModelManager.deleteDownloadedModel(appContext)
+            analyzer = null
+            _state.update {
+                it.copy(modelReady = false, modelDownloading = false, modelError = ScanError.MODEL_CORRUPT)
+            }
+        }
     }
 
     fun retryModelDownload() {
@@ -108,7 +157,12 @@ class ScanViewModel @Inject constructor(
 
     fun captureCurrentAngle() {
         if (_state.value.isCapturing) return
-        _state.update { it.copy(isCapturing = true, coachingHint = null) }
+        if (!scanStartEmitted) {
+            scanStartEmitted = true
+            scanStartTimeMs = System.currentTimeMillis()
+            analytics.emit("scan_start", emptyMap())
+        }
+        _state.update { it.copy(isCapturing = true, coachingHintKey = null) }
 
         val angle = angles[_state.value.currentAngleIndex]
         val monthKey = YearMonth.now().toString()
@@ -127,7 +181,7 @@ class ScanViewModel @Inject constructor(
 
                 override fun onError(exception: ImageCaptureException) {
                     _state.update {
-                        it.copy(isCapturing = false, error = "Capture failed: ${exception.message}")
+                        it.copy(isCapturing = false, error = ScanError.PROCESSING_FAILED)
                     }
                 }
             }
@@ -136,17 +190,18 @@ class ScanViewModel @Inject constructor(
 
     private fun onFrameCaptured(angle: Angle, file: File) {
         viewModelScope.launch {
-            val metrics = withContext(Dispatchers.Default) {
+            val metrics = withContext(ioDispatcher) {
+                val currentAnalyzer = analyzer ?: return@withContext null
                 val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                     ?: return@withContext null
-                val result = analyzer!!.analyze(bitmap)
+                val result = runCatching { currentAnalyzer.analyze(bitmap) }.getOrNull()
                 bitmap.recycle()
                 result
             }
 
             if (metrics == null) {
                 _state.update {
-                    it.copy(isCapturing = false, error = "Unable to read captured image")
+                    it.copy(isCapturing = false, error = ScanError.PROCESSING_FAILED)
                 }
                 return@launch
             }
@@ -158,14 +213,22 @@ class ScanViewModel @Inject constructor(
             val gateResult = qualityGate.evaluateAngle(angle, scores)
 
             if (!gateResult.passed) {
-                val hint = CoachingHints.getHint(gateResult.failReason ?: "blur")
+                val reason = gateResult.failReason ?: "hand_not_detected"
+                analytics.emit(
+                    "scan_angle_quality_fail",
+                    mapOf("angle" to angle.name.lowercase(Locale.ROOT), "reason" to reason),
+                )
                 file.delete()
-                _state.update { it.copy(isCapturing = false, coachingHint = hint) }
+                _state.update {
+                    it.copy(isCapturing = false, coachingHintKey = CoachingHints.keyFor(reason))
+                }
                 return@launch
             }
 
             capturedPaths[angle] = file.absolutePath
             qualityResults[angle] = scores
+            palmMetricsByAngle[angle] = metrics.palmMetrics
+            analytics.emit("scan_angle_pass", mapOf("angle" to angle.name.lowercase(Locale.ROOT)))
 
             _state.update {
                 it.copy(
@@ -173,7 +236,7 @@ class ScanViewModel @Inject constructor(
                     showFlash = true,
                     completedAngles = it.completedAngles + angle,
                     currentAngleIndex = it.currentAngleIndex + 1,
-                    coachingHint = null,
+                    coachingHintKey = null,
                 )
             }
 
@@ -181,6 +244,10 @@ class ScanViewModel @Inject constructor(
             _state.update { it.copy(showFlash = false) }
 
             if (_state.value.currentAngleIndex >= angles.size) {
+                analytics.emit(
+                    "scan_complete",
+                    mapOf("duration_ms" to (System.currentTimeMillis() - scanStartTimeMs)),
+                )
                 runPipeline()
             }
         }
@@ -191,50 +258,77 @@ class ScanViewModel @Inject constructor(
         val angle = angles[newIndex]
         capturedPaths.remove(angle)
         qualityResults.remove(angle)
+        palmMetricsByAngle.remove(angle)
         _state.update {
             it.copy(
                 currentAngleIndex = newIndex,
                 completedAngles = it.completedAngles - angle,
-                coachingHint = null,
+                coachingHintKey = null,
             )
         }
     }
 
     fun dismissError() = _state.update { it.copy(error = null) }
 
-    fun dismissCoachingHint() = _state.update { it.copy(coachingHint = null) }
+    fun dismissCoachingHint() = _state.update { it.copy(coachingHintKey = null) }
 
     override fun onCleared() {
         super.onCleared()
         analyzer?.close()
     }
 
-    private fun runPipeline() {
+    /** Test seam: registers a captured frame without going through CameraX. */
+    @VisibleForTesting
+    internal fun seedCapturedFrame(
+        angle: Angle,
+        scores: QualityScores,
+        palmMetrics: PalmMetrics? = null,
+        path: String = "",
+    ) {
+        capturedPaths[angle] = path
+        qualityResults[angle] = scores
+        palmMetricsByAngle[angle] = palmMetrics
+    }
+
+    @VisibleForTesting
+    internal fun runPipeline() {
         _state.update { it.copy(isProcessing = true) }
+        analytics.emit("inference_start", emptyMap())
+        val inferenceStartMs = System.currentTimeMillis()
         viewModelScope.launch {
             try {
                 val profile = userRepository.get()
-                    ?: throw IllegalStateException("No user profile found")
+                if (profile == null) {
+                    analytics.emit("inference_fail", mapOf("reason" to "no_profile"))
+                    _state.update { it.copy(isProcessing = false, error = ScanError.PROCESSING_FAILED) }
+                    return@launch
+                }
 
                 val bestFrames = angles.associateWith { angle ->
                     val scores = qualityResults[angle]
                         ?: qualityGate.scoreFrame(0.0f, 0.0f, 0.0f, 0.0f, 0.0f)
-                    BestFrameResult(angle, 0, scores, null)
+                    BestFrameResult(
+                        angle = angle,
+                        frameIndex = 0,
+                        qualityScores = scores,
+                        fileRef = capturedPaths[angle],
+                        palmMetrics = palmMetricsByAngle[angle],
+                    )
                 }
                 val hand = if (profile.dominantHand == "left") Hand.LEFT else Hand.RIGHT
 
-                val palmResult = PalmFeatureExtractorImpl().extract(bestFrames, hand)
+                val palmResult = palmFeatureExtractor.extract(bestFrames, hand)
 
                 val birthday = LocalDate.ofEpochDay(profile.birthdayEpochDay)
                 val minutes = profile.birthTimeMinutes
                 val birthTime = if (profile.hasBirthTime && minutes != null)
                     LocalTime.of(minutes / 60, minutes % 60)
                 else null
-                val astroResult = AstroEngineImpl().compute(
+                val astroResult = astroEngine.compute(
                     birthday, birthTime, profile.birthPlaceLat, profile.birthPlaceLon
                 )
 
-                val scoringResult = ScoringEngineImpl().score(
+                val scoringResult = scoringEngine.score(
                     ScoringInput(
                         palmResult, astroResult,
                         UserContext(hand, false),
@@ -243,38 +337,55 @@ class ScanViewModel @Inject constructor(
                 )
 
                 val monthKey = YearMonth.now().toString()
-                val prevResults = resultRepository.getRecent(1)
-                val prevEntity = prevResults.firstOrNull()
-                var deltaResult: DeltaResult? = null
+                val avgQuality = qualityResults.values
+                    .map { it.composite }.average().toInt()
 
+                val prevEntity = resultRepository.getRecent(1).firstOrNull()
+                var deltaResult: DeltaResult? = null
                 if (prevEntity != null && prevEntity.monthKey != monthKey) {
-                    val prevMonthly = prevEntity.toMonthlyResult()
-                    val avgScore = qualityResults.values
-                        .map { it.composite }.average().toInt()
                     val currentMonthly = MonthlyResult(
-                        resultId = "temp",
+                        resultId = "pending",
                         monthKey = monthKey,
-                        scanSessionId = "s1",
+                        scanSessionId = "pending",
                         scoringResult = scoringResult,
                         semanticPayloads = emptyMap(),
-                        scanQualityScore = avgScore,
+                        scanQualityScore = avgQuality,
                         featureCoverage = palmResult.featureCoverage,
                         createdAt = System.currentTimeMillis()
                     )
-                    deltaResult = DeltaEngineImpl().computeDelta(prevMonthly, currentMonthly)
+                    deltaResult = deltaEngine.computeDelta(prevEntity.toMonthlyResult(), currentMonthly)
                 }
 
-                val tone = Tone.valueOf(profile.tone.uppercase())
+                val tone = Tone.valueOf(profile.tone.uppercase(Locale.ROOT))
                 val calcLevel = if (profile.calcLevel == "L2") CalcLevel.L2 else CalcLevel.L1
-                val payloads = ContentComposerImpl().compose(
-                    ContentInput(scoringResult, deltaResult, tone, emptySet(), calcLevel, monthKey)
+                val language = resolveLanguage(profile.language)
+                val payloads = contentComposer.compose(
+                    ContentInput(
+                        scoringResult, deltaResult, tone, emptySet(), calcLevel, monthKey,
+                        language = language,
+                    )
                 )
 
-                val safetyFilter = SafetyFilterImpl()
-                payloads.values.forEach { payload -> safetyFilter.validate(payload) }
+                // Safety gate: every payload is validated; violating payloads are ALWAYS
+                // replaced by the engine's safe fallback. strict_safety additionally logs.
+                val safePayloads = payloads.mapValues { (domain, payload) ->
+                    val check = safetyFilter.validate(payload)
+                    if (check.passed) {
+                        payload
+                    } else {
+                        if (featureFlags.strictSafetyEnabled) {
+                            analytics.emit(
+                                "inference_fail",
+                                mapOf("reason" to "safety", "domain" to domain),
+                            )
+                        }
+                        safetyFilter.safeFallbackPayload(domain, language)
+                    }
+                }
 
-                val avgQuality = qualityResults.values
-                    .map { it.composite }.average().toInt()
+                deltaResult?.let { delta ->
+                    resultRepository.saveDelta(monthKey, delta)
+                }
 
                 val resultId = UUID.randomUUID().toString()
                 resultRepository.saveResult(
@@ -284,46 +395,115 @@ class ScanViewModel @Inject constructor(
                         scanSessionId = UUID.randomUUID().toString(),
                         calcLevel = profile.calcLevel,
                         confidenceLevel = scoringResult.confidence,
-                        confidenceReasonsJson = scoringResult.confidenceReasons
-                            .joinToString(",", "[", "]") { "\"$it\"" },
-                        domainScoresJson = scoringResult.domainScores.entries
-                            .joinToString(",", "{", "}") { "\"${it.key}\":${it.value}" },
-                        subdimScoresJson = "{}",
+                        confidenceReasonsJson = json.encodeToString(scoringResult.confidenceReasons),
+                        domainScoresJson = json.encodeToString(scoringResult.domainScores),
+                        subdimScoresJson = json.encodeToString(scoringResult.subdimScores),
                         grade = scoringResult.grade,
-                        semanticPayloadsJson = Json.encodeToString(payloads),
-                        palmFeatureSummaryJson = "{}",
-                        astroSignalsJson = "[]",
-                        explainabilityJson = "[]",
+                        semanticPayloadsJson = json.encodeToString(safePayloads),
+                        palmFeatureSummaryJson = palmFeaturesToJson(palmResult),
+                        astroSignalsJson = astroSignalsToJson(astroResult),
+                        explainabilityJson = json.encodeToString(scoringResult.explainability),
                         rulesetVersion = scoringResult.rulesetVersion,
-                        contentVersion = "1.0.0",
+                        contentVersion = contentComposer.templatesVersion,
                         scanQualityScore = avgQuality,
                         featureCoverage = palmResult.featureCoverage,
                         scanImagePath = "scans/$monthKey",
                     )
                 )
 
+                analytics.emit(
+                    "inference_success",
+                    mapOf(
+                        "confidence" to scoringResult.confidence.lowercase(Locale.ROOT),
+                        "calc_level" to profile.calcLevel.lowercase(Locale.ROOT),
+                        "duration_ms" to (System.currentTimeMillis() - inferenceStartMs),
+                    ),
+                )
                 _state.update { it.copy(isProcessing = false, isComplete = true) }
             } catch (e: Exception) {
-                _state.update { it.copy(isProcessing = false, error = e.message) }
+                analytics.emit("inference_fail", mapOf("reason" to "pipeline_error"))
+                _state.update { it.copy(isProcessing = false, error = ScanError.PROCESSING_FAILED) }
             }
         }
     }
 
-    private fun MonthlyResultEntity.toMonthlyResult(): MonthlyResult {
-        val scores = domainScoresJson.removeSurrounding("{", "}")
-            .split(",")
-            .filter { it.contains(":") }
-            .associate { entry ->
-                val (k, v) = entry.split(":")
-                k.trim('"') to v.trim().toInt()
+    /**
+     * Resolves the content language: explicit profile choice wins; "system" (the v3
+     * default) follows the device locale, restricted to the engine-supported set.
+     */
+    private fun resolveLanguage(profileLanguage: String?): String {
+        val explicit = profileLanguage?.takeUnless { it.isBlank() || it == "system" }
+        if (explicit != null) return explicit
+        val locale = Locale.getDefault()
+        return when {
+            locale.language == "zh" &&
+                (locale.script == "Hant" || locale.country in setOf("TW", "HK", "MO")) -> "zh-TW"
+            locale.language == "zh" -> "zh-CN"
+            locale.language == "ja" -> "ja"
+            locale.language == "hi" -> "hi"
+            else -> "en"
+        }
+    }
+
+    /** PalmFeatures is not @Serializable (contracts frozen); build the JSON by hand. */
+    private fun palmFeaturesToJson(palmResult: PalmFeatureResult): String {
+        val f = palmResult.features
+        return buildJsonObject {
+            put("headlinePresent", f.headlinePresent)
+            put("heartlinePresent", f.heartlinePresent)
+            put("lifelinePresent", f.lifelinePresent)
+            put("fatelinePresent", f.fatelinePresent)
+            put("headlineShape", f.headlineShape)
+            put("heartlineShape", f.heartlineShape)
+            put("lifelineShape", f.lifelineShape)
+            put("fatelineShape", f.fatelineShape)
+            put("headlineClarity", f.headlineClarity)
+            put("heartlineClarity", f.heartlineClarity)
+            put("lifelineClarity", f.lifelineClarity)
+            put("fatelineClarity", f.fatelineClarity)
+            put("headlineLength", f.headlineLength)
+            put("fatelineLength", f.fatelineLength)
+            put("venusMountDensity", f.venusMountDensity)
+            put("jupiterMountDensity", f.jupiterMountDensity)
+            put("saturnMountDensity", f.saturnMountDensity)
+            put("minorLineDensity", f.minorLineDensity)
+            put("featureCoverage", palmResult.featureCoverage)
+            put("confidence", palmResult.confidence)
+            put("extractorVersion", palmResult.extractorVersion)
+        }.toString()
+    }
+
+    /** AstroSignal is not @Serializable (contracts frozen); build the JSON by hand. */
+    private fun astroSignalsToJson(astroResult: AstroResult): String {
+        return buildJsonArray {
+            astroResult.signals.forEach { signal ->
+                add(
+                    buildJsonObject {
+                        put("signalId", signal.signalId)
+                        put("direction", signal.direction)
+                        put("magnitude", signal.magnitude)
+                        put("confidence", signal.confidence)
+                        put("safetyTag", signal.safetyTag)
+                    }
+                )
             }
+        }.toString()
+    }
+
+    private fun MonthlyResultEntity.toMonthlyResult(): MonthlyResult {
+        val domainScores = runCatching {
+            json.decodeFromString<Map<String, Int>>(domainScoresJson)
+        }.getOrDefault(emptyMap())
+        val subdimScores = runCatching {
+            json.decodeFromString<Map<String, Int>>(subdimScoresJson)
+        }.getOrDefault(emptyMap())
         return MonthlyResult(
             resultId = id,
             monthKey = monthKey,
             scanSessionId = scanSessionId,
             scoringResult = ScoringResult(
-                domainScores = scores,
-                subdimScores = emptyMap(),
+                domainScores = domainScores,
+                subdimScores = subdimScores,
                 grade = grade,
                 confidence = confidenceLevel,
                 confidenceReasons = emptyList(),

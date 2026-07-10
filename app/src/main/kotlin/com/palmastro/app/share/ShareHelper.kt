@@ -6,9 +6,14 @@ import android.graphics.Bitmap
 import androidx.core.content.FileProvider
 import java.io.File
 
+/**
+ * Fires the system share sheet for a rendered card. All user-visible text (chooser
+ * title, fallback text) is resolved from string resources by the caller so the share
+ * flow follows the app locale.
+ */
 object ShareHelper {
 
-    fun share(context: Context, bitmap: Bitmap, textFallback: String) {
+    fun share(context: Context, bitmap: Bitmap, textFallback: String, chooserTitle: String) {
         val shareDir = File(context.cacheDir, "share")
         shareDir.mkdirs()
         val file = File(shareDir, "palmastro_share.png")
@@ -29,44 +34,13 @@ object ShareHelper {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        context.startActivity(Intent.createChooser(intent, "Share PalmAstro"))
+        context.startActivity(Intent.createChooser(intent, chooserTitle))
     }
 
-    fun buildSummaryText(
-        monthKey: String,
-        grade: String,
-        confidence: String,
-        domains: List<ShareCardRenderer.DomainScore>,
-    ): String {
-        val gradeNamesZh = mapOf(
-            "Growing" to "Growing", "Stable" to "Stable", "Building" to "Building", "Watchout" to "Watch Out",
-        )
-        val domainLine = domains.joinToString("  ") { "${it.displayName}：${it.score}" }
-        return """
-            |PalmAstro — $monthKey Monthly Report
-            |Grade: ${gradeNamesZh[grade] ?: grade}
-            |$domainLine
-            |Confidence: $confidence
-        """.trimMargin()
-    }
+    /** Joins pre-localized lines into the text fallback shared next to the card image. */
+    fun buildShareText(vararg lines: String): String =
+        lines.filter { it.isNotBlank() }.joinToString("\n")
 
-    fun buildDomainText(
-        displayName: String,
-        score: Int,
-        grade: String,
-        interpretation: String,
-        actionToday: String,
-    ): String {
-        val gradeNamesZh = mapOf(
-            "Growing" to "Growing", "Stable" to "Stable", "Building" to "Building", "Watchout" to "Watch Out",
-        )
-        val interpTruncated = if (interpretation.length > 100) interpretation.take(100) + "…" else interpretation
-        val actionTruncated = if (actionToday.length > 80) actionToday.take(80) + "…" else actionToday
-        return """
-            |PalmAstro — ${displayName}Analysis
-            |Score: $score（${gradeNamesZh[grade] ?: grade}）
-            |Analysis：$interpTruncated
-            |Action: $actionTruncated
-        """.trimMargin()
-    }
+    fun truncate(text: String, maxChars: Int): String =
+        if (text.length > maxChars) text.take(maxChars) + "…" else text
 }

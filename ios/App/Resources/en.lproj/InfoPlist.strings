@@ -1,0 +1,2 @@
+/* Localized Info.plist values (PRD §35/§34: clear camera purpose string). */
+"NSCameraUsageDescription" = "PalmAstro uses the camera to scan your palm. Frames are analyzed on this device only and are never uploaded.";

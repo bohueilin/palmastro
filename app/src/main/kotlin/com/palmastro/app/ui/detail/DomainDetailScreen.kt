@@ -1,21 +1,18 @@
 package com.palmastro.app.ui.detail
 
-import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.layout.ContentScale
-import com.palmastro.app.R
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,52 +22,85 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.palmastro.app.R
 import com.palmastro.app.share.ShareCardRenderer
 import com.palmastro.app.share.ShareHelper
-import com.palmastro.app.viewmodel.DomainDetailState
+import com.palmastro.app.ui.results.SharePreviewDialog
+import com.palmastro.app.ui.results.confidenceDisplayName
+import com.palmastro.app.ui.results.domainDisplayName
+import com.palmastro.app.ui.results.gradeColor
+import com.palmastro.app.ui.results.gradeDisplayName
 import com.palmastro.app.viewmodel.DomainDetailViewModel
-import com.palmastro.content.ContentComposerImpl
-import com.palmastro.contracts.ContentInput
-import com.palmastro.contracts.Tone
-import com.palmastro.contracts.ScoringResult
 import com.palmastro.contracts.Observation
-
-private val gradeColors = mapOf(
-    "Growing" to Color(0xFF388E3C), "Stable" to Color(0xFF1976D2),
-    "Building" to Color(0xFFE65100), "Watchout" to Color(0xFFD32F2F),
-)
-private val gradeNames = mapOf(
-    "Growing" to "Growing", "Stable" to "Stable", "Building" to "Building", "Watchout" to "Watch Out",
-)
-private val domainImages = mapOf("career" to R.drawable.img_domain_career, "wealth" to R.drawable.img_domain_wealth, "family" to R.drawable.img_domain_family, "health" to R.drawable.img_domain_health)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DomainDetailScreen(
     onBack: () -> Unit,
     onJournalClick: () -> Unit = {},
+    onExplainabilityClick: () -> Unit = {},
     viewModel: DomainDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val view = LocalView.current
+    val displayName = domainDisplayName(state.domain)
+    var previewBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var shareText by remember { mutableStateOf("") }
+
+    // Strings needed inside click lambdas, resolved during composition.
+    val sharingAnnouncement = stringResource(R.string.detail_sharing)
+    val chooserTitle = stringResource(R.string.share_chooser_title)
+    val domainHeader = stringResource(R.string.share_domain_header, displayName)
+    val cardLabels = ShareCardRenderer.CardLabels(
+        analysis = stringResource(R.string.share_card_analysis),
+        actions = stringResource(R.string.share_card_actions),
+        reflection = stringResource(R.string.share_card_reflection),
+        watermark = stringResource(R.string.share_watermark),
+    )
+    val payloadForShare = state.payload
+    val gradeDisplayForShare = gradeDisplayName(payloadForShare?.scoreCard?.grade ?: "")
+    val scoreLine = stringResource(R.string.share_score_format, payloadForShare?.scoreCard?.totalScore ?: 0, gradeDisplayForShare)
+    val analysisLine = stringResource(R.string.share_analysis_label, ShareHelper.truncate(payloadForShare?.interpretation?.pattern.orEmpty(), 100))
+    val actionLine = stringResource(R.string.share_action_label, ShareHelper.truncate(payloadForShare?.actionToday.orEmpty(), 80))
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(state.displayName, fontWeight = FontWeight.SemiBold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } },
+                title = { Text(displayName, fontWeight = FontWeight.SemiBold) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
+                    }
+                },
                 actions = {
-                    if (state.payload != null) {
-                        IconButton(onClick = { view.announceForAccessibility("Sharing analysis"); shareDomainDetail(context, state) }) {
-                            Icon(Icons.Default.Share, contentDescription = "Share")
+                    if (state.payload != null && state.shareCardsEnabled) {
+                        IconButton(onClick = {
+                            val payload = state.payload ?: return@IconButton
+                            view.announceForAccessibility(sharingAnnouncement)
+                            val data = ShareCardRenderer.DomainDetailData(
+                                headerTitle = domainHeader,
+                                score = payload.scoreCard.totalScore,
+                                grade = payload.scoreCard.grade,
+                                gradeDisplay = gradeDisplayForShare,
+                                interpretation = payload.interpretation.pattern,
+                                actionToday = payload.actionToday,
+                                prompt = payload.prompt,
+                            )
+                            shareText = ShareHelper.buildShareText(domainHeader, scoreLine, analysisLine, actionLine)
+                            previewBitmap = ShareCardRenderer.renderDomainDetailCard(data, cardLabels)
+                        }) {
+                            Icon(Icons.Default.Share, contentDescription = stringResource(R.string.detail_share))
                         }
                     }
                 },
@@ -79,35 +109,29 @@ fun DomainDetailScreen(
     ) { padding ->
         when {
             state.isLoading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            state.error != null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { Text(state.error ?: "", color = MaterialTheme.colorScheme.error, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+            state.error != null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Text(
+                    stringResource(R.string.detail_not_found),
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
             state.payload != null -> {
-                val basePayload = state.payload!!
-                val domain = state.domain
-                var selectedLang by remember { mutableStateOf("en") }
-                val availableLangs = listOf("en" to "English", "zh-TW" to "繁體中文", "zh-CN" to "简体中文", "ja" to "日本語", "hi" to "हिन्दी")
-                val payload = if (selectedLang == "en") basePayload else {
-                    val composer = ContentComposerImpl()
-                    val mockScoring = ScoringResult(mapOf(domain to basePayload.scoreCard.totalScore), emptyMap(), basePayload.scoreCard.grade, basePayload.confidence, emptyList(), basePayload.explainability, emptyList(), "1.0.0")
-                    val input = ContentInput(mockScoring, null, Tone.SCIENTIFIC, emptySet(), basePayload.calcLevel, basePayload.monthKey)
-                    val translated = composer.composeInLanguage(input, selectedLang)
-                    translated[domain] ?: basePayload
-                }
-                val gradeColor = gradeColors[payload.scoreCard.grade] ?: MaterialTheme.colorScheme.primary
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
-                ) {
-                    // Hero score header with gradient
+                val payload = state.payload!!
+                val gc = gradeColor(payload.scoreCard.grade)
+                Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
+                    // 1. Score header
                     Box(
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
-                            .background(Brush.verticalGradient(listOf(gradeColor.copy(alpha = 0.15f), Color.Transparent)))
+                            .background(Brush.verticalGradient(listOf(gc.copy(alpha = 0.15f), Color.Transparent)))
                             .padding(24.dp)
                     ) {
                         Row(verticalAlignment = Alignment.Bottom) {
-                            Text("${payload.scoreCard.totalScore}", fontSize = 56.sp, fontWeight = FontWeight.Bold, color = gradeColor)
+                            Text("${payload.scoreCard.totalScore}", fontSize = 56.sp, fontWeight = FontWeight.Bold, color = gc)
                             Spacer(Modifier.width(8.dp))
                             Column(modifier = Modifier.padding(bottom = 10.dp)) {
-                                Text("/ 100", fontSize = 16.sp, color = gradeColor.copy(alpha = 0.7f))
-                                Text(gradeNames[payload.scoreCard.grade] ?: payload.scoreCard.grade, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = gradeColor)
+                                Text(stringResource(R.string.detail_score_out_of), fontSize = 16.sp, color = gc.copy(alpha = 0.7f))
+                                Text(gradeDisplayName(payload.scoreCard.grade), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = gc)
                             }
                         }
                     }
@@ -115,45 +139,62 @@ fun DomainDetailScreen(
                     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                         Spacer(Modifier.height(24.dp))
 
-                        // Analysis section
-                        // Language swap
-                        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            availableLangs.forEach { (code, label) ->
-                                FilterChip(selected = selectedLang == code, onClick = { selectedLang = code }, label = { Text(label, fontSize = 12.sp) })
+                        // 2. Interpretation: pattern / trigger / cost as labeled paragraphs.
+                        SectionWithIcon(Icons.Outlined.Analytics, stringResource(R.string.detail_analysis))
+                        Spacer(Modifier.height(8.dp))
+                        LabeledParagraph(stringResource(R.string.detail_pattern_label), payload.interpretation.pattern)
+                        if (payload.interpretation.trigger.isNotBlank()) {
+                            Spacer(Modifier.height(12.dp))
+                            LabeledParagraph(stringResource(R.string.detail_trigger_label), payload.interpretation.trigger)
+                        }
+                        if (payload.interpretation.cost.isNotBlank()) {
+                            Spacer(Modifier.height(12.dp))
+                            LabeledParagraph(stringResource(R.string.detail_cost_label), payload.interpretation.cost)
+                        }
+
+                        Spacer(Modifier.height(20.dp))
+                        ScoreEducationCard(score = payload.scoreCard.totalScore, confidence = payload.confidence)
+
+                        // 3. "How was this calculated?" -> Explainability
+                        Spacer(Modifier.height(12.dp))
+                        HowCalculatedRow(confidence = payload.confidence, onClick = onExplainabilityClick)
+
+                        // 4. Observed signals
+                        if (payload.observations.isNotEmpty()) {
+                            Spacer(Modifier.height(28.dp))
+                            SectionWithIcon(Icons.Outlined.TrendingUp, stringResource(R.string.detail_observations))
+                            Spacer(Modifier.height(8.dp))
+                            payload.observations.forEach { obs ->
+                                ObservationItem(obs)
+                                Spacer(Modifier.height(6.dp))
                             }
                         }
-                        Spacer(Modifier.height(20.dp))
 
-                        SectionWithIcon(Icons.Outlined.Analytics, "Analysis")
-                        Spacer(Modifier.height(8.dp))
-                        Text(payload.interpretationZh, fontSize = 16.sp, lineHeight = 26.sp, color = MaterialTheme.colorScheme.onSurface)
-
+                        // 5. Blind spot
                         Spacer(Modifier.height(28.dp))
-
-                        // Blind spot
-
-                        Spacer(Modifier.height(20.dp))
-                        ScoreEducationCard(score = payload.scoreCard.totalScore, confidence = payload.confidence, domain = state.domain)
-
-                        SectionWithIcon(Icons.Outlined.Visibility, "Blind Spot")
+                        SectionWithIcon(Icons.Outlined.Visibility, stringResource(R.string.detail_blindspot))
                         Spacer(Modifier.height(8.dp))
-                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)), shape = RoundedCornerShape(12.dp)) {
-                            Text(payload.blindspotZh, fontSize = 15.sp, lineHeight = 24.sp, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onErrorContainer)
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)),
+                            shape = RoundedCornerShape(12.dp),
+                        ) {
+                            Text(
+                                payload.blindspot, fontSize = 15.sp, lineHeight = 24.sp,
+                                modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
                         }
 
+                        // 6 + 7. Actions
                         Spacer(Modifier.height(28.dp))
-
-                        // Action items
-                        SectionWithIcon(Icons.Outlined.Checklist, "Action Items")
+                        SectionWithIcon(Icons.Outlined.Checklist, stringResource(R.string.detail_actions))
                         Spacer(Modifier.height(8.dp))
-                        ActionChip(label = "Today", text = payload.actionTodayZh, containerColor = MaterialTheme.colorScheme.primaryContainer)
+                        ActionChip(label = stringResource(R.string.detail_today), text = payload.actionToday, containerColor = MaterialTheme.colorScheme.primaryContainer)
                         Spacer(Modifier.height(8.dp))
-                        ActionChip(label = "This Week", text = payload.actionWeekZh, containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                        ActionChip(label = stringResource(R.string.detail_week), text = payload.actionWeek, containerColor = MaterialTheme.colorScheme.secondaryContainer)
 
+                        // 8. Reflection prompt
                         Spacer(Modifier.height(28.dp))
-
-                        // Reflection prompt
-                        SectionWithIcon(Icons.Outlined.Psychology, "Reflection")
+                        SectionWithIcon(Icons.Outlined.Psychology, stringResource(R.string.detail_reflection))
                         Spacer(Modifier.height(8.dp))
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -162,25 +203,26 @@ fun DomainDetailScreen(
                             Column(modifier = Modifier.padding(20.dp)) {
                                 Text("💭", fontSize = 24.sp)
                                 Spacer(Modifier.height(8.dp))
-                                Text(payload.promptZh, fontSize = 16.sp, lineHeight = 26.sp, fontWeight = FontWeight.Medium)
+                                Text(payload.prompt, fontSize = 16.sp, lineHeight = 26.sp, fontWeight = FontWeight.Medium)
                             }
                         }
 
-                        // Key signals
-                        if (payload.observations.isNotEmpty()) {
-                            Spacer(Modifier.height(28.dp))
-                            SectionWithIcon(Icons.Outlined.TrendingUp, "Key Signals")
-                            Spacer(Modifier.height(8.dp))
-                            payload.observations.forEach { obs ->
-                                ObservationItem(obs)
-                                Spacer(Modifier.height(6.dp))
-                            }
+                        // 9. Journal entry
+                        Spacer(Modifier.height(16.dp))
+                        OutlinedButton(
+                            onClick = onJournalClick,
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                        ) {
+                            Icon(Icons.Outlined.EditNote, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.detail_journal_button))
                         }
 
                         // Safety notes
-                        if (payload.safetyNotesZh.isNotEmpty()) {
+                        if (payload.safetyNotes.isNotEmpty()) {
                             Spacer(Modifier.height(24.dp))
-                            payload.safetyNotesZh.forEach { note ->
+                            payload.safetyNotes.forEach { note ->
                                 Text("ℹ️ $note", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
                             }
                         }
@@ -190,6 +232,54 @@ fun DomainDetailScreen(
                 }
             }
         }
+    }
+
+    previewBitmap?.let { bitmap ->
+        SharePreviewDialog(
+            bitmap = bitmap,
+            onDismiss = { previewBitmap = null },
+            onConfirm = {
+                ShareHelper.share(context, bitmap, shareText, chooserTitle)
+                previewBitmap = null
+            },
+        )
+    }
+}
+
+@Composable
+private fun HowCalculatedRow(confidence: String, onClick: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth()
+            .clickable(onClick = onClick)
+            .semantics { role = Role.Button },
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 8.dp),
+        ) {
+            Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.detail_how_calculated), fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                Text(
+                    stringResource(R.string.detail_how_calculated_desc) + " · " +
+                        stringResource(R.string.results_card_confidence, confidenceDisplayName(confidence)),
+                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun LabeledParagraph(label: String, text: String) {
+    Column {
+        Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp)
+        Spacer(Modifier.height(4.dp))
+        Text(text, fontSize = 16.sp, lineHeight = 26.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -219,77 +309,67 @@ private fun ActionChip(label: String, text: String, containerColor: Color) {
 private fun ObservationItem(obs: Observation) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)), shape = RoundedCornerShape(10.dp)) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(obs.displayNameZh, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
-            Text(obs.evidenceSummaryZh, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+            Text(obs.displayName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+            Text(obs.evidenceSummary, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
         }
     }
 }
 
-private fun shareDomainDetail(context: Context, state: DomainDetailState) {
-    val payload = state.payload ?: return
-    val data = ShareCardRenderer.DomainDetailData(state.displayName, payload.scoreCard.totalScore, payload.scoreCard.grade, payload.interpretationZh, payload.actionTodayZh, payload.promptZh)
-    val bitmap = ShareCardRenderer.renderDomainDetailCard(data)
-    val text = ShareHelper.buildDomainText(state.displayName, payload.scoreCard.totalScore, payload.scoreCard.grade, payload.interpretationZh, payload.actionTodayZh)
-    ShareHelper.share(context, bitmap, text)
-    bitmap.recycle()
-}
-
 @Composable
-private fun ScoreEducationCard(score: Int, confidence: String, domain: String) {
-    val (tier, tierDesc, tierColor) = when {
-        score >= 80 -> Triple("Excellent", "This is an exceptionally strong reading. Your palm features and astrological signals are well-aligned.", androidx.compose.ui.graphics.Color(0xFF388E3C))
-        score >= 65 -> Triple("Good", "A solid, positive reading. You have a strong foundation with room for further growth.", androidx.compose.ui.graphics.Color(0xFF1976D2))
-        score >= 50 -> Triple("Moderate", "A balanced reading. Some strengths are present, with opportunities to develop others.", androidx.compose.ui.graphics.Color(0xFFE65100))
-        score >= 35 -> Triple("Building", "Your reading suggests a period of growth. Focus on fundamentals and be patient.", androidx.compose.ui.graphics.Color(0xFFE65100))
-        else -> Triple("Attention", "This area needs focus. Small, consistent changes can shift your trajectory.", androidx.compose.ui.graphics.Color(0xFFD32F2F))
+private fun ScoreEducationCard(score: Int, confidence: String) {
+    val (tierRes, tierDescRes, tierGrade) = when {
+        score >= 80 -> Triple(R.string.detail_tier_excellent, R.string.detail_tier_excellent_desc, "Growing")
+        score >= 65 -> Triple(R.string.detail_tier_good, R.string.detail_tier_good_desc, "Stable")
+        score >= 50 -> Triple(R.string.detail_tier_moderate, R.string.detail_tier_moderate_desc, "Building")
+        score >= 35 -> Triple(R.string.detail_tier_building, R.string.detail_tier_building_desc, "Building")
+        else -> Triple(R.string.detail_tier_attention, R.string.detail_tier_attention_desc, "Watchout")
     }
+    val tierColor = gradeColor(tierGrade)
 
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow), shape = RoundedCornerShape(16.dp)) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.School, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(8.dp))
-                Text("Understanding Your Score", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp)
+                Text(stringResource(R.string.detail_understanding_score), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp)
             }
             Spacer(Modifier.height(14.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(color = tierColor.copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
-                    Text(tier, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = tierColor, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
+                    Text(stringResource(tierRes), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = tierColor, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
                 }
                 Spacer(Modifier.width(8.dp))
-                Text("$score out of 100", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.detail_score_points, score), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(10.dp))
-            Text(tierDesc, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, lineHeight = 22.sp)
+            Text(stringResource(tierDescRes), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, lineHeight = 22.sp)
 
             Spacer(Modifier.height(16.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             Spacer(Modifier.height(16.dp))
 
-            Text("How to improve", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.detail_how_improve), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.height(8.dp))
 
-            val tips = when {
-                confidence == "low" -> listOf(
-                    "📸 Rescan in better lighting for a more accurate reading",
-                    "🖐️ Keep your palm flat and steady during the scan",
-                    "💡 Avoid shadows and glare on your palm",
+            val tipsRes = when {
+                confidence.equals("low", ignoreCase = true) -> listOf(
+                    R.string.detail_tip_rescan, R.string.detail_tip_steady, R.string.detail_tip_glare,
                 )
                 score < 50 -> listOf(
-                    "🔄 Scan monthly to track progress over time",
-                    "📝 Use the journal to reflect on your actions",
-                    "🎯 Focus on the daily and weekly action items",
-                    "🌱 Small consistent changes create lasting shifts",
+                    R.string.detail_tip_monthly, R.string.detail_tip_journal,
+                    R.string.detail_tip_actions, R.string.detail_tip_small_changes,
                 )
                 else -> listOf(
-                    "📊 Compare with previous months in History",
-                    "📝 Record reflections in your journal",
-                    "🔄 Scan again next month to track your growth",
+                    R.string.detail_tip_compare, R.string.detail_tip_reflect, R.string.detail_tip_next_month,
                 )
             }
-            tips.forEach { tip ->
-                Text(tip, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp, modifier = Modifier.padding(vertical = 2.dp))
+            tipsRes.forEach { tip ->
+                Row(modifier = Modifier.padding(vertical = 2.dp), verticalAlignment = Alignment.Top) {
+                    Text("•", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(tip), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp)
+                }
             }
         }
     }

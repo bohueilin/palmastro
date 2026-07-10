@@ -1,45 +1,59 @@
 package com.palmastro.content
 
-import com.palmastro.contracts.*
+import com.palmastro.contracts.RenderedReport
+import com.palmastro.contracts.SemanticPayload
+import com.palmastro.contracts.Tone
 import com.palmastro.contracts.interfaces.Renderer
 
-class ToneRenderer : Renderer {
+/**
+ * Renders a [SemanticPayload] to a plain-text report (no HTML) in the
+ * payload's language, applying tone prefixes/labels from the versioned
+ * template library (PRD §19, §45, §50).
+ */
+class ToneRenderer(
+    private val templates: ContentTemplates = ContentTemplates.default()
+) : Renderer {
 
     override fun render(payload: SemanticPayload, tone: Tone): RenderedReport {
-        val html = buildString {
-            append("<div class=\"report ${tone.name.lowercase()}\">")
-            append("<h2>${payload.domain}</h2>")
-            append("<div class=\"score\">${payload.scoreCard.totalScore} / 100 — ${payload.scoreCard.grade}</div>")
+        val lang = templates.resolveLanguage(payload.language)
+        val toneTemplate = templates.tones[tone.name]
+        val prefix = toneTemplate?.let { templates.localized(it.interpretationPrefix, lang) } ?: ""
+        val blindspotLabel = toneTemplate?.let { templates.localized(it.blindspotLabel, lang) } ?: ""
+        val labels = templates.labels
+        val domainName = templates.domains[payload.domain]?.displayName
+            ?.let { templates.localized(it, lang) }
+            ?.takeIf { it.isNotBlank() }
+            ?: payload.domain
+        val grade = labels.grades[payload.scoreCard.grade]
+            ?.let { templates.localized(it, lang) }
+            ?.takeIf { it.isNotBlank() }
+            ?: payload.scoreCard.grade
 
-            when (tone) {
-                Tone.SCIENTIFIC -> {
-                    append("<p class=\"interpretation\">${payload.interpretationZh}</p>")
-                    append("<p class=\"blindspot\">盲點：${payload.blindspotZh}</p>")
-                }
-                Tone.HEALING -> {
-                    append("<p class=\"interpretation\">親愛的，${payload.interpretationZh}</p>")
-                    append("<p class=\"blindspot\">溫柔提醒：${payload.blindspotZh}</p>")
-                }
-                Tone.ROAST_SAFE -> {
-                    append("<p class=\"interpretation\">直說了：${payload.interpretationZh}</p>")
-                    append("<p class=\"blindspot\">你不想聽但該聽的：${payload.blindspotZh}</p>")
-                }
+        val lines = buildList {
+            if (grade.isBlank()) {
+                add("$domainName — ${payload.scoreCard.totalScore}/100")
+            } else {
+                add("$domainName — ${payload.scoreCard.totalScore}/100 · $grade")
             }
-
-            append("<div class=\"actions\">")
-            append("<p>今日行動：${payload.actionTodayZh}</p>")
-            append("<p>本週行動：${payload.actionWeekZh}</p>")
-            append("</div>")
-
-            append("<p class=\"prompt\">反思提問：${payload.promptZh}</p>")
-
-            payload.safetyNotesZh.forEach { note ->
-                append("<p class=\"safety\">⚠️ $note</p>")
+            add("")
+            add("$prefix${payload.interpretation.pattern}")
+            if (payload.interpretation.trigger.isNotBlank()) add(payload.interpretation.trigger)
+            if (payload.interpretation.cost.isNotBlank()) add(payload.interpretation.cost)
+            if (payload.blindspot.isNotBlank()) {
+                add("")
+                add("$blindspotLabel${payload.blindspot}")
             }
-
-            append("</div>")
+            add("")
+            add("${templates.localized(labels.actionToday, lang)}${payload.actionToday}")
+            add("${templates.localized(labels.actionWeek, lang)}${payload.actionWeek}")
+            add("")
+            add("${templates.localized(labels.prompt, lang)}${payload.prompt}")
+            payload.safetyNotes.forEach { note ->
+                add("")
+                add("${templates.localized(labels.safetyNote, lang)}$note")
+            }
         }
 
-        return RenderedReport(domain = payload.domain, tone = tone, htmlZh = html)
+        return RenderedReport(domain = payload.domain, tone = tone, text = lines.joinToString("\n"))
     }
 }

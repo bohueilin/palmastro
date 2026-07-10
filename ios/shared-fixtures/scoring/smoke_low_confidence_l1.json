@@ -1,0 +1,33 @@
+{
+  "input": {
+    "palmFeatures": {
+      "features": {
+        "headlinePresent": true, "heartlinePresent": true, "lifelinePresent": true, "fatelinePresent": false,
+        "headlineShape": "unknown", "heartlineShape": "unknown", "lifelineShape": "unknown", "fatelineShape": "unknown",
+        "headlineClarity": "moderate", "heartlineClarity": "moderate", "lifelineClarity": "moderate", "fatelineClarity": "faint",
+        "headlineLength": "unknown", "fatelineLength": "unknown",
+        "venusMountDensity": "unknown", "jupiterMountDensity": "unknown", "saturnMountDensity": "unknown", "minorLineDensity": "unknown"
+      },
+      "featureCoverage": 0.3,
+      "confidence": "low",
+      "extractorVersion": "2.0.0"
+    },
+    "astroResult": {
+      "calcLevel": "L1",
+      "signals": [],
+      "engineVersion": "2.0.0"
+    },
+    "userContext": {"dominantHand": "RIGHT", "oneHandOnly": false},
+    "rulesetVersion": "2.0.0"
+  },
+  "expected": {
+    "domainScores": {"career": 50, "wealth": 50, "family": 50, "health": 50},
+    "subdimScores": {},
+    "grade": "Building",
+    "confidence": "low",
+    "confidenceReasons": ["scan_quality_low", "low_feature_coverage", "missing_birth_time"],
+    "explainability": [],
+    "matchedBuckets": [],
+    "rulesetVersion": "2.0.0"
+  }
+}

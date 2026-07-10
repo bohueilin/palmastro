@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Domain detail + Explainability + Journal-extras strings (ui-results agent). -->
+<resources>
+    <string name="detail_pattern_label">Pattern</string>
+    <string name="detail_trigger_label">Trigger</string>
+    <string name="detail_cost_label">Cost</string>
+    <string name="detail_how_calculated">How was this calculated?</string>
+    <string name="detail_how_calculated_desc">See the signals and weights behind this score</string>
+    <string name="detail_journal_button">Write in journal</string>
+    <string name="detail_score_out_of">/ 100</string>
+    <string name="detail_understanding_score">Understanding your score</string>
+    <string name="detail_score_points">%1$d out of 100</string>
+    <string name="detail_how_improve">How to improve</string>
+    <string name="detail_tier_excellent">Excellent</string>
+    <string name="detail_tier_good">Good</string>
+    <string name="detail_tier_moderate">Moderate</string>
+    <string name="detail_tier_building">Building</string>
+    <string name="detail_tier_attention">Attention</string>
+    <string name="detail_tier_excellent_desc">An exceptionally strong reading. Your palm features and astrological signals are well aligned.</string>
+    <string name="detail_tier_good_desc">A solid, positive reading. You have a strong foundation with room for further growth.</string>
+    <string name="detail_tier_moderate_desc">A balanced reading. Some strengths are present, with opportunities to develop others.</string>
+    <string name="detail_tier_building_desc">Your reading suggests a period of growth. Focus on fundamentals and be patient.</string>
+    <string name="detail_tier_attention_desc">This area needs focus. Small, consistent changes can shift your trajectory.</string>
+    <string name="detail_tip_rescan">Rescan in better lighting for a more accurate reading</string>
+    <string name="detail_tip_steady">Keep your palm flat and steady during the scan</string>
+    <string name="detail_tip_glare">Avoid shadows and glare on your palm</string>
+    <string name="detail_tip_monthly">Scan monthly to track progress over time</string>
+    <string name="detail_tip_journal">Use the journal to reflect on your actions</string>
+    <string name="detail_tip_actions">Focus on the daily and weekly action items</string>
+    <string name="detail_tip_small_changes">Small consistent changes create lasting shifts</string>
+    <string name="detail_tip_compare">Compare with previous months in History</string>
+    <string name="detail_tip_reflect">Record reflections in your journal</string>
+    <string name="detail_tip_next_month">Scan again next month to track your growth</string>
+
+    <string name="explain_title">How this was calculated</string>
+    <string name="explain_intro">Every domain starts from a neutral baseline. Palm and astrological signals then nudge the score up or down. Here is exactly what moved yours.</string>
+    <string name="explain_baseline_label">Baseline score</string>
+    <string name="explain_baseline_desc">Every reading starts at 50 — a neutral midpoint, not a judgment.</string>
+    <string name="explain_palm_signals">Palm signal contributions</string>
+    <string name="explain_astro_signals">Astro signal contributions</string>
+    <string name="explain_no_signals">No individual signals were strong enough to report for this domain.</string>
+    <string name="explain_contribution_desc">%1$s contributes %2$s points</string>
+    <string name="explain_confidence_label">Confidence</string>
+    <string name="explain_confidence_reasons">Why this confidence level</string>
+    <string name="explain_quality_factors">Quality factors</string>
+    <string name="explain_scan_quality">Scan quality: %1$d/100</string>
+    <string name="explain_feature_coverage">Feature coverage: %1$d%%</string>
+    <string name="explain_calc_level">Calculation level: %1$s</string>
+    <string name="explain_safety_note">PalmAstro is reflective, not scientific. Scores describe patterns in your scan and birth details — they do not predict the future, and they are not medical, financial, or professional advice.</string>
+
+    <string name="journal_delete">Delete entry</string>
+    <string name="journal_delete_confirm_title">Delete this entry?</string>
+    <string name="journal_delete_confirm_message">This journal entry will be permanently deleted.</string>
+    <string name="journal_general_entry">General reflection</string>
+</resources>

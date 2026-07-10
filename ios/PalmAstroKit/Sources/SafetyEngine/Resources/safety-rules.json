@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "fallbackLanguage": "en",
+  "fallbackText": {
+    "en": "This content has been adjusted for safety. Please see other suggestions.",
+    "zh-TW": "此內容已依安全準則調整，請參考其他建議。"
+  },
+  "fallbackPayload": {
+    "en": {
+      "pattern": "This month's reading was adjusted to meet our content safety guidelines.",
+      "blindspot": "A fresh scan next month will produce a full reading.",
+      "actionToday": "Take five quiet minutes for yourself today.",
+      "actionWeek": "Choose one small, kind commitment to yourself this week.",
+      "prompt": "What would taking care of yourself look like this week?"
+    },
+    "zh-TW": {
+      "pattern": "本月的解讀已依內容安全準則調整。",
+      "blindspot": "下個月重新掃描即可獲得完整解讀。",
+      "actionToday": "今天留五分鐘安靜的時間給自己。",
+      "actionWeek": "本週為自己選擇一個小小的、善待自己的承諾。",
+      "prompt": "這一週，好好照顧自己會是什麼樣子？"
+    }
+  },
+  "categories": [
+    {
+      "id": "wealth_prohibited",
+      "appliesToDomains": ["wealth"],
+      "crossDomain": false,
+      "terms": [
+        "買入", "賣出", "股票", "保證獲利", "投資建議", "買進", "放空",
+        "期貨", "基金推薦", "穩賺", "報酬率", "年化收益",
+        "guaranteed return", "investment advice", "financial advice",
+        "buy stock", "sell stock", "trading signal", "guaranteed profit",
+        "get rich", "guaranteed income", "insider tip", "pump and dump"
+      ]
+    },
+    {
+      "id": "health_prohibited",
+      "appliesToDomains": ["health"],
+      "crossDomain": true,
+      "terms": [
+        "糖尿病", "癌症", "診斷", "服用", "藥物", "處方", "治療方案",
+        "高血壓", "心臟病", "憂鬱症", "焦慮症", "病症", "症狀",
+        "diagnosis", "treatment plan", "medication", "disease prediction",
+        "prescribe", "medical advice", "clinical", "prognosis",
+        "you have", "you suffer from", "your condition", "take medication",
+        "stop taking", "cure", "terminal", "malignant"
+      ]
+    },
+    {
+      "id": "identity_attack",
+      "appliesToDomains": ["career", "wealth", "family", "health"],
+      "crossDomain": true,
+      "terms": [
+        "你很爛", "你沒救了", "廢物", "白痴", "你一定會", "你就是",
+        "沒用", "失敗者", "你完了", "放棄吧", "你不行", "笨蛋",
+        "you are worthless", "you are hopeless", "give up",
+        "you will fail", "you are stupid", "you are pathetic",
+        "loser", "waste of", "you deserve"
+      ]
+    }
+  ]
+}

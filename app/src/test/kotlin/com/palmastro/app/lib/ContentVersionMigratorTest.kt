@@ -29,8 +29,8 @@ class ContentVersionMigratorTest {
 
     private fun makePayloads() = mapOf("career" to SemanticPayload(
         domain = "career", monthKey = "2026-03", calcLevel = CalcLevel.L2, confidence = "high",
-        observations = emptyList(), interpretationZh = "migrated", blindspotZh = "", actionTodayZh = "",
-        actionWeekZh = "", promptZh = "", safetyNotesZh = emptyList(), explainability = emptyList(),
+        observations = emptyList(), interpretation = Interpretation("migrated"), blindspot = "", actionToday = "",
+        actionWeek = "", prompt = "", safetyNotes = emptyList(), explainability = emptyList(),
         scoreCard = ScoreCard(72, "Stable", null, null, emptyMap()),
     ))
 

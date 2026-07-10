@@ -28,7 +28,9 @@ class WipeManager @Inject constructor(
         installIdDao.deleteAll()
         deleteScanImages()
         deleteShareCache()
-        clearAllSharedPreferences()
+        deleteShareAuditLog()
+        clearWipeableSharedPreferences()
+        // PRD §28/§53: rotate the install id so post-wipe activity is unlinkable.
         installIdDao.upsert(InstallIdEntity(installId = UUID.randomUUID().toString()))
     }
 
@@ -47,14 +49,29 @@ class WipeManager @Inject constructor(
         if (shareDir.exists()) shareDir.deleteRecursively()
     }
 
-    private fun clearAllSharedPreferences() {
-        val prefsToWipe = listOf("palmastro_feature_flags", "palmastro_db_prefs")
+    private fun deleteShareAuditLog() {
+        val auditLog = File(appContext.filesDir, SHARE_AUDIT_LOG_NAME)
+        if (auditLog.exists()) auditLog.delete()
+    }
+
+    private fun clearWipeableSharedPreferences() {
+        // DB_KEY_PREFS_NAME is intentionally PRESERVED: it holds the Keystore-wrapped
+        // SQLCipher key for the still-open encrypted database. Clearing the tables IS
+        // the wipe; destroying the key would brick the open DB and the app with it.
+        val prefsToWipe = listOf("palmastro_feature_flags")
         for (prefsName in prefsToWipe) {
             appContext.getSharedPreferences(prefsName, Context.MODE_PRIVATE).edit().clear().apply()
         }
         val prefsDir = File(appContext.applicationInfo.dataDir, "shared_prefs")
         if (prefsDir.exists()) {
-            prefsDir.listFiles()?.filter { it.name.startsWith("palmastro_") }?.forEach { it.delete() }
+            prefsDir.listFiles()
+                ?.filter { it.name.startsWith("palmastro_") && it.name != "$DB_KEY_PREFS_NAME.xml" }
+                ?.forEach { it.delete() }
         }
+    }
+
+    companion object {
+        const val DB_KEY_PREFS_NAME = "palmastro_db_prefs"
+        const val SHARE_AUDIT_LOG_NAME = "share_audit.log"
     }
 }

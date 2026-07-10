@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared chrome -->
+    <string name="ob_back">返回</string>
+    <string name="ob_next">下一步</string>
+    <string name="ob_progress">第 %1$d 步，共 %2$d 步</string>
+
+    <!-- Step: Welcome / value proposition -->
+    <string name="ob_welcome_title">歡迎使用掌紋星象</string>
+    <string name="ob_welcome_subtitle">結合掌紋與星象，每月一次的自我檢視</string>
+    <string name="ob_welcome_body">每月掃描一次手掌，就能獲得事業、財富、家庭與健康四大領域的沉穩解析，每一項洞察都有清楚的依據。</string>
+
+    <!-- Step: Privacy promise (PRD 12.1) -->
+    <string name="ob_privacy_title">我們的隱私承諾</string>
+    <string name="ob_privacy_subtitle">開始之前，先讓您了解資料如何被處理</string>
+    <string name="ob_privacy_point_on_device">手掌照片只在您的裝置上分析，不會上傳到任何伺服器。</string>
+    <string name="ob_privacy_point_no_biometric">掌紋星象不會用手掌辨識您的身分，這裡沒有任何生物特徵識別。</string>
+    <string name="ob_privacy_point_reflection">分析結果僅供自我反思與娛樂參考，不是醫療、財務或法律建議。</string>
+    <string name="ob_privacy_point_delete">您隨時可以在「設定」中刪除所有資料。</string>
+    <string name="ob_privacy_icon">隱私保護標誌</string>
+
+    <!-- Step: Name (optional) -->
+    <string name="ob_name_title">想讓我們怎麼稱呼您？</string>
+    <string name="ob_name_subtitle">這是選填項目，可以直接跳過</string>
+    <string name="ob_name_label">顯示名稱（選填）</string>
+    <string name="ob_name_placeholder">輸入名稱，或留空</string>
+    <string name="ob_gender_label">我的性別（選填）</string>
+    <string name="ob_gender_female">女性</string>
+    <string name="ob_gender_male">男性</string>
+    <string name="ob_gender_other">其他</string>
+
+    <!-- Step: Birthday -->
+    <string name="ob_birthday_title">您的生日</string>
+    <string name="ob_birthday_subtitle">必填，用於星象計算</string>
+    <string name="ob_birthday_month">月</string>
+    <string name="ob_birthday_day">日</string>
+    <string name="ob_birthday_year">年</string>
+    <string name="ob_birthday_future">生日不能是未來的日期</string>
+    <string name="ob_birthday_invalid">這個日期不存在，請再確認一次</string>
+    <string name="ob_zodiac_caption">您的星座</string>
+
+    <!-- Zodiac names -->
+    <string name="ob_zodiac_aries">牡羊座</string>
+    <string name="ob_zodiac_taurus">金牛座</string>
+    <string name="ob_zodiac_gemini">雙子座</string>
+    <string name="ob_zodiac_cancer">巨蟹座</string>
+    <string name="ob_zodiac_leo">獅子座</string>
+    <string name="ob_zodiac_virgo">處女座</string>
+    <string name="ob_zodiac_libra">天秤座</string>
+    <string name="ob_zodiac_scorpio">天蠍座</string>
+    <string name="ob_zodiac_sagittarius">射手座</string>
+    <string name="ob_zodiac_capricorn">摩羯座</string>
+    <string name="ob_zodiac_aquarius">水瓶座</string>
+    <string name="ob_zodiac_pisces">雙魚座</string>
+
+    <!-- Step: Dominant hand + relationship -->
+    <string name="ob_hand_title">您的慣用手</string>
+    <string name="ob_hand_subtitle">必填，我們會掃描您的慣用手</string>
+    <string name="ob_hand_left">左手</string>
+    <string name="ob_hand_right">右手</string>
+    <string name="ob_status_label">感情狀態（選填）</string>
+    <string name="ob_status_single">單身</string>
+    <string name="ob_status_relationship">戀愛中</string>
+    <string name="ob_status_married">已婚</string>
+
+    <!-- Step: Birth details (optional) -->
+    <string name="ob_birth_details_title">出生時間與地點</string>
+    <string name="ob_birth_details_subtitle">選填，提供後可解鎖更精確的 L2 星象分析</string>
+    <string name="ob_birth_time_label">出生時間</string>
+    <string name="ob_birth_hour">時</string>
+    <string name="ob_birth_minute">分</string>
+    <string name="ob_birth_place_label">出生地點</string>
+    <string name="ob_birth_place_search">搜尋城市…</string>
+    <string name="ob_birth_place_unknown">其他／不確定</string>
+    <string name="ob_birth_details_confirm">確認</string>
+    <string name="ob_birth_details_skip">跳過此步驟</string>
+
+    <!-- Step: Tone (PRD 45 display names) -->
+    <string name="ob_tone_title">您偏好的解讀風格</string>
+    <string name="ob_tone_subtitle">希望掌紋星象用什麼方式與您對話？</string>
+    <string name="ob_tone_analytical">理性分析</string>
+    <string name="ob_tone_analytical_desc">客觀、以數據為依據</string>
+    <string name="ob_tone_gentle">溫和陪伴</string>
+    <string name="ob_tone_gentle_desc">溫暖、給您鼓勵</string>
+    <string name="ob_tone_direct">直話直說</string>
+    <string name="ob_tone_direct_desc">直接坦率，但始終安全</string>
+
+    <!-- Step: Language -->
+    <string name="ob_language_title">語言</string>
+    <string name="ob_language_subtitle">選擇 App 顯示語言</string>
+    <string name="ob_language_system">跟隨系統</string>
+    <string name="ob_language_english">English</string>
+    <string name="ob_language_traditional_chinese">繁體中文</string>
+
+    <!-- Step: Summary -->
+    <string name="ob_summary_title">一切就緒！</string>
+    <string name="ob_summary_subtitle">確認您的資料</string>
+    <string name="ob_summary_name">名稱</string>
+    <string name="ob_summary_gender">性別</string>
+    <string name="ob_summary_hand">慣用手</string>
+    <string name="ob_summary_birthday">生日</string>
+    <string name="ob_summary_zodiac">星座</string>
+    <string name="ob_summary_status">感情狀態</string>
+    <string name="ob_summary_tone">風格</string>
+    <string name="ob_summary_language">語言</string>
+    <string name="ob_summary_analysis">分析模式</string>
+    <string name="ob_summary_l2">L2（詳細）</string>
+    <string name="ob_summary_l1">L1（標準）</string>
+    <string name="ob_summary_not_set">未填寫</string>
+
+    <!-- Step: Camera permission education -->
+    <string name="ob_camera_title">關於相機權限</string>
+    <string name="ob_camera_subtitle">開始第一次掃描前的最後一步</string>
+    <string name="ob_camera_body">掌紋星象需要使用相機才能掃描您的手掌。下一個畫面中，Android 會請您授予相機權限。</string>
+    <string name="ob_camera_point_local">照片只會在您的裝置上處理，僅用於掌紋分析。</string>
+    <string name="ob_camera_point_denied">若您拒絕授權，仍可繼續瀏覽 App，之後也能在「設定」中重新開啟相機權限。</string>
+    <string name="ob_camera_start">開始第一次掃描</string>
+</resources>

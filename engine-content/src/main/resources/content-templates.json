@@ -1,0 +1,1054 @@
+{
+  "version": "2.0.0",
+  "defaultLanguage": "en",
+  "languages": [
+    "en",
+    "zh-TW",
+    "zh-CN",
+    "ja",
+    "hi"
+  ],
+  "buckets": {
+    "peak": {
+      "min": 80,
+      "max": 100
+    },
+    "rising": {
+      "min": 65,
+      "max": 79
+    },
+    "transition": {
+      "min": 50,
+      "max": 64
+    },
+    "building": {
+      "min": 35,
+      "max": 49
+    },
+    "attention": {
+      "min": 0,
+      "max": 34
+    },
+    "high": {
+      "min": 65,
+      "max": 100
+    },
+    "low": {
+      "min": 0,
+      "max": 64
+    }
+  },
+  "domains": {
+    "career": {
+      "displayName": {
+        "en": "Career",
+        "zh-TW": "事業",
+        "zh-CN": "事业",
+        "ja": "キャリア",
+        "hi": "करियर"
+      },
+      "interpretation": {
+        "pattern": {
+          "peak": {
+            "en": "Career signals are unusually strong this month. Palm and astro indicators align around focus, follow-through, and visible momentum.",
+            "zh-TW": "事業方面本月展現出非凡的力量。掌紋與星象信號高度對齊，專注力與行動力正處於高峰。",
+            "zh-CN": "{domain}方面本月展现出非凡的力量。你的掌纹与星象信号高度对齐，预示着良好的发展态势。",
+            "ja": "{domain}は今月、非常に強いエネルギーを示しています。手相と星のシグナルが高いレベルで一致しています。",
+            "hi": "{domain} इस महीने असाधारण ऊर्जा दिखा रहा है। आपकी हस्तरेखा और ज्योतिषीय संकेत मजबूत तालमेल में हैं।"
+          },
+          "rising": {
+            "en": "Your career energy is in a positive phase. The reading shows a solid base with clear indicators of steady progress.",
+            "zh-TW": "你的事業能量正處於積極階段。分析顯示出穩固的基礎，有著穩定成長的明確指標。",
+            "zh-CN": "你的{domain}能量正处于积极阶段。分析显示出稳固的基础，有着稳定成长的明确指标。",
+            "ja": "{domain}のエネルギーはポジティブな段階にあります。安定した基盤と着実な成長の兆しが見えます。",
+            "hi": "आपकी {domain} ऊर्जा सकारात्मक चरण में है। विश्लेषण एक मजबूत नींव और स्थिर विकास के संकेत दिखाता है।"
+          },
+          "transition": {
+            "en": "Your career is in a transitional stretch. The fundamentals hold steady, and a few focused moves could unlock real progress.",
+            "zh-TW": "你的事業正處於轉型期。基礎面穩定，但有些領域需要特別關注以獲得突破。",
+            "zh-CN": "你的{domain}正处于转型期。基础面稳定，但有些领域需要特别关注以获得突破。",
+            "ja": "{domain}は過渡期にあります。基礎は安定していますが、注力すべき分野があります。",
+            "hi": "आपका {domain} संक्रमण काल में है। नींव स्थिर है, लेकिन कुछ क्षेत्रों पर ध्यान देने की जरूरत है।"
+          },
+          "building": {
+            "en": "Career readings point to a building phase. This month rewards patient groundwork over bold leaps.",
+            "zh-TW": "你的事業正在累積階段。這是耐心經營、打好基礎的時期。",
+            "zh-CN": "你的{domain}正在积累阶段。这是耐心经营、打好基础的时期。",
+            "ja": "{domain}は蓄積の段階です。忍耐強く基礎を築く時期です。",
+            "hi": "आपका {domain} निर्माण के चरण में है। यह धैर्य और मजबूत नींव बनाने का समय है।"
+          },
+          "attention": {
+            "en": "Career indicators are asking for attention this month. That is not an alarm — it is an invitation to pause and recalibrate.",
+            "zh-TW": "你的事業指標正在提醒你需要留心。這不是警告，而是重新調整的邀請。",
+            "zh-CN": "你的{domain}指标正在提醒你需要留心。这不是警告，而是重新调整的邀请。",
+            "ja": "{domain}の指標が注意を促しています。これは警告ではなく、再調整への招待です。",
+            "hi": "आपके {domain} संकेतक ध्यान देने की मांग कर रहे हैं। यह चिंता नहीं, बल्कि पुनर्संतुलन का निमंत्रण है।"
+          }
+        },
+        "trigger": {
+          "high": {
+            "en": "Momentum like this tends to surface around visible commitments — reviews, launches, and new responsibilities.",
+            "zh-TW": "這樣的動能通常出現在明確的承諾場合——檢討、啟動與新責任。",
+            "zh-CN": "这样的动能通常出现在明确的承诺场合——评审、启动与新责任。",
+            "ja": "この勢いは、レビューや新しい責任など、目に見えるコミットメントの場面で表れやすいものです。",
+            "hi": "ऐसी गति अक्सर स्पष्ट जिम्मेदारियों — समीक्षा, नई शुरुआत — के आसपास दिखती है।"
+          },
+          "low": {
+            "en": "Friction tends to appear when deadlines stack up and priorities compete for the same hours.",
+            "zh-TW": "當期限堆疊、優先事項互相競爭時，阻力最容易出現。",
+            "zh-CN": "当期限堆叠、优先事项互相竞争时，阻力最容易出现。",
+            "ja": "締め切りが重なり、優先順位が競合するときに摩擦が生じやすくなります。",
+            "hi": "जब समय-सीमाएँ जमा होती हैं और प्राथमिकताएँ टकराती हैं, तब रुकावट दिखती है।"
+          }
+        },
+        "cost": {
+          "high": {
+            "en": "Unchecked, this drive can crowd out rest and turn wins into obligations.",
+            "zh-TW": "若不留意，這股衝勁可能擠壓休息，讓勝利變成負擔。",
+            "zh-CN": "若不留意，这股冲劲可能挤压休息，让胜利变成负担。",
+            "ja": "放っておくと、この勢いが休息を圧迫し、成果が重荷に変わることもあります。",
+            "hi": "ध्यान न देने पर यही जोश आराम को निगल सकता है और जीत बोझ बन सकती है।"
+          },
+          "low": {
+            "en": "Ignored, small frustrations can harden into cynicism about work that still matters.",
+            "zh-TW": "若置之不理，小小的挫折可能累積成對工作的倦怠感。",
+            "zh-CN": "若置之不理，小小的挫折可能累积成对工作的倦怠感。",
+            "ja": "放置すると、小さな不満が仕事への冷めた気持ちに固まってしまうかもしれません。",
+            "hi": "अनदेखा करने पर छोटी निराशाएँ काम के प्रति उदासीनता में बदल सकती हैं।"
+          }
+        }
+      },
+      "blindspot": {
+        "high": {
+          "en": "When career energy is strong, there's a tendency to overcommit. Success can mask the early signs of burnout.",
+          "zh-TW": "事業能量強勁時，容易過度承諾。成功可能掩蓋倦怠的早期跡象。",
+          "zh-CN": "事业能量强劲时，容易过度承诺。成功可能掩盖倦怠的早期迹象。",
+          "ja": "キャリアエネルギーが強い時は、過度なコミットメントに注意。成功が燃え尽きの兆候を隠すことがあります。",
+          "hi": "जब करियर ऊर्जा मजबूत हो, तो जरूरत से ज्यादा वादे करने की प्रवृत्ति रहती है। सफलता थकान के शुरुआती संकेत छिपा सकती है।"
+        },
+        "low": {
+          "en": "During challenging career periods, avoid making reactive decisions. Give yourself at least 48 hours before responding to stressful situations.",
+          "zh-TW": "在事業低潮期，避免做出衝動的決定。給自己至少48小時的冷靜期。",
+          "zh-CN": "在事业低潮期，避免做出冲动的决定。给自己至少48小时的冷静期。",
+          "ja": "キャリアの低迷期には、衝動的な決断を避けましょう。難しい状況には48時間おいてから応じるのが賢明です。",
+          "hi": "करियर के कठिन दौर में जल्दबाजी के फैसलों से बचें। तनावपूर्ण स्थिति में जवाब देने से पहले खुद को कम से कम 48 घंटे दें।"
+        }
+      },
+      "actionToday": {
+        "high": {
+          "en": "Identify one person whose work you admire and send them a specific compliment about something they did recently.",
+          "zh-TW": "找到一位你欣賞的人，針對他最近做的具體事情給予讚美。",
+          "zh-CN": "找到一位你欣赏的人，针对他最近做的具体事情给予赞美。",
+          "ja": "尊敬する人を一人選び、最近の具体的な仕事について褒め言葉を伝えましょう。",
+          "hi": "जिसके काम की आप कद्र करते हैं, उसे आज किसी खास बात के लिए सराहना भेजें।"
+        },
+        "low": {
+          "en": "Spend 10 minutes listing what's going well in your career — not what needs fixing.",
+          "zh-TW": "花10分鐘列出你事業中順利的事——而非需要修正的。",
+          "zh-CN": "花10分钟列出你事业中顺利的事——而非需要修正的。",
+          "ja": "キャリアでうまくいっていることを10分間書き出しましょう。直すべきことではなく。",
+          "hi": "10 मिनट निकालकर लिखें कि करियर में क्या अच्छा चल रहा है — क्या सुधारना है, वह नहीं।"
+        }
+      },
+      "actionWeek": {
+        "high": {
+          "en": "Take on one stretch assignment outside your comfort zone this week.",
+          "zh-TW": "本週接受一個超出舒適區的任務或專案。",
+          "zh-CN": "本周接受一个超出舒适区的任务或项目。",
+          "ja": "今週、コンフォートゾーンの外にある課題を一つ引き受けましょう。",
+          "hi": "इस हफ्ते अपने आराम क्षेत्र से बाहर की एक चुनौती लें।"
+        },
+        "low": {
+          "en": "Block two 30-minute 'thinking time' slots this week — no meetings, no tasks.",
+          "zh-TW": "本週安排兩段30分鐘的「思考時間」——不開會、不做任務。",
+          "zh-CN": "本周安排两段30分钟的「思考时间」——不开会、不做任务。",
+          "ja": "今週は30分の「考える時間」を2回確保しましょう。会議もタスクもなしで。",
+          "hi": "इस हफ्ते 30-30 मिनट के दो 'सोचने के समय' तय करें — न मीटिंग, न काम।"
+        }
+      },
+      "prompt": {
+        "high": {
+          "en": "Would you choose this work if money wasn't a factor? What would you redesign about your role?",
+          "zh-TW": "如果金錢不是問題，你會選擇做同樣的工作嗎？你會改變什麼？",
+          "zh-CN": "如果金钱不是问题，你会选择做同样的工作吗？你会改变什么？",
+          "ja": "お金が問題でなければ、同じ仕事を選びますか？役割のどこを変えたいですか？",
+          "hi": "अगर पैसा मायने न रखता, तो क्या आप यही काम चुनते? अपनी भूमिका में क्या बदलते?"
+        },
+        "low": {
+          "en": "If your career challenges right now are trying to teach you something, what would that lesson be?",
+          "zh-TW": "如果你現在的職業挑戰正在試圖教你什麼，那個教訓會是什麼？",
+          "zh-CN": "如果你现在的职业挑战正在试图教你什么，那个教训会是什么？",
+          "ja": "今のキャリアの課題が何かを教えようとしているなら、その教訓は何でしょう？",
+          "hi": "अगर करियर की मौजूदा चुनौतियाँ कुछ सिखा रही हैं, तो वह सबक क्या होगा?"
+        }
+      }
+    },
+    "wealth": {
+      "displayName": {
+        "en": "Wealth",
+        "zh-TW": "財富",
+        "zh-CN": "财富",
+        "ja": "財運",
+        "hi": "धन"
+      },
+      "interpretation": {
+        "pattern": {
+          "peak": {
+            "en": "Wealth signals show exceptional steadiness this month. Your awareness of money habits reads sharp and well aligned.",
+            "zh-TW": "財富方面本月展現出穩健的力量。你對金錢習慣的覺察清晰，信號整體對齊。",
+            "zh-CN": "{domain}方面本月展现出非凡的力量。你的掌纹与星象信号高度对齐，预示着良好的发展态势。",
+            "ja": "{domain}は今月、非常に強いエネルギーを示しています。手相と星のシグナルが高いレベルで一致しています。",
+            "hi": "{domain} इस महीने असाधारण ऊर्जा दिखा रहा है। आपकी हस्तरेखा और ज्योतिषीय संकेत मजबूत तालमेल में हैं।"
+          },
+          "rising": {
+            "en": "Your money awareness is in a positive phase. The reading suggests steady habits with room to compound quietly.",
+            "zh-TW": "你的財富能量正處於積極階段。讀數顯示穩定的習慣，正在安靜地累積。",
+            "zh-CN": "你的{domain}能量正处于积极阶段。分析显示出稳固的基础，有着稳定成长的明确指标。",
+            "ja": "{domain}のエネルギーはポジティブな段階にあります。安定した基盤と着実な成長の兆しが見えます。",
+            "hi": "आपकी {domain} ऊर्जा सकारात्मक चरण में है। विश्लेषण एक मजबूत नींव और स्थिर विकास के संकेत दिखाता है।"
+          },
+          "transition": {
+            "en": "Your wealth picture is in transition. Day-to-day habits are stable, but attention to small leaks could pay off.",
+            "zh-TW": "你的財富正處於轉型期。日常習慣穩定，但留意小漏洞會帶來回報。",
+            "zh-CN": "你的{domain}正处于转型期。基础面稳定，但有些领域需要特别关注以获得突破。",
+            "ja": "{domain}は過渡期にあります。基礎は安定していますが、注力すべき分野があります。",
+            "hi": "आपका {domain} संक्रमण काल में है। नींव स्थिर है, लेकिन कुछ क्षेत्रों पर ध्यान देने की जरूरत है।"
+          },
+          "building": {
+            "en": "Wealth readings suggest a building phase. Favor tracking and planning over big commitments this month.",
+            "zh-TW": "你的財富正在累積階段。本月適合記錄與規劃，而非重大的承諾。",
+            "zh-CN": "你的{domain}正在积累阶段。这是耐心经营、打好基础的时期。",
+            "ja": "{domain}は蓄積の段階です。忍耐強く基礎を築く時期です。",
+            "hi": "आपका {domain} निर्माण के चरण में है। यह धैर्य और मजबूत नींव बनाने का समय है।"
+          },
+          "attention": {
+            "en": "Wealth indicators are calling for attention. Treat this as a nudge to slow spending decisions, not a verdict.",
+            "zh-TW": "你的財富指標正在提醒你需要留心。把它當作放慢消費決策的提示，而非定論。",
+            "zh-CN": "你的{domain}指标正在提醒你需要留心。这不是警告，而是重新调整的邀请。",
+            "ja": "{domain}の指標が注意を促しています。これは警告ではなく、再調整への招待です。",
+            "hi": "आपके {domain} संकेतक ध्यान देने की मांग कर रहे हैं। यह चिंता नहीं, बल्कि पुनर्संतुलन का निमंत्रण है।"
+          }
+        },
+        "trigger": {
+          "high": {
+            "en": "Confidence with money often peaks right after wins — a bonus, a saved goal, a good month.",
+            "zh-TW": "金錢上的自信常在小勝利之後達到頂點——獎金、達成的儲蓄目標、順利的一個月。",
+            "zh-CN": "金钱上的自信常在小胜利之后达到顶点——奖金、达成的储蓄目标、顺利的一个月。",
+            "ja": "お金への自信は、目標達成や好調な月など、うまくいった直後に高まりがちです。",
+            "hi": "पैसों का आत्मविश्वास अक्सर छोटी जीत के ठीक बाद चरम पर होता है।"
+          },
+          "low": {
+            "en": "Money stress tends to spike around bills, comparisons, and late-night browsing.",
+            "zh-TW": "金錢壓力常在帳單、比較心態與深夜瀏覽購物時升高。",
+            "zh-CN": "金钱压力常在账单、比较心态与深夜浏览购物时升高。",
+            "ja": "お金のストレスは、請求書や他人との比較、夜遅くの買い物閲覧で高まりやすいものです。",
+            "hi": "पैसों का तनाव अक्सर बिलों, तुलना और देर रात की खरीदारी में बढ़ता है।"
+          }
+        },
+        "cost": {
+          "high": {
+            "en": "The quiet cost is lifestyle creep — spending that rises to meet every good month.",
+            "zh-TW": "安靜的代價是生活方式膨脹——支出隨著每個順利的月份悄悄上升。",
+            "zh-CN": "安静的代价是生活方式膨胀——支出随着每个顺利的月份悄悄上升。",
+            "ja": "静かな代償は生活水準の膨張です。良い月のたびに支出が増えていきます。",
+            "hi": "चुपचाप कीमत है जीवनशैली का फैलाव — हर अच्छे महीने के साथ बढ़ता खर्च।"
+          },
+          "low": {
+            "en": "Left alone, money worry drains focus from the places it could actually help.",
+            "zh-TW": "若放任不管，金錢焦慮會消耗你本可用在改善上的注意力。",
+            "zh-CN": "若放任不管，金钱焦虑会消耗你本可用在改善上的注意力。",
+            "ja": "放っておくと、お金の不安は本来役立てられるはずの集中力を奪います。",
+            "hi": "यूँ ही छोड़ने पर पैसों की चिंता उस ध्यान को खा जाती है जो असल में मदद कर सकता था।"
+          }
+        }
+      },
+      "blindspot": {
+        "high": {
+          "en": "Financial confidence can lead to lifestyle inflation. The gap between 'can afford' and 'should buy' widens when things feel abundant.",
+          "zh-TW": "財務自信可能導致生活方式膨脹。「能負擔」和「應該買」之間的差距會在順境中擴大。",
+          "zh-CN": "财务自信可能导致生活方式膨胀。「能负担」和「应该买」之间的差距会在顺境中扩大。",
+          "ja": "財務的な自信はライフスタイルの肥大化につながることがあります。「買える」と「買うべき」の差は、順調な時ほど広がります。",
+          "hi": "वित्तीय आत्मविश्वास जीवनशैली के फैलाव की ओर ले जा सकता है। 'खरीद सकते हैं' और 'खरीदना चाहिए' का अंतर अच्छे समय में बढ़ता है।"
+        },
+        "low": {
+          "en": "When wealth signals are lower, avoid both panic-saving and stress-spending.",
+          "zh-TW": "當財務信號較低時，避免恐慌性儲蓄或壓力性消費。",
+          "zh-CN": "当财务信号较低时，避免恐慌性储蓄或压力性消费。",
+          "ja": "財務シグナルが低い時は、パニック的な節約もストレス消費も避けましょう。",
+          "hi": "जब धन के संकेत कमजोर हों, तो घबराहट में बचत और तनाव में खर्च — दोनों से बचें।"
+        }
+      },
+      "actionToday": {
+        "high": {
+          "en": "Review your subscriptions and cancel one you haven't used this month.",
+          "zh-TW": "檢視你的訂閱服務，取消一個過去一個月沒使用的。",
+          "zh-CN": "检视你的订阅服务，取消一个过去一个月没使用的。",
+          "ja": "サブスクリプションを見直し、今月使わなかったものを一つ解約しましょう。",
+          "hi": "अपनी सदस्यताएँ देखें और इस महीने इस्तेमाल न हुई एक को रद्द करें।"
+        },
+        "low": {
+          "en": "Identify one free activity that genuinely makes you happy.",
+          "zh-TW": "找出一個真正讓你開心的免費活動。",
+          "zh-CN": "找出一个真正让你开心的免费活动。",
+          "ja": "本当に楽しめる無料の活動を一つ見つけましょう。",
+          "hi": "एक मुफ्त गतिविधि खोजें जो सचमुच आपको खुश करती है।"
+        }
+      },
+      "actionWeek": {
+        "high": {
+          "en": "Set up one automatic transfer to savings this week.",
+          "zh-TW": "本週設定一筆自動轉帳到儲蓄帳戶。",
+          "zh-CN": "本周设定一笔自动转账到储蓄账户。",
+          "ja": "今週、貯蓄口座への自動振替を一つ設定しましょう。",
+          "hi": "इस हफ्ते बचत खाते में एक स्वचालित ट्रांसफर सेट करें।"
+        },
+        "low": {
+          "en": "Have one honest conversation about money with someone you trust this week.",
+          "zh-TW": "本週和一個你信任的人坦誠地談談金錢。",
+          "zh-CN": "本周和一个你信任的人坦诚地谈谈金钱。",
+          "ja": "今週、信頼できる人とお金について率直に話してみましょう。",
+          "hi": "इस हफ्ते किसी भरोसेमंद व्यक्ति से पैसों पर एक खुली बातचीत करें।"
+        }
+      },
+      "prompt": {
+        "high": {
+          "en": "Beyond financial security, what does 'enough' look like for you?",
+          "zh-TW": "除了財務安全，對你來說「足夠」是什麼樣子？",
+          "zh-CN": "除了财务安全，「足够」对你来说是什么样子？",
+          "ja": "経済的な安心の先にある「十分」とは、あなたにとってどんな姿ですか？",
+          "hi": "आर्थिक सुरक्षा से आगे, आपके लिए 'काफी' कैसा दिखता है?"
+        },
+        "low": {
+          "en": "If you could change one financial habit tomorrow, which one would have the biggest ripple effect?",
+          "zh-TW": "如果你明天可以改變一個理財習慣，哪一個會產生最大的漣漪效應？",
+          "zh-CN": "如果你明天可以改变一个理财习惯，哪一个会产生最大的涟漪效应？",
+          "ja": "明日一つだけお金の習慣を変えられるなら、どれが最も大きな波及効果を生みますか？",
+          "hi": "अगर कल एक पैसों की आदत बदल सकें, तो किसका असर सबसे बड़ा होगा?"
+        }
+      },
+      "safetyNotes": {
+        "en": [
+          "For personal reflection only. This is not financial, investment, or tax guidance."
+        ],
+        "zh-TW": [
+          "本內容僅供個人成長參考，不提供任何投資、理財或稅務方面的指引。"
+        ],
+        "zh-CN": [
+          "本内容仅供个人成长参考，不提供任何投资、理财或税务方面的指引。"
+        ],
+        "ja": [
+          "この内容は自己成長のための参考であり、投資や資産運用に関する助言ではありません。"
+        ],
+        "hi": [
+          "यह सामग्री केवल आत्म-विकास के लिए है। यह किसी प्रकार की निवेश या वित्तीय सलाह नहीं है।"
+        ]
+      }
+    },
+    "family": {
+      "displayName": {
+        "en": "Family",
+        "zh-TW": "家庭",
+        "zh-CN": "家庭",
+        "ja": "家庭",
+        "hi": "परिवार"
+      },
+      "interpretation": {
+        "pattern": {
+          "peak": {
+            "en": "Family signals are notably warm this month. Connection and communication indicators align in your favor.",
+            "zh-TW": "家庭方面本月展現出溫暖的力量。連結與溝通的信號整體對你有利。",
+            "zh-CN": "{domain}方面本月展现出非凡的力量。你的掌纹与星象信号高度对齐，预示着良好的发展态势。",
+            "ja": "{domain}は今月、非常に強いエネルギーを示しています。手相と星のシグナルが高いレベルで一致しています。",
+            "hi": "{domain} इस महीने असाधारण ऊर्जा दिखा रहा है। आपकी हस्तरेखा और ज्योतिषीय संकेत मजबूत तालमेल में हैं।"
+          },
+          "rising": {
+            "en": "Your family energy is in a positive phase. The reading points to open channels and easy repair after friction.",
+            "zh-TW": "你的家庭能量正處於積極階段。讀數顯示溝通管道暢通，摩擦後也容易修復。",
+            "zh-CN": "你的{domain}能量正处于积极阶段。分析显示出稳固的基础，有着稳定成长的明确指标。",
+            "ja": "{domain}のエネルギーはポジティブな段階にあります。安定した基盤と着実な成長の兆しが見えます。",
+            "hi": "आपकी {domain} ऊर्जा सकारात्मक चरण में है। विश्लेषण एक मजबूत नींव और स्थिर विकास के संकेत दिखाता है।"
+          },
+          "transition": {
+            "en": "Family life is in a transitional stretch. Bonds are stable, though a few relationships would welcome more attention.",
+            "zh-TW": "你的家庭正處於轉型期。關係穩定，但有些連結值得投入更多關注。",
+            "zh-CN": "你的{domain}正处于转型期。基础面稳定，但有些领域需要特别关注以获得突破。",
+            "ja": "{domain}は過渡期にあります。基礎は安定していますが、注力すべき分野があります。",
+            "hi": "आपका {domain} संक्रमण काल में है। नींव स्थिर है, लेकिन कुछ क्षेत्रों पर ध्यान देने की जरूरत है।"
+          },
+          "building": {
+            "en": "Family readings point to a building phase. Small, consistent gestures matter more than grand plans right now.",
+            "zh-TW": "你的家庭正在累積階段。此刻持續的小舉動勝過盛大的計畫。",
+            "zh-CN": "你的{domain}正在积累阶段。这是耐心经营、打好基础的时期。",
+            "ja": "{domain}は蓄積の段階です。忍耐強く基礎を築く時期です。",
+            "hi": "आपका {domain} निर्माण के चरण में है। यह धैर्य और मजबूत नींव बनाने का समय है।"
+          },
+          "attention": {
+            "en": "Family indicators are asking for gentle attention. Consider this an invitation to reconnect, not a warning.",
+            "zh-TW": "你的家庭指標正在溫柔地提醒你。把它視為重新連結的邀請，而非警訊。",
+            "zh-CN": "你的{domain}指标正在提醒你需要留心。这不是警告，而是重新调整的邀请。",
+            "ja": "{domain}の指標が注意を促しています。これは警告ではなく、再調整への招待です。",
+            "hi": "आपके {domain} संकेतक ध्यान देने की मांग कर रहे हैं। यह चिंता नहीं, बल्कि पुनर्संतुलन का निमंत्रण है।"
+          }
+        },
+        "trigger": {
+          "high": {
+            "en": "Warmth shows up most in unstructured time — shared meals, errands, small rituals.",
+            "zh-TW": "溫暖最常出現在不刻意安排的時刻——共餐、跑腿、小小的儀式。",
+            "zh-CN": "温暖最常出现在不刻意安排的时刻——共餐、跑腿、小小的仪式。",
+            "ja": "温かさは、食事や日々の小さな習慣など、何気ない時間に最も表れます。",
+            "hi": "अपनापन सबसे ज्यादा सहज पलों में दिखता है — साथ खाना, छोटे-छोटे काम।"
+          },
+          "low": {
+            "en": "Distance tends to grow quietly through busy weeks and postponed conversations.",
+            "zh-TW": "距離常在忙碌的日子與一再延後的對話中悄悄拉開。",
+            "zh-CN": "距离常在忙碌的日子与一再延后的对话中悄悄拉开。",
+            "ja": "距離は、忙しい日々と先送りされた会話の中で静かに広がりがちです。",
+            "hi": "दूरी अक्सर व्यस्त हफ्तों और टलती बातचीत में चुपचाप बढ़ती है।"
+          }
+        },
+        "cost": {
+          "high": {
+            "en": "Taken for granted, warmth can fade into routine before anyone names it.",
+            "zh-TW": "若視為理所當然，溫暖可能在無人察覺時淡成例行公事。",
+            "zh-CN": "若视为理所当然，温暖可能在无人察觉时淡成例行公事。",
+            "ja": "当たり前になると、温かさは誰も気づかないうちに日常へ薄れていきます。",
+            "hi": "हल्के में लेने पर अपनापन बिना कहे ही औपचारिकता में बदल सकता है।"
+          },
+          "low": {
+            "en": "Unspoken tension tends to cost the most in the relationships you value most.",
+            "zh-TW": "未說出口的張力，往往讓你最在乎的關係付出最大代價。",
+            "zh-CN": "未说出口的张力，往往让你最在乎的关系付出最大代价。",
+            "ja": "口にされない緊張は、最も大切な関係に最も大きな負担をかけがちです。",
+            "hi": "अनकहा तनाव अक्सर उन्हीं रिश्तों को सबसे महंगा पड़ता है जो सबसे प्रिय हैं।"
+          }
+        }
+      },
+      "blindspot": {
+        "high": {
+          "en": "Strong family harmony can make you assume everyone is fine. The quietest family member may need the most attention.",
+          "zh-TW": "家庭和諧時容易假設每個人都很好。最安靜的家人可能最需要關注。",
+          "zh-CN": "家庭和谐时容易假设每个人都很好。最安静的家人可能最需要关注。",
+          "ja": "家族の調和が良い時ほど、全員が大丈夫だと思い込みがちです。最も静かな家族が最も気にかけてほしいのかもしれません。",
+          "hi": "पारिवारिक सामंजस्य अच्छा होने पर लगता है कि सब ठीक हैं। सबसे शांत सदस्य को शायद सबसे ज्यादा ध्यान चाहिए।"
+        },
+        "low": {
+          "en": "During challenging family periods, remember that distance isn't always rejection. Sometimes people need space.",
+          "zh-TW": "家庭關係困難時期，記住距離並不總是拒絕——有時人們需要空間。",
+          "zh-CN": "家庭关系困难时期，记住距离并不总是拒绝——有时人们需要空间。",
+          "ja": "家族関係が難しい時期には、距離は必ずしも拒絶ではないと覚えておきましょう。空間が必要なこともあります。",
+          "hi": "कठिन समय में याद रखें, दूरी हमेशा अस्वीकृति नहीं होती — कभी-कभी लोगों को बस थोड़ी जगह चाहिए।"
+        }
+      },
+      "actionToday": {
+        "high": {
+          "en": "Put your phone down during dinner tonight and be fully present.",
+          "zh-TW": "今晚吃飯時放下手機，全心與家人在一起。",
+          "zh-CN": "今晚吃饭时放下手机，全心与家人在一起。",
+          "ja": "今夜の食事中はスマホを置いて、家族との時間に集中しましょう。",
+          "hi": "आज रात खाने के समय फोन दूर रखें और पूरी तरह मौजूद रहें।"
+        },
+        "low": {
+          "en": "Write down one thing you appreciate about a family member but haven't told them.",
+          "zh-TW": "寫下一件你感謝某位家人但從未說過的事。",
+          "zh-CN": "写下一件你感谢某位家人但从未说过的事。",
+          "ja": "家族について感謝しているのにまだ伝えていないことを一つ書き出しましょう。",
+          "hi": "परिवार के किसी सदस्य की एक बात लिखें जिसकी आप कद्र करते हैं पर कभी कहा नहीं।"
+        }
+      },
+      "actionWeek": {
+        "high": {
+          "en": "Plan a specific activity with family — not 'let's hang out' but 'let's do X on Saturday.'",
+          "zh-TW": "和家人安排一個具體活動——不是「找時間聚聚」，而是「週六一起做某件事」。",
+          "zh-CN": "和家人安排一个具体活动——不是「找时间聚聚」，而是「周六一起做某件事」。",
+          "ja": "家族と具体的な予定を立てましょう。「そのうち」ではなく「土曜日にこれをしよう」と。",
+          "hi": "परिवार के साथ एक तय गतिविधि बनाएं — 'कभी मिलते हैं' नहीं, बल्कि 'शनिवार को यह करेंगे'।"
+        },
+        "low": {
+          "en": "Spend 20 minutes this week on a family relationship that needs attention.",
+          "zh-TW": "本週花20分鐘在一段需要關注的家庭關係上。",
+          "zh-CN": "本周花20分钟在一段需要关注的家庭关系上。",
+          "ja": "今週、気にかけたい家族関係のために20分使いましょう。",
+          "hi": "इस हफ्ते 20 मिनट उस पारिवारिक रिश्ते को दें जिसे ध्यान चाहिए।"
+        }
+      },
+      "prompt": {
+        "high": {
+          "en": "What's one conversation you've been avoiding? What would it take to have it with compassion?",
+          "zh-TW": "有什麼對話你一直在迴避？用同理心去開啟它需要什麼？",
+          "zh-CN": "有什么对话你一直在回避？用同理心去开启它需要什么？",
+          "ja": "避け続けている会話はありませんか？思いやりを持って始めるには何が必要でしょう？",
+          "hi": "कौन-सी बातचीत आप टालते आ रहे हैं? उसे करुणा के साथ करने के लिए क्या चाहिए?"
+        },
+        "low": {
+          "en": "What's one expectation you hold for a family relationship that might be worth examining?",
+          "zh-TW": "你對家庭關係抱持的某個期望，值得重新審視嗎？",
+          "zh-CN": "你对家庭关系抱持的某个期望，值得重新审视吗？",
+          "ja": "家族関係への期待の中で、見直す価値のあるものは何でしょう？",
+          "hi": "पारिवारिक रिश्ते से जुड़ी कौन-सी उम्मीद फिर से परखने लायक है?"
+        }
+      }
+    },
+    "health": {
+      "displayName": {
+        "en": "Health",
+        "zh-TW": "健康",
+        "zh-CN": "健康",
+        "ja": "健康",
+        "hi": "स्वास्थ्य"
+      },
+      "interpretation": {
+        "pattern": {
+          "peak": {
+            "en": "Well-being signals look strong this month. Energy, rhythm, and recovery indicators are working together.",
+            "zh-TW": "健康方面本月展現出良好的狀態。精力、節奏與恢復的信號正協同運作。",
+            "zh-CN": "{domain}方面本月展现出非凡的力量。你的掌纹与星象信号高度对齐，预示着良好的发展态势。",
+            "ja": "{domain}は今月、非常に強いエネルギーを示しています。手相と星のシグナルが高いレベルで一致しています。",
+            "hi": "{domain} इस महीने असाधारण ऊर्जा दिखा रहा है। आपकी हस्तरेखा और ज्योतिषीय संकेत मजबूत तालमेल में हैं।"
+          },
+          "rising": {
+            "en": "Your well-being energy is in a positive phase. The reading shows a steady rhythm worth protecting.",
+            "zh-TW": "你的健康能量正處於積極階段。讀數顯示值得守護的穩定節奏。",
+            "zh-CN": "你的{domain}能量正处于积极阶段。分析显示出稳固的基础，有着稳定成长的明确指标。",
+            "ja": "{domain}のエネルギーはポジティブな段階にあります。安定した基盤と着実な成長の兆しが見えます。",
+            "hi": "आपकी {domain} ऊर्जा सकारात्मक चरण में है। विश्लेषण एक मजबूत नींव और स्थिर विकास के संकेत दिखाता है।"
+          },
+          "transition": {
+            "en": "Your well-being is in a transitional stretch. Routines are holding, and small adjustments could lift your energy.",
+            "zh-TW": "你的健康正處於調整期。作息大致穩定，小幅調整能提升你的精力。",
+            "zh-CN": "你的{domain}正处于转型期。基础面稳定，但有些领域需要特别关注以获得突破。",
+            "ja": "{domain}は過渡期にあります。基礎は安定していますが、注力すべき分野があります。",
+            "hi": "आपका {domain} संक्रमण काल में है। नींव स्थिर है, लेकिन कुछ क्षेत्रों पर ध्यान देने की जरूरत है।"
+          },
+          "building": {
+            "en": "Well-being readings point to a building phase. Prioritize rest and simple routines over intensity.",
+            "zh-TW": "你的健康正在累積階段。優先安排休息與簡單的日常，而非高強度挑戰。",
+            "zh-CN": "你的{domain}正在积累阶段。这是耐心经营、打好基础的时期。",
+            "ja": "{domain}は蓄積の段階です。忍耐強く基礎を築く時期です。",
+            "hi": "आपका {domain} निर्माण के चरण में है। यह धैर्य और मजबूत नींव बनाने का समय है।"
+          },
+          "attention": {
+            "en": "Well-being indicators are asking for care this month. This is an invitation to slow down and listen to your body.",
+            "zh-TW": "你的健康指標正在提醒你放慢腳步。這是傾聽身體的邀請。",
+            "zh-CN": "你的{domain}指标正在提醒你需要留心。这不是警告，而是重新调整的邀请。",
+            "ja": "{domain}の指標が注意を促しています。これは警告ではなく、再調整への招待です。",
+            "hi": "आपके {domain} संकेतक ध्यान देने की मांग कर रहे हैं। यह चिंता नहीं, बल्कि पुनर्संतुलन का निमंत्रण है।"
+          }
+        },
+        "trigger": {
+          "high": {
+            "en": "Good rhythms hold best when sleep and meals stay anchored, even on busy days.",
+            "zh-TW": "當睡眠與飲食保持規律，即使忙碌，好的節奏也最容易維持。",
+            "zh-CN": "当睡眠与饮食保持规律，即使忙碌，好的节奏也最容易维持。",
+            "ja": "睡眠と食事のリズムが保たれていれば、忙しい日でも良い調子は続きやすいものです。",
+            "hi": "नींद और भोजन नियमित रहें तो व्यस्त दिनों में भी अच्छी लय बनी रहती है।"
+          },
+          "low": {
+            "en": "Energy dips tend to follow short nights, skipped breaks, and screens before bed.",
+            "zh-TW": "精力下滑常跟隨著睡眠不足、略過休息與睡前滑手機。",
+            "zh-CN": "精力下滑常跟随着睡眠不足、略过休息与睡前刷手机。",
+            "ja": "エネルギーの低下は、睡眠不足や休憩抜き、寝る前の画面時間の後に起こりがちです。",
+            "hi": "ऊर्जा में गिरावट अक्सर कम नींद, छूटे ब्रेक और सोने से पहले स्क्रीन के बाद आती है।"
+          }
+        },
+        "cost": {
+          "high": {
+            "en": "Feeling good can tempt you to trade sleep for output until the rhythm slips.",
+            "zh-TW": "狀態好時，你可能想用睡眠換取產出，直到節奏悄悄失衡。",
+            "zh-CN": "状态好时，你可能想用睡眠换取产出，直到节奏悄悄失衡。",
+            "ja": "調子が良いと、つい睡眠を成果と引き換えにし、リズムを崩しがちです。",
+            "hi": "अच्छा महसूस होने पर नींद को काम से बदलने का लालच लय बिगाड़ सकता है।"
+          },
+          "low": {
+            "en": "Pushing through tiredness usually borrows energy you will need next week.",
+            "zh-TW": "硬撐著疲憊前進，通常是向下週的精力預支。",
+            "zh-CN": "硬撑着疲惫前进，通常是向下周的精力预支。",
+            "ja": "疲れを押して進むのは、来週必要になるエネルギーの前借りになりがちです。",
+            "hi": "थकान के बावजूद धक्का देना अगले हफ्ते की ऊर्जा उधार लेना है।"
+          }
+        }
+      },
+      "blindspot": {
+        "high": {
+          "en": "Good well-being readings can create a false sense of invincibility. This is the best time to establish preventive habits.",
+          "zh-TW": "良好的健康指標可能產生虛假的安全感。這其實是建立預防習慣的最佳時機。",
+          "zh-CN": "良好的健康指标可能产生虚假的安全感。这其实是建立预防习惯的最佳时机。",
+          "ja": "良好な指標は根拠のない無敵感を生むことがあります。今こそ予防的な習慣を作る最良の時期です。",
+          "hi": "अच्छे संकेत अजेयता का भ्रम पैदा कर सकते हैं। यही समय है अच्छी आदतें बनाने का।"
+        },
+        "low": {
+          "en": "Lower well-being indicators aren't predictions — they're invitations to prioritize yourself. Start with basics: sleep, hydration, movement.",
+          "zh-TW": "較低的健康指標不是預測——而是優先照顧自己的邀請。從基本做起：睡眠、補水、運動。",
+          "zh-CN": "较低的健康指标不是预测——而是优先照顾自己的邀请。从基本做起：睡眠、补水、运动。",
+          "ja": "低めの指標は予言ではなく、自分を大切にするための合図です。睡眠・水分・運動という基本から始めましょう。",
+          "hi": "कमजोर संकेत भविष्यवाणी नहीं हैं — वे खुद का ख्याल रखने का निमंत्रण हैं। बुनियाद से शुरू करें: नींद, पानी, हलचल।"
+        }
+      },
+      "actionToday": {
+        "high": {
+          "en": "Do something physical you enjoy today — walking, dancing, stretching.",
+          "zh-TW": "做一件你真正喜歡的運動——散步、跳舞、伸展。",
+          "zh-CN": "做一件你真正喜欢的运动——散步、跳舞、伸展。",
+          "ja": "今日は好きな運動を一つ——散歩、ダンス、ストレッチなど。",
+          "hi": "आज कोई पसंदीदा शारीरिक गतिविधि करें — टहलना, नाचना, स्ट्रेचिंग।"
+        },
+        "low": {
+          "en": "Go to bed 30 minutes earlier tonight. Sleep is the foundation.",
+          "zh-TW": "今晚早睡30分鐘。睡眠是一切的基礎。",
+          "zh-CN": "今晚早睡30分钟。睡眠是一切的基础。",
+          "ja": "今夜は30分早く寝ましょう。睡眠がすべての土台です。",
+          "hi": "आज रात 30 मिनट पहले सोएँ। नींद ही नींव है।"
+        }
+      },
+      "actionWeek": {
+        "high": {
+          "en": "Try one new healthy recipe this week.",
+          "zh-TW": "本週試做一道新的健康食譜。",
+          "zh-CN": "本周试做一道新的健康食谱。",
+          "ja": "今週、新しいヘルシーレシピを一つ試してみましょう。",
+          "hi": "इस हफ्ते एक नई सेहतमंद रेसिपी आज़माएँ।"
+        },
+        "low": {
+          "en": "Schedule a wellness check if you haven't had one recently.",
+          "zh-TW": "如果你最近沒做過健康檢查，安排一次。",
+          "zh-CN": "如果你最近没做过健康检查，安排一次。",
+          "ja": "最近受けていなければ、健康チェックの予定を入れましょう。",
+          "hi": "अगर हाल में कोई हेल्थ चेक नहीं हुआ है, तो एक तय करें।"
+        }
+      },
+      "prompt": {
+        "high": {
+          "en": "Your body is your longest relationship. How's the communication quality right now?",
+          "zh-TW": "你和身體之間的溝通品質如何？你在傾聽嗎？",
+          "zh-CN": "你和身体之间的沟通质量如何？你在倾听吗？",
+          "ja": "あなたと体のコミュニケーションの質は、今どうですか？",
+          "hi": "आपका शरीर आपका सबसे लंबा रिश्ता है। अभी संवाद कैसा चल रहा है?"
+        },
+        "low": {
+          "en": "If your body could write you a letter, what would it say?",
+          "zh-TW": "如果你的身體現在可以寫一封信給你，它會說什麼？",
+          "zh-CN": "如果你的身体可以写一封信给你，它会说什么？",
+          "ja": "体があなたに手紙を書けるとしたら、何と言うでしょう？",
+          "hi": "अगर आपका शरीर आपको खत लिख सकता, तो क्या कहता?"
+        }
+      },
+      "safetyNotes": {
+        "en": [
+          "For self-awareness only. This is not medical or health guidance."
+        ],
+        "zh-TW": [
+          "本內容僅供自我覺察參考，不提供任何醫療或健康方面的指引。"
+        ],
+        "zh-CN": [
+          "本内容仅供自我觉察参考，不提供任何医疗或健康方面的指引。"
+        ],
+        "ja": [
+          "この内容は自己観察のための参考であり、医療に関する助言ではありません。"
+        ],
+        "hi": [
+          "यह सामग्री केवल आत्म-जागरूकता के लिए है। यह चिकित्सा सलाह नहीं है।"
+        ]
+      }
+    }
+  },
+  "observations": {
+    "PALM_HEADLINE_LONG_CLEAR": {
+      "displayName": {
+        "en": "Head line — long and clear",
+        "zh-TW": "頭腦線清晰而長",
+        "zh-CN": "头脑线清晰而长",
+        "ja": "頭脳線が長く明瞭",
+        "hi": "मस्तिष्क रेखा लंबी और स्पष्ट"
+      },
+      "evidenceSummary": {
+        "en": "The head line region reads long and well defined in this scan, a pattern linked to focus and structured thinking.",
+        "zh-TW": "本次掃描中頭腦線區域清晰綿長，這種型態與專注力和條理思考相關。",
+        "zh-CN": "本次扫描中头脑线区域清晰绵长，这种形态与专注力和条理思考相关。",
+        "ja": "今回のスキャンでは頭脳線の領域が長く明瞭で、集中力や論理的思考と結び付けられるパターンです。",
+        "hi": "इस स्कैन में मस्तिष्क रेखा लंबी और स्पष्ट दिखी — यह पैटर्न एकाग्रता और सुव्यवस्थित सोच से जुड़ा माना जाता है।"
+      }
+    },
+    "PALM_HEADLINE_CHAINED": {
+      "displayName": {
+        "en": "Head line — chained",
+        "zh-TW": "頭腦線呈鏈狀",
+        "zh-CN": "头脑线呈链状",
+        "ja": "頭脳線が鎖状",
+        "hi": "मस्तिष्क रेखा शृंखलाबद्ध"
+      },
+      "evidenceSummary": {
+        "en": "The head line region shows a chained texture this scan, traditionally read as scattered attention — a nudge toward single-tasking.",
+        "zh-TW": "本次掃描中頭腦線區域呈鏈狀紋理，傳統上解讀為注意力分散——提醒你一次專注一件事。",
+        "zh-CN": "本次扫描中头脑线区域呈链状纹理，传统上解读为注意力分散——提醒你一次专注一件事。",
+        "ja": "今回のスキャンでは頭脳線が鎖状に見え、伝統的には注意の分散と読まれます。ひとつずつ取り組む合図かもしれません。",
+        "hi": "इस स्कैन में मस्तिष्क रेखा शृंखला जैसी दिखी — पारंपरिक रूप से बिखरे ध्यान का संकेत, एक समय में एक काम की ओर इशारा।"
+      }
+    },
+    "PALM_HEARTLINE_STRONG": {
+      "displayName": {
+        "en": "Heart line — deep and curved",
+        "zh-TW": "感情線深而彎",
+        "zh-CN": "感情线深而弯",
+        "ja": "感情線が深くカーブ",
+        "hi": "हृदय रेखा गहरी और घुमावदार"
+      },
+      "evidenceSummary": {
+        "en": "The heart line region reads deep and curved, a pattern associated with emotional openness and strong connections.",
+        "zh-TW": "感情線區域深刻且弧度明顯，這種型態與情感開放及深厚的人際連結相關。",
+        "zh-CN": "感情线区域深刻且弧度明显，这种形态与情感开放及深厚的人际连结相关。",
+        "ja": "感情線の領域が深くカーブしており、感情の豊かさや強いつながりと結び付けられるパターンです。",
+        "hi": "हृदय रेखा गहरी और घुमावदार दिखी — यह पैटर्न भावनात्मक खुलेपन और मजबूत रिश्तों से जुड़ा माना जाता है।"
+      }
+    },
+    "PALM_HEARTLINE_THIN": {
+      "displayName": {
+        "en": "Heart line — thin and straight",
+        "zh-TW": "感情線細而直",
+        "zh-CN": "感情线细而直",
+        "ja": "感情線が細く直線的",
+        "hi": "हृदय रेखा पतली और सीधी"
+      },
+      "evidenceSummary": {
+        "en": "The heart line region reads thin and straight this scan, often interpreted as a reserved emotional style rather than a lack of feeling.",
+        "zh-TW": "本次掃描中感情線區域細且直，常被解讀為內斂的情感風格，而非缺乏感受。",
+        "zh-CN": "本次扫描中感情线区域细且直，常被解读为内敛的情感风格，而非缺乏感受。",
+        "ja": "感情線が細く直線的に見え、感情の欠如ではなく控えめな表現スタイルと解釈されることが多いパターンです。",
+        "hi": "हृदय रेखा पतली और सीधी दिखी — इसे भावना की कमी नहीं, बल्कि संयमित भावनात्मक शैली के रूप में पढ़ा जाता है।"
+      }
+    },
+    "PALM_LIFELINE_CLEAR": {
+      "displayName": {
+        "en": "Life line — clear",
+        "zh-TW": "生命線清晰",
+        "zh-CN": "生命线清晰",
+        "ja": "生命線が明瞭",
+        "hi": "जीवन रेखा स्पष्ट"
+      },
+      "evidenceSummary": {
+        "en": "The life line region reads clear and continuous, traditionally linked with vitality and steady routines.",
+        "zh-TW": "生命線區域清晰連貫，傳統上與活力和穩定的生活節奏相關。",
+        "zh-CN": "生命线区域清晰连贯，传统上与活力和稳定的生活节奏相关。",
+        "ja": "生命線の領域が明瞭で途切れなく、伝統的に活力や安定した生活リズムと結び付けられます。",
+        "hi": "जीवन रेखा स्पष्ट और अखंड दिखी — पारंपरिक रूप से ऊर्जा और नियमित दिनचर्या से जुड़ी मानी जाती है।"
+      }
+    },
+    "PALM_LIFELINE_FAINT": {
+      "displayName": {
+        "en": "Life line — faint",
+        "zh-TW": "生命線較淡",
+        "zh-CN": "生命线较淡",
+        "ja": "生命線が薄め",
+        "hi": "जीवन रेखा हल्की"
+      },
+      "evidenceSummary": {
+        "en": "The life line region reads lighter in this scan. In palm tradition this is a nudge toward rest and gentler routines — never a health verdict.",
+        "zh-TW": "本次掃描中生命線區域較淡。在手相傳統中，這被視為多休息、放慢節奏的提醒，而非任何健康結論。",
+        "zh-CN": "本次扫描中生命线区域较淡。在手相传统中，这被视为多休息、放慢节奏的提醒，而非任何健康结论。",
+        "ja": "今回のスキャンでは生命線が薄めに見えました。手相の伝統では休息とゆるやかなリズムへの合図とされ、健康の判定ではありません。",
+        "hi": "इस स्कैन में जीवन रेखा हल्की दिखी। हस्तरेखा परंपरा में यह आराम और सहज दिनचर्या का इशारा है — स्वास्थ्य का फैसला नहीं।"
+      }
+    },
+    "PALM_FATELINE_STRONG": {
+      "displayName": {
+        "en": "Fate line — strong",
+        "zh-TW": "命運線分明",
+        "zh-CN": "命运线分明",
+        "ja": "運命線がはっきり",
+        "hi": "भाग्य रेखा सुदृढ़"
+      },
+      "evidenceSummary": {
+        "en": "The fate line region reads strong and well defined, a pattern associated with direction and sense of purpose.",
+        "zh-TW": "命運線區域強而分明，這種型態與方向感和目標感相關。",
+        "zh-CN": "命运线区域强而分明，这种形态与方向感和目标感相关。",
+        "ja": "運命線の領域が力強くはっきりしており、方向性や目的意識と結び付けられるパターンです。",
+        "hi": "भाग्य रेखा मजबूत और स्पष्ट दिखी — यह पैटर्न दिशा और उद्देश्य की भावना से जुड़ा माना जाता है।"
+      }
+    },
+    "PALM_FATELINE_BREAKS": {
+      "displayName": {
+        "en": "Fate line — breaks",
+        "zh-TW": "命運線有中斷",
+        "zh-CN": "命运线有中断",
+        "ja": "運命線に途切れ",
+        "hi": "भाग्य रेखा में विराम"
+      },
+      "evidenceSummary": {
+        "en": "The fate line region shows breaks this scan, traditionally read as shifts in path — often a season of re-deciding what matters.",
+        "zh-TW": "本次掃描中命運線區域出現中斷，傳統上解讀為路徑的轉換——常是重新決定優先順序的季節。",
+        "zh-CN": "本次扫描中命运线区域出现中断，传统上解读为路径的转换——常是重新决定优先顺序的季节。",
+        "ja": "運命線に途切れが見られ、伝統的には進路の転換と読まれます。優先順位を選び直す時期かもしれません。",
+        "hi": "भाग्य रेखा में विराम दिखे — पारंपरिक रूप से राह में बदलाव का संकेत, प्राथमिकताएँ फिर तय करने का मौसम।"
+      }
+    },
+    "ASTRO_SUN_FIRE": {
+      "displayName": {
+        "en": "Sun in a fire sign",
+        "zh-TW": "太陽落在火象星座",
+        "zh-CN": "太阳落在火象星座",
+        "ja": "太陽が火のサイン",
+        "hi": "सूर्य अग्नि राशि में"
+      },
+      "evidenceSummary": {
+        "en": "Your sun sign sits in the fire element, an energy read as initiative, boldness, and quick starts.",
+        "zh-TW": "你的太陽星座屬火象，這種能量常被解讀為主動、果敢與快速啟動。",
+        "zh-CN": "你的太阳星座属火象，这种能量常被解读为主动、果敢与快速启动。",
+        "ja": "太陽星座が火のエレメントにあり、主体性や大胆さ、素早いスタートと読まれるエネルギーです。",
+        "hi": "आपका सूर्य अग्नि तत्व में है — इसे पहल, साहस और तेज शुरुआत की ऊर्जा के रूप में पढ़ा जाता है।"
+      }
+    },
+    "ASTRO_SUN_EARTH": {
+      "displayName": {
+        "en": "Sun in an earth sign",
+        "zh-TW": "太陽落在土象星座",
+        "zh-CN": "太阳落在土象星座",
+        "ja": "太陽が地のサイン",
+        "hi": "सूर्य पृथ्वी राशि में"
+      },
+      "evidenceSummary": {
+        "en": "Your sun sign sits in the earth element, associated with steadiness, patience, and practical follow-through.",
+        "zh-TW": "你的太陽星座屬土象，與穩健、耐心和務實的執行力相關。",
+        "zh-CN": "你的太阳星座属土象，与稳健、耐心和务实的执行力相关。",
+        "ja": "太陽星座が地のエレメントにあり、安定感や忍耐、実務的なやり遂げる力と結び付けられます。",
+        "hi": "आपका सूर्य पृथ्वी तत्व में है — यह स्थिरता, धैर्य और व्यावहारिक निष्पादन से जुड़ा है।"
+      }
+    },
+    "ASTRO_SUN_AIR": {
+      "displayName": {
+        "en": "Sun in an air sign",
+        "zh-TW": "太陽落在風象星座",
+        "zh-CN": "太阳落在风象星座",
+        "ja": "太陽が風のサイン",
+        "hi": "सूर्य वायु राशि में"
+      },
+      "evidenceSummary": {
+        "en": "Your sun sign sits in the air element, read as curiosity, communication, and connecting ideas and people.",
+        "zh-TW": "你的太陽星座屬風象，常被解讀為好奇、善於溝通、連結想法與人。",
+        "zh-CN": "你的太阳星座属风象，常被解读为好奇、善于沟通、连结想法与人。",
+        "ja": "太陽星座が風のエレメントにあり、好奇心やコミュニケーション、発想と人を結ぶ力と読まれます。",
+        "hi": "आपका सूर्य वायु तत्व में है — इसे जिज्ञासा, संवाद और विचारों-लोगों को जोड़ने की ऊर्जा के रूप में पढ़ा जाता है।"
+      }
+    },
+    "ASTRO_SUN_WATER": {
+      "displayName": {
+        "en": "Sun in a water sign",
+        "zh-TW": "太陽落在水象星座",
+        "zh-CN": "太阳落在水象星座",
+        "ja": "太陽が水のサイン",
+        "hi": "सूर्य जल राशि में"
+      },
+      "evidenceSummary": {
+        "en": "Your sun sign sits in the water element, associated with empathy, intuition, and emotional depth.",
+        "zh-TW": "你的太陽星座屬水象，與同理心、直覺和情感深度相關。",
+        "zh-CN": "你的太阳星座属水象，与同理心、直觉和情感深度相关。",
+        "ja": "太陽星座が水のエレメントにあり、共感力や直感、感情の深さと結び付けられます。",
+        "hi": "आपका सूर्य जल तत्व में है — यह सहानुभूति, अंतर्ज्ञान और भावनात्मक गहराई से जुड़ा है।"
+      }
+    },
+    "ASTRO_SATURN_STRONG": {
+      "displayName": {
+        "en": "Saturn emphasis",
+        "zh-TW": "土星能量突出",
+        "zh-CN": "土星能量突出",
+        "ja": "土星の強調",
+        "hi": "शनि की प्रधानता"
+      },
+      "evidenceSummary": {
+        "en": "Saturn-related signals stand out in this reading, traditionally linked with discipline, structure, and long-term commitments.",
+        "zh-TW": "本次解讀中土星相關信號突出，傳統上與紀律、結構和長期承諾相關。",
+        "zh-CN": "本次解读中土星相关信号突出，传统上与纪律、结构和长期承诺相关。",
+        "ja": "土星に関わるシグナルが目立ち、伝統的に規律や構造、長期的な取り組みと結び付けられます。",
+        "hi": "इस पाठ में शनि से जुड़े संकेत उभरे — पारंपरिक रूप से अनुशासन, संरचना और दीर्घकालिक प्रतिबद्धता से जुड़े।"
+      }
+    },
+    "ASTRO_JUPITER_STRONG": {
+      "displayName": {
+        "en": "Jupiter emphasis",
+        "zh-TW": "木星能量突出",
+        "zh-CN": "木星能量突出",
+        "ja": "木星の強調",
+        "hi": "बृहस्पति की प्रधानता"
+      },
+      "evidenceSummary": {
+        "en": "Jupiter-related signals stand out in this reading, traditionally read as expansion, optimism, and opportunity.",
+        "zh-TW": "本次解讀中木星相關信號突出，傳統上解讀為擴展、樂觀與機會。",
+        "zh-CN": "本次解读中木星相关信号突出，传统上解读为扩展、乐观与机会。",
+        "ja": "木星に関わるシグナルが目立ち、伝統的に拡大や楽観、機会と読まれます。",
+        "hi": "इस पाठ में बृहस्पति से जुड़े संकेत उभरे — पारंपरिक रूप से विस्तार, आशावाद और अवसर के रूप में पढ़े जाते हैं।"
+      }
+    }
+  },
+  "observationFallbackEvidence": {
+    "en": "This signal contributes to your overall reading.",
+    "zh-TW": "此信號影響你的整體解讀。",
+    "zh-CN": "此信号影响你的整体解读。",
+    "ja": "このシグナルは全体のリーディングに寄与しています。",
+    "hi": "यह संकेत आपके समग्र पाठ में योगदान देता है।"
+  },
+  "fallback": {
+    "interpretationPattern": {
+      "en": "This month's reading is presented in a simplified, extra-careful form.",
+      "zh-TW": "本月的解讀以更謹慎的簡化形式呈現。",
+      "zh-CN": "本月的解读以更谨慎的简化形式呈现。",
+      "ja": "今月のリーディングは、より慎重な簡易形式でお届けしています。",
+      "hi": "इस महीने का पाठ सरल और अतिरिक्त सावधानी वाले रूप में प्रस्तुत है।"
+    },
+    "interpretationTrigger": {
+      "en": "Some generated wording did not meet our content standards, so a safe version is shown instead.",
+      "zh-TW": "部分內容未通過我們的內容標準，因此改以安全版本顯示。",
+      "zh-CN": "部分内容未通过我们的内容标准，因此改以安全版本显示。",
+      "ja": "一部の文章が当社の基準を満たさなかったため、安全な内容に置き換えています。",
+      "hi": "कुछ शब्द हमारे मानकों पर खरे नहीं उतरे, इसलिए सुरक्षित रूप दिखाया गया है।"
+    },
+    "interpretationCost": {
+      "en": "Nothing is lost — your scores and history remain unchanged.",
+      "zh-TW": "別擔心——你的分數與歷史紀錄都完整保留。",
+      "zh-CN": "别担心——你的分数与历史纪录都完整保留。",
+      "ja": "ご安心ください。スコアと履歴はそのまま保持されています。",
+      "hi": "चिंता न करें — आपके स्कोर और इतिहास सुरक्षित हैं।"
+    },
+    "blindspot": {
+      "en": "Take gentle readings like this as reflection prompts, not verdicts.",
+      "zh-TW": "把這樣的解讀當作反思的起點，而非定論。",
+      "zh-CN": "把这样的解读当作反思的起点，而非定论。",
+      "ja": "このようなリーディングは結論ではなく、振り返りのきっかけとして受け取ってください。",
+      "hi": "ऐसे पाठ को निष्कर्ष नहीं, चिंतन की शुरुआत मानें।"
+    },
+    "actionToday": {
+      "en": "Take three slow breaths and note one thing that went well today.",
+      "zh-TW": "深呼吸三次，寫下今天一件順利的事。",
+      "zh-CN": "深呼吸三次，写下今天一件顺利的事。",
+      "ja": "ゆっくり3回深呼吸をして、今日うまくいったことを一つ書き留めましょう。",
+      "hi": "तीन गहरी साँसें लें और आज की एक अच्छी बात लिखें।"
+    },
+    "actionWeek": {
+      "en": "Pick one small routine to keep every day this week.",
+      "zh-TW": "本週選定一個每天都能維持的小習慣。",
+      "zh-CN": "本周选定一个每天都能维持的小习惯。",
+      "ja": "今週は毎日続けられる小さな習慣を一つ選びましょう。",
+      "hi": "इस हफ्ते एक छोटी आदत चुनें और रोज निभाएँ।"
+    },
+    "prompt": {
+      "en": "What deserves a little more of your attention this week?",
+      "zh-TW": "本週有什麼值得你多一點關注？",
+      "zh-CN": "本周有什么值得你多一点关注？",
+      "ja": "今週、もう少し目を向けたいことは何ですか？",
+      "hi": "इस हफ्ते किस चीज़ को थोड़ा और ध्यान देना चाहिए?"
+    },
+    "filteredText": {
+      "en": "This section was adjusted to meet our content guidelines. Your other insights are unaffected.",
+      "zh-TW": "此段內容已依內容準則調整，其他洞察不受影響。",
+      "zh-CN": "此段内容已依内容准则调整，其他洞察不受影响。",
+      "ja": "このセクションはコンテンツ基準に沿って調整されました。他のインサイトには影響ありません。",
+      "hi": "यह अनुभाग सामग्री दिशानिर्देशों के अनुसार समायोजित किया गया है। बाकी अंतर्दृष्टि अप्रभावित हैं।"
+    }
+  },
+  "tones": {
+    "SCIENTIFIC": {
+      "interpretationPrefix": {
+        "en": "",
+        "zh-TW": "",
+        "zh-CN": "",
+        "ja": "",
+        "hi": ""
+      },
+      "blindspotLabel": {
+        "en": "Blindspot: ",
+        "zh-TW": "盲點：",
+        "zh-CN": "盲点：",
+        "ja": "盲点：",
+        "hi": "अंधा बिंदु: "
+      }
+    },
+    "HEALING": {
+      "interpretationPrefix": {
+        "en": "Take a breath. ",
+        "zh-TW": "親愛的，",
+        "zh-CN": "亲爱的，",
+        "ja": "どうか安心してください。",
+        "hi": "प्रिय, "
+      },
+      "blindspotLabel": {
+        "en": "A gentle reminder: ",
+        "zh-TW": "溫柔提醒：",
+        "zh-CN": "温柔提醒：",
+        "ja": "やさしい気づき：",
+        "hi": "कोमल याद: "
+      }
+    },
+    "ROAST_SAFE": {
+      "interpretationPrefix": {
+        "en": "Straight talk: ",
+        "zh-TW": "直說了：",
+        "zh-CN": "直说了：",
+        "ja": "率直に言うと：",
+        "hi": "सीधी बात: "
+      },
+      "blindspotLabel": {
+        "en": "The part you'd rather skip: ",
+        "zh-TW": "你不想聽但該聽的：",
+        "zh-CN": "你不想听但该听的：",
+        "ja": "耳が痛い話：",
+        "hi": "जो सुनना ज़रूरी है: "
+      }
+    }
+  },
+  "labels": {
+    "actionToday": {
+      "en": "Today: ",
+      "zh-TW": "今日行動：",
+      "zh-CN": "今日行动：",
+      "ja": "今日の行動：",
+      "hi": "आज का कदम: "
+    },
+    "actionWeek": {
+      "en": "This week: ",
+      "zh-TW": "本週行動：",
+      "zh-CN": "本周行动：",
+      "ja": "今週の行動：",
+      "hi": "इस सप्ताह: "
+    },
+    "prompt": {
+      "en": "Reflection: ",
+      "zh-TW": "反思提問：",
+      "zh-CN": "反思提问：",
+      "ja": "振り返りの問い：",
+      "hi": "चिंतन प्रश्न: "
+    },
+    "safetyNote": {
+      "en": "Note: ",
+      "zh-TW": "提醒：",
+      "zh-CN": "提醒：",
+      "ja": "ご注意：",
+      "hi": "नोट: "
+    },
+    "grades": {
+      "Watchout": {
+        "en": "Watchout",
+        "zh-TW": "留意",
+        "zh-CN": "留意",
+        "ja": "要注意",
+        "hi": "सावधान"
+      },
+      "Building": {
+        "en": "Building",
+        "zh-TW": "累積",
+        "zh-CN": "积累",
+        "ja": "構築期",
+        "hi": "निर्माण"
+      },
+      "Stable": {
+        "en": "Stable",
+        "zh-TW": "穩定",
+        "zh-CN": "稳定",
+        "ja": "安定",
+        "hi": "स्थिर"
+      },
+      "Growing": {
+        "en": "Growing",
+        "zh-TW": "成長",
+        "zh-CN": "成长",
+        "ja": "成長",
+        "hi": "विकास"
+      }
+    }
+  }
+}

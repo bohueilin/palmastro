@@ -1,0 +1,2 @@
+/* 本地化 Info.plist 值（相機用途說明）。 */
+"NSCameraUsageDescription" = "PalmAstro 使用相機掃描你的手掌。影像僅在這支手機上分析，絕不上傳。";

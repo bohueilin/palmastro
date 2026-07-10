@@ -22,22 +22,28 @@ android {
     }
 }
 
+ksp {
+    // PRD §27/§53: schema history is committed so migrations can be validated.
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
-    implementation(project(":contracts"))
+    // `api`: repository signatures expose contracts types (DeltaResult, GradeShift).
+    api(project(":contracts"))
 
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+    // `api`: the app's DatabaseModule builds the SQLCipher SupportFactory (PRD §27).
+    api("net.zetetic:android-database-sqlcipher:4.5.4")
     implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
     implementation("com.google.dagger:hilt-android:2.50")
     ksp("com.google.dagger:hilt-compiler:2.50")
-}
 
-
-dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testImplementation("io.mockk:mockk:1.13.8")

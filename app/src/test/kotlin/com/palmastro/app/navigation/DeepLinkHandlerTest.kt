@@ -102,4 +102,51 @@ class DeepLinkHandlerTest {
         val link = DeepLinkHandler.buildDomainLink("career", "2026-03")
         assertEquals("palmastro://domain?domain=career&monthKey=2026-03", link)
     }
+
+    // ── Destination → navigation route mapping ──
+
+    @Test
+    fun `routeFor Home maps to results`() {
+        assertEquals("results", DeepLinkHandler.routeFor(DeepLinkDestination.Home))
+    }
+
+    @Test
+    fun `routeFor Results without monthKey maps to results`() {
+        assertEquals("results", DeepLinkHandler.routeFor(DeepLinkDestination.Results(null)))
+    }
+
+    @Test
+    fun `routeFor Results with monthKey maps to results query route`() {
+        assertEquals(
+            "results?monthKey=2026-03",
+            DeepLinkHandler.routeFor(DeepLinkDestination.Results("2026-03")),
+        )
+    }
+
+    @Test
+    fun `routeFor DomainDetail maps to domain_detail route`() {
+        assertEquals(
+            "domain_detail/career/2026-03",
+            DeepLinkHandler.routeFor(DeepLinkDestination.DomainDetail("career", "2026-03")),
+        )
+    }
+
+    @Test
+    fun `routeFor Scan History Settings map to their routes`() {
+        assertEquals("scan", DeepLinkHandler.routeFor(DeepLinkDestination.Scan))
+        assertEquals("history", DeepLinkHandler.routeFor(DeepLinkDestination.History))
+        assertEquals("settings", DeepLinkHandler.routeFor(DeepLinkDestination.Settings))
+    }
+
+    @Test
+    fun `parse returns Settings for palmastro settings`() {
+        assertIs<DeepLinkDestination.Settings>(DeepLinkHandler.parse(intentWithUri("palmastro://settings")))
+    }
+
+    @Test
+    fun `parsed deep link round-trips through routeFor`() {
+        val dest = DeepLinkHandler.parse(intentWithUri(DeepLinkHandler.buildDomainLink("health", "2026-07")))
+        assertIs<DeepLinkDestination.DomainDetail>(dest)
+        assertEquals("domain_detail/health/2026-07", DeepLinkHandler.routeFor(dest))
+    }
 }

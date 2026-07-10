@@ -14,7 +14,8 @@ data class UserProfileEntity(
     val birthPlaceLon: Double? = null,
     val birthPlaceName: String? = null,
     val tone: String = "scientific",
-    val reminders: String = "monthly",
+    // Reminders are opt-in at launch (PRD §23; execution spec).
+    val reminders: String = "off",
     val rawMediaRetention: Boolean = true,
     val calcLevel: String = "L1",
     val createdAt: Long = System.currentTimeMillis(),
@@ -22,6 +23,8 @@ data class UserProfileEntity(
     val gender: String? = null,
     val relationshipStatus: String? = null,
     val updatedAt: Long = System.currentTimeMillis(),
+    // "system" = follow device locale; added in schema v3.
+    @ColumnInfo(defaultValue = "system") val language: String = "system",
 )
 
 @Entity(tableName = "monthly_result")
@@ -85,8 +88,5 @@ data class JournalEntryEntity(
     val domain: String? = null,
     val text: String,
     val createdAt: Long = System.currentTimeMillis(),
-    val name: String? = null,
-    val gender: String? = null,
-    val relationshipStatus: String? = null,
     val updatedAt: Long = System.currentTimeMillis(),
 )

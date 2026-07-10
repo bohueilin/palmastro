@@ -1,0 +1,77 @@
+import Foundation
+import CoreContracts
+
+/// Astro engine v2 (EXECUTION_SPEC "L2 astrology: real math only").
+///
+/// - L1 (birthday only): tropical sun sign -> `ASTRO_SUN_<ELEMENT>` and
+///   `ASTRO_SUN_<MODALITY>` signals. No ascendant, no houses (PRD §17).
+/// - L2 (birthday + time + place): adds `ASTRO_MOON_<ELEMENT>` (Meeus
+///   low-precision lunar longitude) and `ASTRO_ASC_<ELEMENT>` (standard
+///   ascendant formula, obliquity 23.4367 deg).
+///
+/// The fabricated planetary-strength signals of the prototype engine
+/// (SATURN_STRONG et al.) are intentionally absent.
+///
+/// Timezone note: the contract carries no timezone, so birth time is
+/// interpreted as local mean solar time and converted to UT with
+/// `UT = local - longitude/15h`. Documented Assumption (editable); worst-case
+/// drift vs the civil timezone is under ~1h which only matters within a few
+/// degrees of a sign cusp.
+public final class AstroEngineImpl: AstroEngineProtocol {
+
+    private let version: String
+
+    public init(version: String = "2.0.0") {
+        self.version = version
+    }
+
+    public func compute(
+        birthday: CivilDate,
+        birthTime: CivilTime?,
+        birthPlaceLat: Double?,
+        birthPlaceLon: Double?
+    ) -> AstroResult {
+        let isL2 = birthTime != nil && birthPlaceLat != nil && birthPlaceLon != nil
+        let calcLevel: CalcLevel = isL2 ? .L2 : .L1
+
+        var signals: [AstroSignal] = []
+
+        // L1: sun element + modality (tropical, calendar-boundary table).
+        let sun = Zodiac.sunSign(for: birthday)
+        signals.append(AstroSignal(
+            signalId: "ASTRO_SUN_\(sun.element)",
+            direction: "+", magnitude: 3, confidence: "high", safetyTag: "SAFE_GENERAL"
+        ))
+        signals.append(AstroSignal(
+            signalId: "ASTRO_SUN_\(sun.modality)",
+            direction: "+", magnitude: 2, confidence: "high", safetyTag: "SAFE_GENERAL"
+        ))
+
+        if isL2, let time = birthTime, let lat = birthPlaceLat, let lon = birthPlaceLon {
+            let localHour = Double(time.hour) + Double(time.minute) / 60.0
+            let utHour = localHour - lon / 15.0
+            let jd = Astronomy.julianDay(
+                year: birthday.year, month: birthday.month, day: birthday.day, hourUT: utHour
+            )
+
+            let moonLongitude = Astronomy.moonEclipticLongitude(julianDay: jd)
+            let moon = Zodiac.sign(forEclipticLongitude: moonLongitude)
+            signals.append(AstroSignal(
+                signalId: "ASTRO_MOON_\(moon.element)",
+                direction: "+", magnitude: 2, confidence: "high",
+                safetyTag: moon.element == "WATER" ? "SAFE_HEALTH_SOFT_ONLY" : "SAFE_GENERAL"
+            ))
+
+            let lst = Astronomy.normalizeDegrees(Astronomy.gmstDegrees(julianDay: jd) + lon)
+            let ascLongitude = Astronomy.ascendantLongitude(lstDegrees: lst, latitudeDegrees: lat)
+            let asc = Zodiac.sign(forEclipticLongitude: ascLongitude)
+            signals.append(AstroSignal(
+                signalId: "ASTRO_ASC_\(asc.element)",
+                direction: "+", magnitude: 3, confidence: "high",
+                safetyTag: asc.element == "FIRE" ? "SAFE_CAREER" : "SAFE_GENERAL"
+            ))
+        }
+
+        return AstroResult(calcLevel: calcLevel, signals: signals, engineVersion: version)
+    }
+}

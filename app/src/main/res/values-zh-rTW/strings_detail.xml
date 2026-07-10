@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Domain detail + Explainability + Journal-extras strings (ui-results agent), Taiwan Traditional Chinese. -->
+<resources>
+    <string name="detail_pattern_label">模式</string>
+    <string name="detail_trigger_label">觸發點</string>
+    <string name="detail_cost_label">潛在代價</string>
+    <string name="detail_how_calculated">這個分數怎麼算的？</string>
+    <string name="detail_how_calculated_desc">查看這個分數背後的訊號與權重</string>
+    <string name="detail_journal_button">寫日記</string>
+    <string name="detail_score_out_of">/ 100</string>
+    <string name="detail_understanding_score">理解你的分數</string>
+    <string name="detail_score_points">%1$d 分（滿分 100）</string>
+    <string name="detail_how_improve">如何提升</string>
+    <string name="detail_tier_excellent">非常好</string>
+    <string name="detail_tier_good">良好</string>
+    <string name="detail_tier_moderate">中等</string>
+    <string name="detail_tier_building">累積中</string>
+    <string name="detail_tier_attention">需要關注</string>
+    <string name="detail_tier_excellent_desc">非常強的解讀結果。你的掌紋特徵與星象訊號高度一致。</string>
+    <string name="detail_tier_good_desc">穩健、正向的解讀結果。你的基礎扎實，仍有成長空間。</string>
+    <string name="detail_tier_moderate_desc">均衡的解讀結果。已有一些優勢，也有值得培養的面向。</string>
+    <string name="detail_tier_building_desc">解讀顯示你正處於累積階段。專注基本功，保持耐心。</string>
+    <string name="detail_tier_attention_desc">這個領域需要多留意。小而穩定的改變就能扭轉方向。</string>
+    <string name="detail_tip_rescan">在光線較好的環境重新掃描，結果會更準確</string>
+    <string name="detail_tip_steady">掃描時保持手掌平放且穩定</string>
+    <string name="detail_tip_glare">避免手掌上的陰影與反光</string>
+    <string name="detail_tip_monthly">每月掃描一次，追蹤長期變化</string>
+    <string name="detail_tip_journal">用日記記錄與反思你的行動</string>
+    <string name="detail_tip_actions">專注於每日與每週的行動建議</string>
+    <string name="detail_tip_small_changes">小而持續的改變會帶來長遠的轉變</string>
+    <string name="detail_tip_compare">到歷史記錄比較過去幾個月的變化</string>
+    <string name="detail_tip_reflect">在日記中記錄你的反思</string>
+    <string name="detail_tip_next_month">下個月再掃描一次，追蹤你的成長</string>
+
+    <string name="explain_title">分數是怎麼算出來的</string>
+    <string name="explain_intro">每個領域都從中性的基準分開始，掌紋與星象訊號再把分數往上或往下調整。以下是影響你分數的完整過程。</string>
+    <string name="explain_baseline_label">基準分數</string>
+    <string name="explain_baseline_desc">每次解讀都從 50 分開始 — 這是中性的起點，不是評價。</string>
+    <string name="explain_palm_signals">掌紋訊號影響</string>
+    <string name="explain_astro_signals">星象訊號影響</string>
+    <string name="explain_no_signals">這個領域沒有足夠明顯的個別訊號可以列出。</string>
+    <string name="explain_contribution_desc">%1$s 影響 %2$s 分</string>
+    <string name="explain_confidence_label">信心度</string>
+    <string name="explain_confidence_reasons">信心度的依據</string>
+    <string name="explain_quality_factors">品質因素</string>
+    <string name="explain_scan_quality">掃描品質：%1$d/100</string>
+    <string name="explain_feature_coverage">特徵覆蓋率：%1$d%%</string>
+    <string name="explain_calc_level">計算等級：%1$s</string>
+    <string name="explain_safety_note">掌紋星象屬於自我反思工具，並非科學論斷。分數僅描述你的掃描與出生資訊中的模式，不能預測未來，也不是醫療、財務或專業建議。</string>
+
+    <string name="journal_delete">刪除日記</string>
+    <string name="journal_delete_confirm_title">要刪除這則日記嗎？</string>
+    <string name="journal_delete_confirm_message">這則日記將被永久刪除。</string>
+    <string name="journal_general_entry">一般反思</string>
+</resources>

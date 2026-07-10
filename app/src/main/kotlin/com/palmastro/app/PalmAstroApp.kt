@@ -9,11 +9,23 @@ import androidx.work.WorkManager
 import com.palmastro.app.security.SecurityChecker
 import com.palmastro.app.security.ThreatLevel
 import com.palmastro.app.worker.ScanImageCleanupWorker
+import com.palmastro.data.repository.InstallIdRepository
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @HiltAndroidApp
 class PalmAstroApp : Application() {
+    // dagger.Lazy defers database creation (Keystore key unwrap + SQLCipher open)
+    // off the main thread; the repository is first touched inside appScope.
+    @Inject lateinit var installIdRepository: dagger.Lazy<InstallIdRepository>
+
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     var securityThreatLevel: ThreatLevel = ThreatLevel.NONE
         private set
 
@@ -23,6 +35,7 @@ class PalmAstroApp : Application() {
         runSecurityCheck()
         createNotificationChannel()
         scheduleScanImageCleanup()
+        ensureInstallId()
     }
 
     private fun runSecurityCheck() {
@@ -33,6 +46,13 @@ class PalmAstroApp : Application() {
             report.threats.forEach { threat ->
                 CrashReporting.log("security_threat: $threat")
             }
+        }
+    }
+
+    private fun ensureInstallId() {
+        appScope.launch {
+            runCatching { installIdRepository.get().getOrCreate() }
+                .onFailure { CrashReporting.recordException(it) }
         }
     }
 

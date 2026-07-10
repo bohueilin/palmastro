@@ -1,6 +1,7 @@
 package com.palmastro.scoring
 
 import com.palmastro.contracts.*
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -9,74 +10,154 @@ class SignalResolverTest {
     private val ruleset = Ruleset.default()
 
     private fun makePalmFeatures(
-        headlinePresent: Boolean = false, headlineClarity: String = "faint", headlineLength: String = "medium",
-        heartlinePresent: Boolean = false, heartlineClarity: String = "faint",
-        lifelinePresent: Boolean = false, lifelineClarity: String = "faint",
-        fatelinePresent: Boolean = false, fatelineShape: String = "faint",
+        headlinePresent: Boolean = false, headlineClarity: String = "unclear", headlineLength: String = "medium",
+        heartlinePresent: Boolean = false, heartlineClarity: String = "unclear",
+        lifelinePresent: Boolean = false, lifelineClarity: String = "unclear",
+        fatelinePresent: Boolean = false, fatelineClarity: String = "unclear",
+        minorLineDensity: String = "low",
+        confidence: String = "high",
     ) = PalmFeatureResult(
         features = PalmFeatures(
             headlinePresent = headlinePresent, heartlinePresent = heartlinePresent,
             lifelinePresent = lifelinePresent, fatelinePresent = fatelinePresent,
-            headlineShape = "curved", heartlineShape = "curved", lifelineShape = "curved", fatelineShape = fatelineShape,
+            headlineShape = "curved", heartlineShape = "curved", lifelineShape = "curved", fatelineShape = "straight",
             headlineClarity = headlineClarity, heartlineClarity = heartlineClarity,
-            lifelineClarity = lifelineClarity, fatelineClarity = "faint",
-            headlineLength = headlineLength, fatelineLength = "short",
-            venusMountDensity = "low", jupiterMountDensity = "low", saturnMountDensity = "low", minorLineDensity = "low",
+            lifelineClarity = lifelineClarity, fatelineClarity = fatelineClarity,
+            headlineLength = headlineLength, fatelineLength = "medium",
+            venusMountDensity = "low", jupiterMountDensity = "low", saturnMountDensity = "low",
+            minorLineDensity = minorLineDensity,
         ),
-        featureCoverage = 0.9f, confidence = "high", extractorVersion = "1.0.0"
+        featureCoverage = 0.9f, confidence = confidence, extractorVersion = "2.0.0"
     )
 
-    @Test fun `headline long and clear matches PALM_HEADLINE_LONG_CLEAR`() {
-        val f = makePalmFeatures(headlinePresent = true, headlineClarity = "clear", headlineLength = "long")
-        val signals = SignalResolver.resolvePalmSignals(f, ruleset)
-        assertEquals(1, signals.size); assertEquals("PALM_HEADLINE_LONG_CLEAR", signals[0].signalId)
+    private fun ids(f: PalmFeatureResult) = SignalResolver.resolvePalmSignals(f, ruleset).map { it.signalId }
+
+    @Nested
+    inner class PositivePalmSignals {
+        @Test fun `headline long and clear matches PALM_HEADLINE_LONG_CLEAR`() {
+            val f = makePalmFeatures(headlinePresent = true, headlineClarity = "clear", headlineLength = "long")
+            assertEquals(listOf("PALM_HEADLINE_LONG_CLEAR"), ids(f))
+        }
+        @Test fun `headline present but medium clarity produces no headline positive`() {
+            val f = makePalmFeatures(headlinePresent = true, headlineClarity = "medium", headlineLength = "long")
+            assertTrue("PALM_HEADLINE_LONG_CLEAR" !in ids(f))
+        }
+        @Test fun `headline present and clear but not long produces no match`() {
+            val f = makePalmFeatures(headlinePresent = true, headlineClarity = "clear", headlineLength = "short")
+            assertTrue(ids(f).isEmpty())
+        }
+        @Test fun `heartline present and clear matches PALM_HEARTLINE_STRONG`() {
+            val f = makePalmFeatures(heartlinePresent = true, heartlineClarity = "clear")
+            assertEquals(listOf("PALM_HEARTLINE_STRONG"), ids(f))
+        }
+        @Test fun `heartline present and medium matches PALM_HEARTLINE_STRONG`() {
+            val f = makePalmFeatures(heartlinePresent = true, heartlineClarity = "medium")
+            assertEquals(listOf("PALM_HEARTLINE_STRONG"), ids(f))
+        }
+        @Test fun `lifeline present and clear matches PALM_LIFELINE_CLEAR`() {
+            val f = makePalmFeatures(lifelinePresent = true, lifelineClarity = "clear")
+            assertEquals(listOf("PALM_LIFELINE_CLEAR"), ids(f))
+        }
+        @Test fun `fateline present and clear matches PALM_FATELINE_STRONG`() {
+            val f = makePalmFeatures(fatelinePresent = true, fatelineClarity = "clear")
+            assertEquals(listOf("PALM_FATELINE_STRONG"), ids(f))
+        }
+        @Test fun `all positive features matching produces 4 palm signals`() {
+            val f = makePalmFeatures(
+                headlinePresent = true, headlineClarity = "clear", headlineLength = "long",
+                heartlinePresent = true, heartlineClarity = "clear",
+                lifelinePresent = true, lifelineClarity = "clear",
+                fatelinePresent = true, fatelineClarity = "clear"
+            )
+            assertEquals(4, ids(f).size)
+        }
     }
-    @Test fun `headline present but not clear produces no match`() {
-        val signals = SignalResolver.resolvePalmSignals(makePalmFeatures(headlinePresent = true, headlineClarity = "faint", headlineLength = "long"), ruleset)
-        assertTrue(signals.isEmpty())
+
+    @Nested
+    inner class NegativePalmSignals {
+        @Test fun `broken headline matches PALM_HEADLINE_CHAINED`() {
+            val f = makePalmFeatures(headlinePresent = true, headlineClarity = "broken")
+            assertEquals(listOf("PALM_HEADLINE_CHAINED"), ids(f))
+        }
+        @Test fun `broken fateline matches PALM_FATELINE_BREAKS`() {
+            val f = makePalmFeatures(fatelinePresent = true, fatelineClarity = "broken")
+            assertEquals(listOf("PALM_FATELINE_BREAKS"), ids(f))
+        }
+        @Test fun `thin heartline matches PALM_HEARTLINE_THIN`() {
+            val f = makePalmFeatures(heartlinePresent = true, heartlineClarity = "thin")
+            assertEquals(listOf("PALM_HEARTLINE_THIN"), ids(f))
+        }
+        @Test fun `faint lifeline matches PALM_LIFELINE_FAINT`() {
+            val f = makePalmFeatures(lifelinePresent = true, lifelineClarity = "faint")
+            assertEquals(listOf("PALM_LIFELINE_FAINT"), ids(f))
+        }
+        @Test fun `high minor line density matches PALM_MINOR_LINES_DENSE`() {
+            val f = makePalmFeatures(minorLineDensity = "high")
+            assertEquals(listOf("PALM_MINOR_LINES_DENSE"), ids(f))
+        }
+        @Test fun `med minor line density produces no match`() {
+            val f = makePalmFeatures(minorLineDensity = "med")
+            assertTrue(ids(f).isEmpty())
+        }
+        @Test fun `absent lines never trigger negatives`() {
+            val f = makePalmFeatures(
+                headlinePresent = false, headlineClarity = "broken",
+                heartlinePresent = false, heartlineClarity = "thin",
+                lifelinePresent = false, lifelineClarity = "faint",
+                fatelinePresent = false, fatelineClarity = "broken"
+            )
+            assertTrue(ids(f).isEmpty())
+        }
+        @Test fun `resolved negatives carry direction -1 from ruleset`() {
+            val f = makePalmFeatures(lifelinePresent = true, lifelineClarity = "faint")
+            val signals = SignalResolver.resolvePalmSignals(f, ruleset)
+            assertEquals(-1, signals.single().direction)
+        }
+        @Test fun `all negative features matching produces 5 palm signals`() {
+            val f = makePalmFeatures(
+                headlinePresent = true, headlineClarity = "broken",
+                heartlinePresent = true, heartlineClarity = "thin",
+                lifelinePresent = true, lifelineClarity = "faint",
+                fatelinePresent = true, fatelineClarity = "broken",
+                minorLineDensity = "high"
+            )
+            assertEquals(5, ids(f).size)
+        }
     }
-    @Test fun `headline present and clear but not long produces no match`() {
-        val signals = SignalResolver.resolvePalmSignals(makePalmFeatures(headlinePresent = true, headlineClarity = "clear", headlineLength = "short"), ruleset)
-        assertTrue(signals.isEmpty())
-    }
-    @Test fun `heartline present and clear matches PALM_HEARTLINE_STRONG`() {
-        val signals = SignalResolver.resolvePalmSignals(makePalmFeatures(heartlinePresent = true, heartlineClarity = "clear"), ruleset)
-        assertEquals(1, signals.size); assertEquals("PALM_HEARTLINE_STRONG", signals[0].signalId)
-    }
-    @Test fun `heartline present and moderate matches PALM_HEARTLINE_STRONG`() {
-        val signals = SignalResolver.resolvePalmSignals(makePalmFeatures(heartlinePresent = true, heartlineClarity = "moderate"), ruleset)
-        assertEquals(1, signals.size); assertEquals("PALM_HEARTLINE_STRONG", signals[0].signalId)
-    }
-    @Test fun `heartline present but faint produces no match`() {
-        val signals = SignalResolver.resolvePalmSignals(makePalmFeatures(heartlinePresent = true, heartlineClarity = "faint"), ruleset)
-        assertTrue(signals.isEmpty())
-    }
-    @Test fun `lifeline present and clear matches PALM_LIFELINE_CLEAR`() {
-        val signals = SignalResolver.resolvePalmSignals(makePalmFeatures(lifelinePresent = true, lifelineClarity = "clear"), ruleset)
-        assertEquals(1, signals.size); assertEquals("PALM_LIFELINE_CLEAR", signals[0].signalId)
-    }
-    @Test fun `fateline present and straight matches PALM_FATELINE_STRONG`() {
-        val signals = SignalResolver.resolvePalmSignals(makePalmFeatures(fatelinePresent = true, fatelineShape = "straight"), ruleset)
-        assertEquals(1, signals.size); assertEquals("PALM_FATELINE_STRONG", signals[0].signalId)
-    }
-    @Test fun `all features matching produces 4 palm signals`() {
-        val f = makePalmFeatures(headlinePresent = true, headlineClarity = "clear", headlineLength = "long",
-            heartlinePresent = true, heartlineClarity = "clear", lifelinePresent = true, lifelineClarity = "clear",
-            fatelinePresent = true, fatelineShape = "straight")
-        assertEquals(4, SignalResolver.resolvePalmSignals(f, ruleset).size)
-    }
+
     @Test fun `no features matching produces empty list`() {
-        assertTrue(SignalResolver.resolvePalmSignals(makePalmFeatures(), ruleset).isEmpty())
+        assertTrue(ids(makePalmFeatures()).isEmpty())
     }
-    @Test fun `astro signals with matching IDs resolve correctly`() {
-        val astro = AstroResult(CalcLevel.L2, listOf(
-            AstroSignal("ASTRO_SUN_FIRE", "+", 2, "low", "SAFE_GENERAL"),
-            AstroSignal("ASTRO_SATURN_STRONG", "+", 3, "med", "SAFE_CAREER")), "1.0.0")
-        val resolved = SignalResolver.resolveAstroSignals(astro, ruleset)
-        assertEquals(2, resolved.size)
-    }
-    @Test fun `astro signals with non-matching IDs return empty`() {
-        val astro = AstroResult(CalcLevel.L2, listOf(AstroSignal("NONEXISTENT", "+", 2, "low", "SAFE_GENERAL")), "1.0.0")
-        assertTrue(SignalResolver.resolveAstroSignals(astro, ruleset).isEmpty())
+
+    @Nested
+    inner class AstroSignals {
+        @Test fun `astro signals with matching IDs resolve correctly`() {
+            val astro = AstroResult(CalcLevel.L2, listOf(
+                AstroSignal("ASTRO_SUN_FIRE", "+", 2, "high", "SAFE_GENERAL"),
+                AstroSignal("ASTRO_MOON_WATER", "+", 2, "high", "SAFE_HEALTH_SOFT_ONLY"),
+                AstroSignal("ASTRO_ASC_EARTH", "+", 2, "high", "SAFE_GENERAL")), "2.0.0")
+            val resolved = SignalResolver.resolveAstroSignals(astro, ruleset)
+            assertEquals(3, resolved.size)
+        }
+        @Test fun `sun modality signals resolve`() {
+            val astro = AstroResult(CalcLevel.L1, listOf(
+                AstroSignal("ASTRO_SUN_CARDINAL", "+", 2, "high", "SAFE_GENERAL")), "2.0.0")
+            assertEquals(1, SignalResolver.resolveAstroSignals(astro, ruleset).size)
+        }
+        @Test fun `informational sun sign signal does not resolve to a ruleset entry`() {
+            val astro = AstroResult(CalcLevel.L1, listOf(
+                AstroSignal("ASTRO_SUN_ARIES", "+", 3, "high", "SAFE_GENERAL")), "2.0.0")
+            assertTrue(SignalResolver.resolveAstroSignals(astro, ruleset).isEmpty())
+        }
+        @Test fun `removed planetary signals no longer resolve`() {
+            val astro = AstroResult(CalcLevel.L2, listOf(
+                AstroSignal("ASTRO_SATURN_STRONG", "+", 3, "med", "SAFE_CAREER"),
+                AstroSignal("ASTRO_JUPITER_STRONG", "+", 3, "med", "SAFE_WEALTH_SOFT_ONLY")), "2.0.0")
+            assertTrue(SignalResolver.resolveAstroSignals(astro, ruleset).isEmpty())
+        }
+        @Test fun `astro signals with non-matching IDs return empty`() {
+            val astro = AstroResult(CalcLevel.L2, listOf(AstroSignal("NONEXISTENT", "+", 2, "low", "SAFE_GENERAL")), "2.0.0")
+            assertTrue(SignalResolver.resolveAstroSignals(astro, ruleset).isEmpty())
+        }
     }
 }
