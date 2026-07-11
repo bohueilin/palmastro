@@ -63,6 +63,52 @@ data class ToneTemplate(
     val blindspotLabel: LocalizedText = emptyMap(),
 )
 
+/** One guidance card: short title, one-to-two-sentence body, concrete micro-action. */
+@Serializable
+data class GuidanceCopy(
+    val title: LocalizedText = emptyMap(),
+    val body: LocalizedText = emptyMap(),
+    val action: LocalizedText = emptyMap(),
+)
+
+/**
+ * Per-signal guidance vocabulary (PRD §11-§13): [leanInto] for what to feel
+ * positive about, [mindfulOf] for gentle attention-pointers. Positive-direction
+ * palm signals carry only leanInto, negative-direction ones only mindfulOf,
+ * astro element/modality signals carry both (a strength plus a soft nuance).
+ */
+@Serializable
+data class GuidanceSignalTemplate(
+    val leanInto: GuidanceCopy? = null,
+    val mindfulOf: GuidanceCopy? = null,
+)
+
+/**
+ * Per-domain guidance: bucket-keyed generic [strengths] and [mindful] fallbacks
+ * (peak/rising/transition/building/attention) used when no signal-backed entry
+ * exists, plus [monthPlan] weekly focus lines keyed "high"/"low".
+ */
+@Serializable
+data class GuidanceDomainTemplate(
+    val strengths: Map<String, GuidanceCopy> = emptyMap(),
+    val mindful: Map<String, GuidanceCopy> = emptyMap(),
+    val monthPlan: Map<String, LocalizedText> = emptyMap(),
+)
+
+/**
+ * "Understand your reading" guidance layer (templates v2.1.0, PRD §11-§13,
+ * §30-§32). [monthTheme] is keyed by overall grade. Guidance copy ships
+ * complete in en + zh-TW; zh-CN/ja/hi resolve through the existing chain
+ * ([ContentTemplates.resolveLanguage] keeps them supported, then
+ * [ContentTemplates.localized] falls back per-field to the default "en").
+ */
+@Serializable
+data class GuidanceTemplates(
+    val signals: Map<String, GuidanceSignalTemplate> = emptyMap(),
+    val domains: Map<String, GuidanceDomainTemplate> = emptyMap(),
+    val monthTheme: Map<String, LocalizedText> = emptyMap(),
+)
+
 /** Localized section labels used by the renderer for plain-text reports. */
 @Serializable
 data class ReportLabels(
@@ -89,6 +135,7 @@ data class ContentTemplates(
     val fallback: FallbackTemplate = FallbackTemplate(),
     val tones: Map<String, ToneTemplate> = emptyMap(),
     val labels: ReportLabels = ReportLabels(),
+    val guidance: GuidanceTemplates = GuidanceTemplates(),
 ) {
 
     /** Supported language or the default ("en") — composer honors ContentInput.language. */

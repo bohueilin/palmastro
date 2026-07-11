@@ -9,7 +9,8 @@ for identical inputs — PRD §10 (Cross-Platform Parity) and Workstream C.
 ```
 shared-fixtures/
 ├── scoring/   *.json — ScoringEngine fixtures
-└── content/   *.json — ContentComposer fixtures
+├── content/   *.json — ContentComposer fixtures
+└── guidance/  *.json — GuidanceBuilder fixtures
 ```
 
 `ParityTests` (in `ios/PalmAstroKit/Tests/ParityTests`) skips a category with
@@ -48,13 +49,27 @@ contributions to 1e-9).
 Compared: full payload text fields, safety notes, score cards, observations,
 language, calcLevel and confidence per domain.
 
+### guidance/*.json
+
+- `input`: `{ "payloads": Map<String, SemanticPayload>, "overallGrade": String,
+  "language": String }` — the exact `GuidanceBuilder.build` arguments.
+- `expected`: the `Guidance` produced by the Android engine-content
+  `GuidanceBuilder` with the canonical `content-templates.json` (>= 2.1.0):
+  `{ "monthTheme": String, "strengths": [GuidanceItem], "mindful":
+  [GuidanceItem], "weekPlan": [String] }` where `GuidanceItem` is
+  `{ domain, signalId?, title, body, action }` (`signalId` null/absent for
+  bucket-generic fallback items).
+
+Compared: monthTheme, weekPlan, and full strengths/mindful item lists
+including selection order.
+
 ## Conventions
 
 - JSON field names are the Kotlin property names (kotlinx.serialization
   defaults); enums serialize as their Kotlin names (`"FRONT"`, `"L1"`,
   `"SCIENTIFIC"`).
 - Fixtures must be generated with the same resource versions the apps ship
-  (ruleset 2.0.0, content templates 2.0.0). Bump fixtures together with
-  resource versions.
+  (ruleset 2.0.0, content templates 2.1.0 — the guidance-enabled library).
+  Bump fixtures together with resource versions.
 - Keep fixtures small and named by scenario, e.g.
   `scoring/high_quality_l2_zh.json`, `content/low_scores_l1_en.json`.

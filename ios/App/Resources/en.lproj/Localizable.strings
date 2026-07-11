@@ -109,6 +109,25 @@
 "confidence_med" = "Medium confidence";
 "confidence_low" = "Low confidence";
 
+/* Guidance ("Understand your reading") — copy kept in sync with the Android
+   strings_guidance.xml for cross-platform consistency. */
+"guidance_title" = "Understand your reading";
+"guidance_theme_label" = "This month's theme";
+"guidance_lean_into_header" = "Lean into";
+"guidance_lean_into_footer" = "Strengths this month's reading suggests you can feel good about.";
+"guidance_mindful_header" = "Be mindful of";
+"guidance_mindful_footer" = "A few areas worth a little extra care — gentle awareness, never a warning.";
+"guidance_action_label" = "Try this";
+"guidance_week_header" = "Your gentle week";
+"guidance_week_footer" = "Small, kind steps. Pick the ones that feel right — there's no falling behind.";
+"guidance_footer_reflection" = "This guidance is generated from your palm and astrology signals using fixed, transparent rules. Treat it as a starting point for reflection, and move at your own pace.";
+"guidance_disclaimer" = "Guidance offers small, optional suggestions for self-reflection. It is not a prediction, and not medical or financial advice.";
+"guidance_not_found" = "This reading isn't available yet.";
+"guidance_entry_title" = "This month";
+"guidance_entry_strength" = "Lean into: %@";
+"guidance_entry_mindful" = "Be mindful of: %@";
+"guidance_entry_open" = "Open your monthly guidance";
+
 /* Domain detail */
 "detail_confidence_reasons_title" = "Why this confidence level";
 "confidence_reason_scan_quality_low" = "Scan quality was low";

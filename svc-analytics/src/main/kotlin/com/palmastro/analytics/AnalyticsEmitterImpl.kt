@@ -17,7 +17,7 @@ class AnalyticsEmitterImpl(
         "demo_start", "demo_step_view", "demo_complete", "demo_skip",
         "scan_start", "scan_angle_prompt_view", "scan_angle_quality_fail", "scan_angle_pass", "scan_complete",
         "inference_start", "inference_success", "inference_fail",
-        "results_view", "domain_card_tap", "why_drawer_open", "delta_view",
+        "results_view", "domain_card_tap", "why_drawer_open", "delta_view", "guidance_view",
         "journal_saved",
         "paywall_view", "purchase_start", "purchase_success", "purchase_fail",
         "restore_start", "restore_success", "restore_fail",

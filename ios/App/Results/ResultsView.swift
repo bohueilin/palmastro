@@ -49,6 +49,15 @@ struct ResultsView: View {
                 }
             }
 
+            // Guidance entry card (mirrors the Android placement between the
+            // summary section and the domain cards; hidden when the guidance
+            // library yields nothing, matching Android).
+            if let guidance = model.guidance(for: result), !guidance.isEmpty {
+                Section {
+                    GuidanceEntryCard(guidance: guidance, result: result)
+                }
+            }
+
             Section {
                 ForEach(Domains.all, id: \.self) { domain in
                     if let payload = result.semanticPayloads[domain] {

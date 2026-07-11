@@ -52,6 +52,7 @@ final class AppModel: ObservableObject {
     private let composer: ContentComposerImpl?
     private let renderer: ToneRendererImpl?
     private let safetyFilter: SafetyFilterImpl?
+    private let guidanceBuilder: GuidanceBuilder?
 
     private static let profileCollection = "profile"
     private static let profileKey = "user"
@@ -73,6 +74,7 @@ final class AppModel: ObservableObject {
         composer = try? ContentComposerImpl()
         renderer = try? ToneRendererImpl()
         safetyFilter = try? SafetyFilterImpl()
+        guidanceBuilder = try? GuidanceBuilder()
 
         profile = (try? store.load(UserProfile.self, collection: Self.profileCollection, key: Self.profileKey))
             .flatMap { $0 } ?? UserProfile()
@@ -200,6 +202,21 @@ final class AppModel: ObservableObject {
         guard let renderer, let safetyFilter else { return nil }
         let rendered = renderer.render(payload: payload, tone: profile.tone)
         return safetyFilter.filter(rendered: rendered, language: payload.language)
+    }
+
+    /// "Understand your reading" guidance (lean into / be mindful of / gentle
+    /// plan) derived deterministically from a stored result. Template copy
+    /// only — nothing generated, nothing recomposed.
+    func guidance(for result: MonthlyResult) -> Guidance? {
+        guard let guidanceBuilder else { return nil }
+        let language = result.semanticPayloads[Domains.career]?.language
+            ?? result.semanticPayloads.values.first?.language
+            ?? contentLanguage
+        return guidanceBuilder.build(
+            payloads: result.semanticPayloads,
+            overallGrade: result.scoringResult.grade,
+            language: language
+        )
     }
 
     static func monthKey(for date: Date) -> String {

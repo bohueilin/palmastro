@@ -10,6 +10,9 @@ import com.palmastro.app.ui.detail.DomainDetailScreen
 import com.palmastro.app.ui.explainability.EXPLAINABILITY_ROUTE
 import com.palmastro.app.ui.explainability.ExplainabilityScreen
 import com.palmastro.app.ui.explainability.explainabilityRoute
+import com.palmastro.app.ui.guidance.GUIDANCE_ROUTE
+import com.palmastro.app.ui.guidance.GuidanceScreen
+import com.palmastro.app.ui.guidance.guidanceRoute
 import com.palmastro.app.ui.history.HistoryScreen
 import com.palmastro.app.ui.journal.JournalScreen
 import com.palmastro.app.ui.legal.LEGAL_ROUTE
@@ -72,6 +75,7 @@ fun AppNavigation(
                     navController.navigate("domain_detail/$domain/$monthKey")
                 },
                 onHistoryClick = { navController.navigate("history") },
+                onGuidanceClick = { monthKey -> navController.navigate(guidanceRoute(monthKey)) },
             )
         }
         composable(Route.Scan.path) {
@@ -115,6 +119,12 @@ fun AppNavigation(
             ),
         ) {
             ExplainabilityScreen(onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = GUIDANCE_ROUTE,
+            arguments = listOf(navArgument("monthKey") { type = NavType.StringType }),
+        ) {
+            GuidanceScreen(onBack = { navController.popBackStack() })
         }
         composable(
             route = LEGAL_ROUTE,

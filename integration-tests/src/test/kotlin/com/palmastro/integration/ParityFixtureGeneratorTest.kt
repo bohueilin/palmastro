@@ -2,6 +2,7 @@ package com.palmastro.integration
 
 import com.palmastro.astro.AstroEngineImpl
 import com.palmastro.content.ContentComposerImpl
+import com.palmastro.content.GuidanceBuilder
 import com.palmastro.contracts.*
 import com.palmastro.scoring.ScoringEngineImpl
 import kotlinx.serialization.encodeToString
@@ -159,6 +160,50 @@ class ParityFixtureGeneratorTest {
                 put("expected", json.parseToJsonElement(json.encodeToString(payloads)))
             }
             File(root, "content/$name.json").apply { parentFile.mkdirs() }
+                .writeText(json.encodeToString(fixture))
+        }
+
+        // -- guidance fixtures ---------------------------------------------
+        writeGuidanceFixtures(root, composer, contentScenarios.getValue("growing_l2_en"), scoringHigh.grade, scoringLow)
+    }
+
+    /**
+     * Guidance fixture category (consumed from the guidance/ subdir):
+     * signal_rich_en derives strengths/mindful from real explainability
+     * entries of the growing L2 scenario; bucket_fallback_zh strips the low
+     * reading's explainability so every card comes from the per-domain
+     * bucket generics.
+     */
+    private fun writeGuidanceFixtures(
+        root: File,
+        composer: ContentComposerImpl,
+        signalRichInput: ContentInput,
+        signalRichGrade: String,
+        scoringLow: ScoringResult,
+    ) {
+        val guidanceBuilder = GuidanceBuilder()
+        val bucketScoring = scoringLow.copy(explainability = emptyList())
+        val scenarios = mapOf(
+            "signal_rich_en" to Triple(composer.compose(signalRichInput), signalRichGrade, "en"),
+            "bucket_fallback_zh" to Triple(
+                composer.compose(
+                    ContentInput(bucketScoring, null, Tone.HEALING, emptySet(), CalcLevel.L1, "2026-07", "zh-TW"),
+                ),
+                bucketScoring.grade, "zh-TW",
+            ),
+        )
+        scenarios.forEach { (name, scenario) ->
+            val (payloads, overallGrade, language) = scenario
+            val guidance = guidanceBuilder.build(payloads, overallGrade, language)
+            val fixture = buildJsonObject {
+                put("input", buildJsonObject {
+                    put("payloads", json.parseToJsonElement(json.encodeToString(payloads)))
+                    put("overallGrade", overallGrade)
+                    put("language", language)
+                })
+                put("expected", json.parseToJsonElement(json.encodeToString(guidance)))
+            }
+            File(root, "guidance/$name.json").apply { parentFile.mkdirs() }
                 .writeText(json.encodeToString(fixture))
         }
     }

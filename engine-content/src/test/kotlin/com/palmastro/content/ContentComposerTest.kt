@@ -163,7 +163,7 @@ class ContentComposerTest {
 
     @Test
     fun `templates version is exposed`() {
-        assertEquals("2.0.0", composer.templatesVersion)
+        assertEquals("2.1.0", composer.templatesVersion)
     }
 
     @Test

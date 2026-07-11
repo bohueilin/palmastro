@@ -108,6 +108,25 @@
 "confidence_med" = "中信心";
 "confidence_low" = "低信心";
 
+/* Guidance ("Understand your reading") — copy kept in sync with the Android
+   strings_guidance.xml for cross-platform consistency. */
+"guidance_title" = "看懂你的解讀";
+"guidance_theme_label" = "本月主題";
+"guidance_lean_into_header" = "值得好好發揮";
+"guidance_lean_into_footer" = "這個月的解讀顯示，這些是你可以放心倚靠的優勢。";
+"guidance_mindful_header" = "溫柔留意";
+"guidance_mindful_footer" = "幾個值得多放一點心思的地方——是提醒，不是警告。";
+"guidance_action_label" = "試試看";
+"guidance_week_header" = "你的溫柔一週";
+"guidance_week_footer" = "幾個小小的行動，挑感覺對的做就好，不必勉強。";
+"guidance_footer_reflection" = "這份指引由你的掌紋與星象訊號依固定且透明的規則產生，適合作為自我反思的起點，照自己的步調慢慢來就好。";
+"guidance_disclaimer" = "指引提供小小的、可自由選擇的建議，用於自我反思；不是預測，也不是醫療或財務建議。";
+"guidance_not_found" = "目前還沒有這份解讀。";
+"guidance_entry_title" = "本月指引";
+"guidance_entry_strength" = "值得發揮：%@";
+"guidance_entry_mindful" = "溫柔留意：%@";
+"guidance_entry_open" = "查看本月指引";
+
 /* Domain detail */
 "detail_confidence_reasons_title" = "信心水準的原因";
 "confidence_reason_scan_quality_low" = "掃描品質偏低";

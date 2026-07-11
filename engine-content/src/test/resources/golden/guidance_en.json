@@ -1,0 +1,48 @@
+{
+  "monthTheme": "A month of steady ground — a good time to deepen what already works.",
+  "strengths": [
+    {
+      "domain": "career",
+      "signalId": "PALM_HEADLINE_LONG_CLEAR",
+      "title": "Clear, structured thinking",
+      "body": "Your head line reads long and well defined — a pattern linked to focus and follow-through. Plans you sketch this month tend to hold their shape.",
+      "action": "Pick one idea you keep revisiting and outline the first three steps on paper."
+    },
+    {
+      "domain": "family",
+      "signalId": "PALM_HEARTLINE_STRONG",
+      "title": "Emotional openness",
+      "body": "A deep, curved heart line is traditionally read as warmth and easy connection. People likely feel comfortable opening up around you this month.",
+      "action": "Reach out to someone you care about and ask how they are really doing."
+    },
+    {
+      "domain": "health",
+      "signalId": "PALM_LIFELINE_CLEAR",
+      "title": "Steady vitality",
+      "body": "A clear, continuous life line is linked with steady energy and reliable routines. Your daily rhythm is an asset worth protecting right now.",
+      "action": "Keep one anchor habit — a walk, a set bedtime — every day this week."
+    }
+  ],
+  "mindful": [
+    {
+      "domain": "wealth",
+      "signalId": null,
+      "title": "Small leaks, gentle fixes",
+      "body": "Transition months reward noticing over overhauling. One small fix beats a dramatic new system.",
+      "action": "Cancel or downsize one recurring cost that no longer fits."
+    },
+    {
+      "domain": "health",
+      "signalId": null,
+      "title": "Not borrowing from next week",
+      "body": "Pushing through tiredness borrows energy you will want next week. Gentle pacing repays itself.",
+      "action": "Swap one intense plan this week for a restful one."
+    }
+  ],
+  "weekPlan": [
+    "Week 1 — Career: ride the momentum; pick one meaningful goal and give it your best hours.",
+    "Week 2 — Wealth: observe before adjusting; know your numbers and let big decisions wait.",
+    "Week 3 — Family: enjoy the warmth on purpose; plan one shared moment and be fully there.",
+    "Week 4 — Health: go gently; favor rest, water, and daylight over intensity."
+  ]
+}

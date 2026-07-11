@@ -9,7 +9,7 @@ import CoreContracts
 
     @Test func defaultTemplatesLoad() throws {
         let templates = try ContentTemplates.loadDefault()
-        #expect(templates.version == "2.0.0")
+        #expect(templates.version == "2.1.0")
         #expect(templates.defaultLanguage == "en")
         #expect(templates.languages == Self.launchLanguages)
         #expect(Set(templates.domains.keys) == Set(Domains.all))
@@ -184,7 +184,7 @@ import CoreContracts
     }
 
     @Test func templatesVersionIsExposed() throws {
-        #expect(try ContentComposerImpl().templatesVersion == "2.0.0")
+        #expect(try ContentComposerImpl().templatesVersion == "2.1.0")
     }
 
     @Test func safetyNotesPresentForWealthAndHealth() throws {

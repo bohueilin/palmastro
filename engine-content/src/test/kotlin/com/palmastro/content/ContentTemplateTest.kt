@@ -12,7 +12,7 @@ class ContentTemplateTest {
     @Test
     fun `default library is version 2 with five languages`() {
         val templates = ContentTemplates.default()
-        assertEquals("2.0.0", templates.version)
+        assertEquals("2.1.0", templates.version)
         assertEquals(languages, templates.languages)
         assertEquals("en", templates.defaultLanguage)
     }
@@ -123,7 +123,7 @@ class ContentTemplateTest {
     @Test
     fun `fromResource parses the shipped resource`() {
         val templates = ContentTemplates.fromResource()
-        assertEquals("2.0.0", templates.version)
+        assertEquals("2.1.0", templates.version)
         assertEquals(4, templates.domains.size)
     }
 

@@ -76,6 +76,13 @@ class SafetyFilterImpl(
         return rendered.copy(text = templates.localized(templates.fallback.filteredText, lang))
     }
 
+    /**
+     * Scans one arbitrary text with the same normalization + rules as
+     * [validate]. Used by non-payload surfaces (e.g. the guidance layer)
+     * so every emitted string can be checked field by field.
+     */
+    fun scanText(text: String): List<String> = scan(text)
+
     private fun scan(text: String): List<String> {
         if (text.isBlank()) return emptyList()
         val normalized = normalize(text)

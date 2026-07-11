@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.palmastro.app.config.FeatureFlags
+import com.palmastro.content.GuidanceBuilder
 import com.palmastro.contracts.ComparabilityBucket
 import com.palmastro.contracts.Domains
 import com.palmastro.contracts.SemanticPayload
@@ -29,6 +30,15 @@ data class DomainCard(
     val deltaArrow: String? = null,
 )
 
+/** Compact preview of the guidance layer shown on the Results "This month" entry card. */
+data class GuidanceSummary(
+    val monthTheme: String,
+    /** Title of the first "lean into" strength; empty when none. */
+    val firstStrengthTitle: String,
+    /** Title of the first "be mindful of" item; empty when none. */
+    val firstMindfulTitle: String,
+)
+
 data class ResultsState(
     val isLoading: Boolean = true,
     val hasResults: Boolean = false,
@@ -41,6 +51,8 @@ data class ResultsState(
     /** Domain key with the highest score; drives the month-theme line. */
     val topDomain: String? = null,
     val shareCardsEnabled: Boolean = true,
+    /** Guidance entry-card preview; null when guidance could not be built. */
+    val guidance: GuidanceSummary? = null,
 )
 
 @HiltViewModel
@@ -49,6 +61,8 @@ class ResultsViewModel @Inject constructor(
     private val resultRepository: ResultRepository,
     private val userRepository: UserRepository,
     private val featureFlags: FeatureFlags,
+    // Default keeps existing direct constructions compiling; Hilt injects the singleton.
+    private val guidanceBuilder: GuidanceBuilder = GuidanceBuilder(),
 ) : ViewModel() {
     private val _state = MutableStateFlow(ResultsState())
     val state = _state.asStateFlow()
@@ -82,30 +96,8 @@ class ResultsViewModel @Inject constructor(
             } catch (_: Exception) {
                 emptyMap()
             }
-            val delta = try {
-                resultRepository.getDeltaFor(entity.monthKey)
-            } catch (_: Exception) {
-                null
-            }
-            // Comparability gate (PRD delta rules): LOW-comparability deltas are not shown.
-            val deltaComparable = delta != null && delta.comparabilityBucket != ComparabilityBucket.LOW
-
-            val orderedDomains = Domains.ALL.filter { scores.containsKey(it) } +
-                scores.keys.filterNot { it in Domains.ALL }
-
-            val cards = orderedDomains.map { domain ->
-                val payload = payloads[domain]
-                val deltaValue = if (deltaComparable) delta?.domainDeltas?.get(domain) else null
-                DomainCard(
-                    domain = domain,
-                    score = scores.getValue(domain),
-                    grade = entity.grade,
-                    confidence = payload?.confidence ?: entity.confidenceLevel,
-                    insight = payload?.interpretation?.pattern?.let(::firstSentence).orEmpty(),
-                    delta = deltaValue?.value,
-                    deltaArrow = deltaValue?.arrow,
-                )
-            }
+            val cards = buildDomainCards(entity, scores, payloads)
+            val guidanceSummary = buildGuidanceSummary(entity.grade, payloads, profile?.language)
 
             _state.update {
                 it.copy(
@@ -119,10 +111,57 @@ class ResultsViewModel @Inject constructor(
                     scanQualityScore = entity.scanQualityScore,
                     topDomain = scores.maxByOrNull { entry -> entry.value }?.key,
                     shareCardsEnabled = featureFlags.shareCardsEnabled,
+                    guidance = guidanceSummary,
                 )
             }
         }
     }
+
+    private suspend fun buildDomainCards(
+        entity: com.palmastro.data.entities.MonthlyResultEntity,
+        scores: Map<String, Int>,
+        payloads: Map<String, SemanticPayload>,
+    ): List<DomainCard> {
+        val delta = try {
+            resultRepository.getDeltaFor(entity.monthKey)
+        } catch (_: Exception) {
+            null
+        }
+        // Comparability gate (PRD delta rules): LOW-comparability deltas are not shown.
+        val deltaComparable = delta != null && delta.comparabilityBucket != ComparabilityBucket.LOW
+        val orderedDomains = Domains.ALL.filter { scores.containsKey(it) } +
+            scores.keys.filterNot { it in Domains.ALL }
+        return orderedDomains.map { domain ->
+            val payload = payloads[domain]
+            val deltaValue = if (deltaComparable) delta?.domainDeltas?.get(domain) else null
+            DomainCard(
+                domain = domain,
+                score = scores.getValue(domain),
+                grade = entity.grade,
+                confidence = payload?.confidence ?: entity.confidenceLevel,
+                insight = payload?.interpretation?.pattern?.let(::firstSentence).orEmpty(),
+                delta = deltaValue?.value,
+                deltaArrow = deltaValue?.arrow,
+            )
+        }
+    }
+
+    /**
+     * Guidance preview for the "This month" entry card. Deterministic build from
+     * the stored payloads; any failure degrades to "no card", never an error state.
+     */
+    private fun buildGuidanceSummary(
+        grade: String,
+        payloads: Map<String, SemanticPayload>,
+        profileLanguage: String?,
+    ): GuidanceSummary? = runCatching {
+        val guidance = guidanceBuilder.build(payloads, grade, resolveContentLanguage(profileLanguage))
+        GuidanceSummary(
+            monthTheme = guidance.monthTheme,
+            firstStrengthTitle = guidance.strengths.firstOrNull()?.title.orEmpty(),
+            firstMindfulTitle = guidance.mindful.firstOrNull()?.title.orEmpty(),
+        )
+    }.getOrNull()
 
     companion object {
         private val SENTENCE_ENDINGS = charArrayOf('.', '!', '?', '。', '！', '？')

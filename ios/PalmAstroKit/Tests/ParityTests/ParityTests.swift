@@ -36,6 +36,7 @@ import CoreContracts
 
     static var hasScoringFixtures: Bool { !fixtureURLs(subdirectory: "scoring").isEmpty }
     static var hasContentFixtures: Bool { !fixtureURLs(subdirectory: "content").isEmpty }
+    static var hasGuidanceFixtures: Bool { !fixtureURLs(subdirectory: "guidance").isEmpty }
 
     // MARK: - Scoring parity
 
@@ -108,6 +109,100 @@ import CoreContracts
                 #expect(payload.scoreCard == expected.scoreCard, "\(name)/\(domain): scoreCard")
                 #expect(payload.observations == expected.observations, "\(name)/\(domain): observations")
             }
+        }
+    }
+
+    // MARK: - Guidance parity
+
+    private struct GuidanceFixture: Decodable {
+        struct Input: Decodable {
+            let payloads: [String: SemanticPayload]
+            let overallGrade: String
+            let language: String
+        }
+
+        let input: Input
+        let expected: Guidance
+    }
+
+    @Test(.enabled(
+        if: ParityTests.hasGuidanceFixtures,
+        "No fixtures in ios/shared-fixtures/guidance — generated from the Android engines at integration time."
+    ))
+    func guidanceParityFixtures() throws {
+        let builder = try GuidanceBuilder()
+        for url in Self.fixtureURLs(subdirectory: "guidance") {
+            let fixture = try JSONDecoder().decode(GuidanceFixture.self, from: Data(contentsOf: url))
+            let actual = builder.build(
+                payloads: fixture.input.payloads,
+                overallGrade: fixture.input.overallGrade,
+                language: fixture.input.language
+            )
+            let name = url.lastPathComponent
+
+            #expect(actual.monthTheme == fixture.expected.monthTheme, "\(name): monthTheme")
+            #expect(actual.weekPlan == fixture.expected.weekPlan, "\(name): weekPlan")
+            #expect(
+                actual.strengths.map(\.signalId) == fixture.expected.strengths.map(\.signalId),
+                "\(name): strengths selection/order"
+            )
+            #expect(actual.strengths == fixture.expected.strengths, "\(name): strengths")
+            #expect(
+                actual.mindful.map(\.signalId) == fixture.expected.mindful.map(\.signalId),
+                "\(name): mindful selection/order"
+            )
+            #expect(actual.mindful == fixture.expected.mindful, "\(name): mindful")
+        }
+    }
+
+    // MARK: - Guidance golden snapshots (Android engine-content goldens)
+
+    /// The Android GuidanceGoldenSnapshotTest fixes one input and commits the
+    /// resulting Guidance to engine-content/src/test/resources/golden/. When
+    /// this checkout carries the Android tree, replicate the same input
+    /// through the Swift composer + builder and compare structurally.
+    static var goldenGuidanceURLs: [(language: String, url: URL)] {
+        let golden = fixturesRootURL
+            .deletingLastPathComponent()  // ios/
+            .deletingLastPathComponent()  // repo root
+            .appendingPathComponent("engine-content/src/test/resources/golden", isDirectory: true)
+        return ["en", "zh-TW"]
+            .map { ($0, golden.appendingPathComponent("guidance_\($0).json")) }
+            .filter { FileManager.default.fileExists(atPath: $0.1.path) }
+    }
+
+    @Test(.enabled(
+        if: !ParityTests.goldenGuidanceURLs.isEmpty,
+        "Android golden guidance snapshots not present in this checkout."
+    ))
+    func guidanceMatchesAndroidGoldenSnapshots() throws {
+        let composer = try ContentComposerImpl()
+        let builder = try GuidanceBuilder()
+        for (language, url) in Self.goldenGuidanceURLs {
+            // Same fixed input as the Kotlin GuidanceGoldenSnapshotTest.
+            let input = ContentInput(
+                scoringResult: ScoringResult(
+                    domainScores: ["career": 72, "wealth": 58, "family": 65, "health": 40],
+                    subdimScores: ["career.focus": 75],
+                    grade: "Stable", confidence: "high", confidenceReasons: ["full_scan"],
+                    explainability: [
+                        ExplainEntry(signalId: "PALM_HEADLINE_LONG_CLEAR", mapping: "PALM_HEADLINE_LONG_CLEAR → career", contribution: 3.6),
+                        ExplainEntry(signalId: "ASTRO_JUPITER_STRONG", mapping: "ASTRO_JUPITER_STRONG → wealth", contribution: 2.1),
+                        ExplainEntry(signalId: "PALM_HEARTLINE_STRONG", mapping: "PALM_HEARTLINE_STRONG → family", contribution: 2.4),
+                        ExplainEntry(signalId: "PALM_LIFELINE_CLEAR", mapping: "PALM_LIFELINE_CLEAR → health", contribution: 1.8),
+                    ],
+                    matchedBuckets: [], rulesetVersion: "2.0.0"
+                ),
+                deltaResult: nil, tone: .SCIENTIFIC, entitlements: [],
+                calcLevel: .L2, monthKey: "2026-07", language: language
+            )
+            let expected = try JSONDecoder().decode(Guidance.self, from: Data(contentsOf: url))
+            let actual = builder.build(
+                payloads: composer.compose(input: input),
+                overallGrade: "Stable",
+                language: language
+            )
+            #expect(actual == expected, "guidance golden snapshot mismatch [\(language)]")
         }
     }
 }

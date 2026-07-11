@@ -6,6 +6,12 @@ Source: PRD v2 §§34.1 (prohibited phrases), 34.2, 63–65. Locales: `en-US` an
 future", "guaranteed accurate palm reading", "health diagnosis", "financial
 prediction", or equivalents in either language.
 
+Re-checked 2026-07-11 after adding the "UNDERSTAND YOUR READING / 看懂你的解讀" guidance
+section to both descriptions: "what to lean into / what to be mindful of"
+(值得多發揮什麼 / 需要多留意什麼) is awareness framing, not prediction; the copy
+disclaims warnings and misfortune prediction and names no health or money outcomes —
+compliant with PRD §§30–32 and §34.1.
+
 ## Name (max 30 chars)
 
 | Locale | Name |
@@ -40,6 +46,11 @@ prohibited by PRD §34.1.
 PalmAstro is a privacy-first self-reflection app. It uses on-device palm feature analysis and tropical astrology signals to generate explainable personal growth reports across four areas of life: career, wealth habits, family communication, and stress & recovery patterns.
 
 PalmAstro is not fortune telling. It doesn't tell your future, diagnose your health, or advise your finances. It turns patterns into prompts: things to notice, one action for today, one for the week, and a question worth journaling about.
+
+UNDERSTAND YOUR READING
+• Each month's reading distills into simple guidance: what to lean into right now, and what to be mindful of.
+• "Be mindful of" means gentle awareness, never a warning — the app doesn't predict misfortune, it points at habits worth watching.
+• Every guidance item links back to the signals behind it, so you always know why it's there.
 
 HOW IT WORKS
 • A guided seven-angle palm scan with live quality feedback.
@@ -81,6 +92,11 @@ Questions? support@palmastro.app
 掌紋星象 PalmAstro 是一款隱私優先的自我探索 App。它在你的裝置上分析掌紋特徵，結合回歸黃道星象訊號，針對四個生活領域——事業、財富習慣、家庭溝通、壓力與恢復——產生清楚可解釋、以成長為導向的報告。
 
 掌紋星象不是算命。它不告訴你未來、不診斷健康、也不提供理財建議。它把觀察到的模式化為引導：值得留意的傾向、今天的一個行動、本週的一個練習，以及一個值得寫進日記的問題。
+
+看懂你的解讀
+• 每個月的報告都會整理成一份簡單的指引：這個月值得多發揮什麼、需要多留意什麼。
+• 「留意」是溫和的提醒，不是警告——App 不預言厄運，只是點出值得觀察的習慣。
+• 每一條指引都能回溯到背後的訊號，你隨時知道它為什麼出現。
 
 運作方式
 • 依照引導完成七個角度的手掌掃描，即時回饋拍攝品質。

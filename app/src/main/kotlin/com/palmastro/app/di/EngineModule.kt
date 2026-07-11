@@ -5,6 +5,7 @@ import com.palmastro.app.ui.scan.ImageQualityAnalyzer
 import com.palmastro.app.ui.scan.ImageQualityAnalyzerFactory
 import com.palmastro.astro.AstroEngineImpl
 import com.palmastro.content.ContentComposerImpl
+import com.palmastro.content.GuidanceBuilder
 import com.palmastro.content.SafetyFilterImpl
 import com.palmastro.contracts.interfaces.*
 import com.palmastro.palm.PalmFeatureExtractorImpl
@@ -44,6 +45,10 @@ object EngineModule {
     @Provides @Singleton fun provideContentComposer(impl: ContentComposerImpl): ContentComposer = impl
     @Provides @Singleton fun provideSafetyFilterImpl(): SafetyFilterImpl = SafetyFilterImpl()
     @Provides @Singleton fun provideSafetyFilter(impl: SafetyFilterImpl): SafetyFilter = impl
+
+    // Guidance layer (PRD §§11–13): deterministic builder over the shared content templates.
+    // TODO(integration): confirm GuidanceBuilder ctor once engine-content lands (assumed default ctor over ContentTemplates.default()).
+    @Provides @Singleton fun provideGuidanceBuilder(): GuidanceBuilder = GuidanceBuilder()
 
     @Provides @Singleton fun provideImageQualityAnalyzerFactory(): ImageQualityAnalyzerFactory =
         ImageQualityAnalyzerFactory { context: Context, source -> ImageQualityAnalyzer(context, source) }

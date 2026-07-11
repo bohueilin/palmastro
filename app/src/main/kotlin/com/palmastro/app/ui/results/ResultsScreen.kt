@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Settings
@@ -26,8 +27,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +42,8 @@ import com.palmastro.app.R
 import com.palmastro.app.share.ShareCardRenderer
 import com.palmastro.app.share.ShareHelper
 import com.palmastro.app.viewmodel.DomainCard
+import com.palmastro.app.viewmodel.GuidanceSummary
+import com.palmastro.app.viewmodel.ResultsState
 import com.palmastro.app.viewmodel.ResultsViewModel
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -50,6 +55,7 @@ fun ResultsScreen(
     onSettingsClick: () -> Unit,
     onDomainClick: (String, String) -> Unit,
     onHistoryClick: () -> Unit,
+    onGuidanceClick: (String) -> Unit = {},
     viewModel: ResultsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -59,22 +65,8 @@ fun ResultsScreen(
     var shareText by remember { mutableStateOf("") }
 
     // Resolve every string needed inside non-composable click lambdas up front.
-    val sharingAnnouncement = stringResource(R.string.results_sharing)
+    val share = rememberShareContent(state)
     val chooserTitle = stringResource(R.string.share_chooser_title)
-    val summaryHeader = stringResource(R.string.share_summary_header, state.monthKey)
-    val gradeDisplay = gradeDisplayName(state.grade)
-    val confidenceDisplay = confidenceDisplayName(state.confidence)
-    val gradeLine = stringResource(R.string.share_grade_label, gradeDisplay)
-    val confidenceLine = stringResource(R.string.share_confidence_label, confidenceDisplay)
-    val cardLabels = ShareCardRenderer.CardLabels(
-        analysis = stringResource(R.string.share_card_analysis),
-        actions = stringResource(R.string.share_card_actions),
-        reflection = stringResource(R.string.share_card_reflection),
-        watermark = stringResource(R.string.share_watermark),
-    )
-    val domainScores = state.domainCards.map {
-        ShareCardRenderer.DomainScore(domainDisplayName(it.domain), it.score, it.grade)
-    }
 
     Scaffold(
         topBar = {
@@ -83,22 +75,9 @@ fun ResultsScreen(
                 actions = {
                     if (state.hasResults && state.shareCardsEnabled) {
                         IconButton(onClick = {
-                            view.announceForAccessibility(sharingAnnouncement)
-                            val data = ShareCardRenderer.SummaryData(
-                                headerTitle = summaryHeader,
-                                monthKey = state.monthKey,
-                                grade = state.grade,
-                                gradeDisplay = gradeDisplay,
-                                confidenceLine = confidenceLine,
-                                domains = domainScores,
-                            )
-                            shareText = ShareHelper.buildShareText(
-                                summaryHeader,
-                                gradeLine,
-                                domainScores.joinToString("  ") { "${it.displayName} ${it.score}" },
-                                confidenceLine,
-                            )
-                            previewBitmap = ShareCardRenderer.renderSummaryCard(data, cardLabels)
+                            view.announceForAccessibility(share.sharingAnnouncement)
+                            shareText = share.text
+                            previewBitmap = ShareCardRenderer.renderSummaryCard(share.summaryData, share.cardLabels)
                         }) { Icon(Icons.Default.Share, contentDescription = stringResource(R.string.results_share)) }
                     }
                     IconButton(onClick = onSettingsClick) { Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.common_settings)) }
@@ -109,28 +88,14 @@ fun ResultsScreen(
         when {
             state.isLoading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             !state.hasResults -> EmptyResults(padding = padding, onScanClick = onScanClick)
-            else -> LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(vertical = 16.dp),
-            ) {
-                item { HeroCard(state.monthKey, state.grade, state.confidence, state.topDomain, state.scanQualityScore) }
-                items(state.domainCards) { card ->
-                    DomainCardItem(card = card, onClick = { onDomainClick(card.domain, state.monthKey) })
-                }
-                item {
-                    Spacer(Modifier.height(4.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                        OutlinedButton(onClick = onScanClick, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(12.dp)) {
-                            Text(stringResource(R.string.results_rescan))
-                        }
-                        OutlinedButton(onClick = onHistoryClick, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(12.dp)) {
-                            Text(stringResource(R.string.results_history))
-                        }
-                    }
-                }
-                item { SafetyCard() }
-            }
+            else -> ResultsList(
+                state = state,
+                padding = padding,
+                onScanClick = onScanClick,
+                onDomainClick = onDomainClick,
+                onHistoryClick = onHistoryClick,
+                onGuidanceClick = onGuidanceClick,
+            )
         }
     }
 
@@ -143,6 +108,86 @@ fun ResultsScreen(
                 previewBitmap = null
             },
         )
+    }
+}
+
+/** Pre-resolved share-sheet content usable from non-composable click lambdas. */
+private data class ShareContent(
+    val sharingAnnouncement: String,
+    val text: String,
+    val summaryData: ShareCardRenderer.SummaryData,
+    val cardLabels: ShareCardRenderer.CardLabels,
+)
+
+@Composable
+private fun rememberShareContent(state: ResultsState): ShareContent {
+    val summaryHeader = stringResource(R.string.share_summary_header, state.monthKey)
+    val gradeDisplay = gradeDisplayName(state.grade)
+    val gradeLine = stringResource(R.string.share_grade_label, gradeDisplay)
+    val confidenceLine = stringResource(R.string.share_confidence_label, confidenceDisplayName(state.confidence))
+    val domainScores = state.domainCards.map {
+        ShareCardRenderer.DomainScore(domainDisplayName(it.domain), it.score, it.grade)
+    }
+    return ShareContent(
+        sharingAnnouncement = stringResource(R.string.results_sharing),
+        text = ShareHelper.buildShareText(
+            summaryHeader,
+            gradeLine,
+            domainScores.joinToString("  ") { "${it.displayName} ${it.score}" },
+            confidenceLine,
+        ),
+        summaryData = ShareCardRenderer.SummaryData(
+            headerTitle = summaryHeader,
+            monthKey = state.monthKey,
+            grade = state.grade,
+            gradeDisplay = gradeDisplay,
+            confidenceLine = confidenceLine,
+            domains = domainScores,
+        ),
+        cardLabels = ShareCardRenderer.CardLabels(
+            analysis = stringResource(R.string.share_card_analysis),
+            actions = stringResource(R.string.share_card_actions),
+            reflection = stringResource(R.string.share_card_reflection),
+            watermark = stringResource(R.string.share_watermark),
+        ),
+    )
+}
+
+@Composable
+private fun ResultsList(
+    state: ResultsState,
+    padding: PaddingValues,
+    onScanClick: () -> Unit,
+    onDomainClick: (String, String) -> Unit,
+    onHistoryClick: () -> Unit,
+    onGuidanceClick: (String) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(vertical = 16.dp),
+    ) {
+        item { HeroCard(state.monthKey, state.grade, state.confidence, state.topDomain, state.scanQualityScore) }
+        state.guidance?.let { summary ->
+            item {
+                GuidanceEntryCard(summary = summary, onClick = { onGuidanceClick(state.monthKey) })
+            }
+        }
+        items(state.domainCards) { card ->
+            DomainCardItem(card = card, onClick = { onDomainClick(card.domain, state.monthKey) })
+        }
+        item {
+            Spacer(Modifier.height(4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(onClick = onScanClick, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(12.dp)) {
+                    Text(stringResource(R.string.results_rescan))
+                }
+                OutlinedButton(onClick = onHistoryClick, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(12.dp)) {
+                    Text(stringResource(R.string.results_history))
+                }
+            }
+        }
+        item { SafetyCard() }
     }
 }
 
@@ -235,6 +280,62 @@ private fun HeroCard(monthKey: String, grade: String, confidence: String, topDom
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * "This month" guidance entry (PRD §§11–13): month theme + first strength + first
+ * mindful item, navigating to the full "Understand your reading" screen.
+ */
+@Composable
+private fun GuidanceEntryCard(summary: GuidanceSummary, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) { role = Role.Button },
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.guidance_entry_title),
+                    fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    summary.monthTheme,
+                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold, lineHeight = 21.sp,
+                    maxLines = 2, overflow = TextOverflow.Ellipsis,
+                )
+                if (summary.firstStrengthTitle.isNotBlank()) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        stringResource(R.string.guidance_entry_strength, summary.firstStrengthTitle),
+                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                if (summary.firstMindfulTitle.isNotBlank()) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        stringResource(R.string.guidance_entry_mindful, summary.firstMindfulTitle),
+                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Spacer(Modifier.width(12.dp))
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = stringResource(R.string.guidance_entry_open),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

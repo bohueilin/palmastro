@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Understand your reading" guidance screen + Results entry card (guidance agent). -->
+<resources>
+    <string name="guidance_title">Understand your reading</string>
+    <string name="guidance_theme_label">This month\'s theme</string>
+    <string name="guidance_lean_into_title">Lean into</string>
+    <string name="guidance_lean_into_desc">Strengths this month\'s reading suggests you can feel good about.</string>
+    <string name="guidance_mindful_title">Be mindful of</string>
+    <string name="guidance_mindful_desc">A few areas worth a little extra care — gentle awareness, never a warning.</string>
+    <string name="guidance_action_label">Try this</string>
+    <string name="guidance_week_title">Your gentle week</string>
+    <string name="guidance_week_desc">Small, kind steps. Pick the ones that feel right — there\'s no falling behind.</string>
+    <string name="guidance_week_step_desc">Step %1$d: %2$s</string>
+    <string name="guidance_footer_reflection">This guidance is generated from your palm and astrology signals using fixed, transparent rules. Treat it as a starting point for reflection, and move at your own pace.</string>
+    <string name="guidance_not_found">This reading isn\'t available yet.</string>
+
+    <!-- Results dashboard entry card -->
+    <string name="guidance_entry_title">This month</string>
+    <string name="guidance_entry_strength">Lean into: %1$s</string>
+    <string name="guidance_entry_mindful">Be mindful of: %1$s</string>
+    <string name="guidance_entry_open">Open your monthly guidance</string>
+</resources>

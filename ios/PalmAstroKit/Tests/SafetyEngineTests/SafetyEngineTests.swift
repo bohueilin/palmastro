@@ -299,6 +299,50 @@ import ContentEngine
         }
     }
 
+    /// Every localized string in the guidance template section (leanInto /
+    /// mindfulOf / domain generics / monthPlan / monthTheme) must be clean —
+    /// the guidance layer renders this copy verbatim (PRD §30-§32; mirrors
+    /// the Kotlin GuidanceSafetyTest).
+    @Test func guidanceTemplateCopyPassesTheFilterUnchanged() throws {
+        let templates = try ContentTemplates.loadDefault()
+        let filter = SafetyFilterImpl(rules: try SafetyRules.loadDefault(), templates: templates)
+
+        func expectClean(_ text: LocalizedText, _ label: String) {
+            for (language, value) in text.sorted(by: { $0.key < $1.key }) {
+                let rendered = RenderedReport(domain: "career", tone: .SCIENTIFIC, text: value)
+                #expect(filter.filter(rendered: rendered, language: language) == rendered,
+                        "\(label)[\(language)] was filtered")
+            }
+        }
+        func expectClean(_ copy: GuidanceCopy?, _ label: String) {
+            guard let copy else { return }
+            expectClean(copy.title, "\(label).title")
+            expectClean(copy.body, "\(label).body")
+            expectClean(copy.action, "\(label).action")
+        }
+
+        let guidance = templates.guidance
+        #expect(!guidance.signals.isEmpty, "canonical guidance section is missing")
+        for (signalId, signal) in guidance.signals.sorted(by: { $0.key < $1.key }) {
+            expectClean(signal.leanInto, "signals.\(signalId).leanInto")
+            expectClean(signal.mindfulOf, "signals.\(signalId).mindfulOf")
+        }
+        for (domain, domainTemplate) in guidance.domains.sorted(by: { $0.key < $1.key }) {
+            for (bucket, copy) in domainTemplate.strengths.sorted(by: { $0.key < $1.key }) {
+                expectClean(copy, "domains.\(domain).strengths.\(bucket)")
+            }
+            for (bucket, copy) in domainTemplate.mindful.sorted(by: { $0.key < $1.key }) {
+                expectClean(copy, "domains.\(domain).mindful.\(bucket)")
+            }
+            for (key, text) in domainTemplate.monthPlan.sorted(by: { $0.key < $1.key }) {
+                expectClean(text, "domains.\(domain).monthPlan.\(key)")
+            }
+        }
+        for (grade, text) in guidance.monthTheme.sorted(by: { $0.key < $1.key }) {
+            expectClean(text, "monthTheme.\(grade)")
+        }
+    }
+
     @Test func safeFallbackPayloadIsCleanAndLocalized() throws {
         let templates = try ContentTemplates.loadDefault()
         let composer = ContentComposerImpl(templates: templates)

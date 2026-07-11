@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "defaultLanguage": "en",
   "languages": [
     "en",
@@ -1048,6 +1048,1440 @@
         "zh-CN": "成长",
         "ja": "成長",
         "hi": "विकास"
+      }
+    }
+  },
+  "guidance": {
+    "signals": {
+      "PALM_HEADLINE_LONG_CLEAR": {
+        "leanInto": {
+          "title": {
+            "en": "Clear, structured thinking",
+            "zh-TW": "清晰有條理的思考"
+          },
+          "body": {
+            "en": "Your head line reads long and well defined — a pattern linked to focus and follow-through. Plans you sketch this month tend to hold their shape.",
+            "zh-TW": "你的頭腦線清晰綿長，這種型態與專注力和貫徹力相關。本月擬定的計畫較容易落實成形。"
+          },
+          "action": {
+            "en": "Pick one idea you keep revisiting and outline the first three steps on paper.",
+            "zh-TW": "挑一個你反覆想起的點子，在紙上寫下前三個步驟。"
+          }
+        }
+      },
+      "PALM_HEARTLINE_STRONG": {
+        "leanInto": {
+          "title": {
+            "en": "Emotional openness",
+            "zh-TW": "情感的開放度"
+          },
+          "body": {
+            "en": "A deep, curved heart line is traditionally read as warmth and easy connection. People likely feel comfortable opening up around you this month.",
+            "zh-TW": "深而彎的感情線傳統上代表溫暖與自然的連結。這個月，身邊的人可能特別願意對你敞開心房。"
+          },
+          "action": {
+            "en": "Reach out to someone you care about and ask how they are really doing.",
+            "zh-TW": "主動聯繫一位你在乎的人，問問他最近過得如何。"
+          }
+        }
+      },
+      "PALM_LIFELINE_CLEAR": {
+        "leanInto": {
+          "title": {
+            "en": "Steady vitality",
+            "zh-TW": "穩定的活力"
+          },
+          "body": {
+            "en": "A clear, continuous life line is linked with steady energy and reliable routines. Your daily rhythm is an asset worth protecting right now.",
+            "zh-TW": "清晰連貫的生命線與穩定的精力和規律作息相關。此刻你的日常節奏是值得守護的資產。"
+          },
+          "action": {
+            "en": "Keep one anchor habit — a walk, a set bedtime — every day this week.",
+            "zh-TW": "本週每天維持一個定錨習慣——散步或固定的就寢時間。"
+          }
+        }
+      },
+      "PALM_FATELINE_STRONG": {
+        "leanInto": {
+          "title": {
+            "en": "A strong sense of direction",
+            "zh-TW": "明確的方向感"
+          },
+          "body": {
+            "en": "A well-defined fate line is read as purpose and momentum along a chosen path. Decisions about direction come easier while this signal is strong.",
+            "zh-TW": "分明的命運線代表目標感與前進的動能。趁這股信號正強，方向上的決定會更容易下。"
+          },
+          "action": {
+            "en": "Write down where you want one project to be in three months.",
+            "zh-TW": "寫下你希望某個計畫三個月後達到的樣子。"
+          }
+        }
+      },
+      "PALM_HEADLINE_CHAINED": {
+        "mindfulOf": {
+          "title": {
+            "en": "Scattered attention",
+            "zh-TW": "注意力容易分散"
+          },
+          "body": {
+            "en": "A chained head line is traditionally read as attention pulled in many directions. Nothing is wrong — it is simply a nudge toward single-tasking this month.",
+            "zh-TW": "鏈狀的頭腦線傳統上解讀為注意力被多方拉扯。這不代表有問題，只是提醒你本月一次專注一件事。"
+          },
+          "action": {
+            "en": "Try one 25-minute focus block today with notifications off.",
+            "zh-TW": "今天試著關閉通知，進行一段25分鐘的專注時間。"
+          }
+        }
+      },
+      "PALM_FATELINE_BREAKS": {
+        "mindfulOf": {
+          "title": {
+            "en": "A path in transition",
+            "zh-TW": "路徑正在轉換"
+          },
+          "body": {
+            "en": "Breaks in the fate line are read as shifts in direction — often a season of re-choosing what matters. Give big pivots a little extra thinking room.",
+            "zh-TW": "命運線的中斷被解讀為方向的轉換——常是重新選擇優先順序的季節。重大轉向前，多留一點思考的空間。"
+          },
+          "action": {
+            "en": "Before any major change this month, sleep on it for two nights.",
+            "zh-TW": "本月做重大改變前，先讓自己沉澱兩個晚上。"
+          }
+        }
+      },
+      "PALM_HEARTLINE_THIN": {
+        "mindfulOf": {
+          "title": {
+            "en": "A quieter emotional style",
+            "zh-TW": "較內斂的情感表達"
+          },
+          "body": {
+            "en": "A thin, straight heart line reads as a reserved emotional style, not a lack of feeling. The people close to you may appreciate hearing what usually goes unsaid.",
+            "zh-TW": "細而直的感情線代表內斂的情感風格，而非缺乏感受。親近的人也許很想聽見你平常沒說出口的話。"
+          },
+          "action": {
+            "en": "Tell one person, in plain words, one thing you appreciate about them.",
+            "zh-TW": "用簡單的話，告訴一個人你欣賞他的一點。"
+          }
+        }
+      },
+      "PALM_LIFELINE_FAINT": {
+        "mindfulOf": {
+          "title": {
+            "en": "An invitation to rest",
+            "zh-TW": "休息的邀請"
+          },
+          "body": {
+            "en": "A lighter life line is a traditional nudge toward gentler pacing — never a health verdict. Treat rest as part of the plan, not a reward.",
+            "zh-TW": "較淡的生命線在傳統上是放慢步調的提醒，絕不是健康的結論。把休息當成計畫的一部分，而不是獎勵。"
+          },
+          "action": {
+            "en": "Choose one evening this week to wind down 30 minutes earlier.",
+            "zh-TW": "本週選一個晚上，提早30分鐘放鬆休息。"
+          }
+        }
+      },
+      "PALM_MINOR_LINES_DENSE": {
+        "mindfulOf": {
+          "title": {
+            "en": "A busy inner weather",
+            "zh-TW": "思緒較為繁忙"
+          },
+          "body": {
+            "en": "Dense minor lines are traditionally read as a full, busy mind. It can help to give racing thoughts somewhere to land.",
+            "zh-TW": "細密的雜紋傳統上解讀為思緒繁忙。讓紛飛的念頭有個落腳的地方，會很有幫助。"
+          },
+          "action": {
+            "en": "Do a five-minute brain dump onto paper before bed tonight.",
+            "zh-TW": "今晚睡前花五分鐘，把腦中的念頭全部寫在紙上。"
+          }
+        }
+      },
+      "ASTRO_SUN_FIRE": {
+        "leanInto": {
+          "title": {
+            "en": "Initiative and spark",
+            "zh-TW": "主動與行動力"
+          },
+          "body": {
+            "en": "A fire-sign sun reads as initiative, boldness, and quick starts. Momentum favors you when you move first.",
+            "zh-TW": "火象太陽代表主動、果敢與快速啟動。先跨出第一步，動能就會站在你這邊。"
+          },
+          "action": {
+            "en": "Start the task you have been circling — even a rough first pass counts.",
+            "zh-TW": "著手進行你一直繞著打轉的事——先做個粗略的版本也算數。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Pacing the spark",
+            "zh-TW": "為熱情調速"
+          },
+          "body": {
+            "en": "The same fire that starts things fast can rush past details. A short pause before committing keeps the spark working for you.",
+            "zh-TW": "讓你快速起步的火，也可能匆匆略過細節。承諾之前稍作停頓，能讓這股熱度真正為你所用。"
+          },
+          "action": {
+            "en": "Before saying yes this week, take one breath and check your calendar first.",
+            "zh-TW": "本週答應任何事之前，先深呼吸一次並看看行事曆。"
+          }
+        }
+      },
+      "ASTRO_SUN_EARTH": {
+        "leanInto": {
+          "title": {
+            "en": "Grounded follow-through",
+            "zh-TW": "踏實的執行力"
+          },
+          "body": {
+            "en": "An earth-sign sun is associated with patience and practical follow-through. Slow, steady work compounds especially well for you this month.",
+            "zh-TW": "土象太陽與耐心和務實的執行力相關。本月穩紮穩打的努力，特別容易累積成果。"
+          },
+          "action": {
+            "en": "Break one goal into small daily steps and track them for a week.",
+            "zh-TW": "把一個目標拆成每天的小步驟，持續記錄一週。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Room for flexibility",
+            "zh-TW": "保留彈性空間"
+          },
+          "body": {
+            "en": "Steadiness can shade into holding a plan too tightly. Leaving a little slack makes good plans even sturdier.",
+            "zh-TW": "穩健有時會變成把計畫抓得太緊。留一點餘裕，好計畫會更禁得起變化。"
+          },
+          "action": {
+            "en": "Pick one routine this week and allow yourself one small variation.",
+            "zh-TW": "本週挑一個例行事項，允許自己做一點小變化。"
+          }
+        }
+      },
+      "ASTRO_SUN_AIR": {
+        "leanInto": {
+          "title": {
+            "en": "Ideas and connection",
+            "zh-TW": "點子與連結"
+          },
+          "body": {
+            "en": "An air-sign sun reads as curiosity and communication — connecting ideas and people. Conversations open doors for you this month.",
+            "zh-TW": "風象太陽代表好奇心與溝通力——善於連結想法與人。本月的對話會為你打開機會之門。"
+          },
+          "action": {
+            "en": "Share one idea you have been sitting on with someone who thinks differently.",
+            "zh-TW": "把你醞釀已久的一個想法，說給思考方式不同的人聽。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Landing the ideas",
+            "zh-TW": "讓想法落地"
+          },
+          "body": {
+            "en": "Many open threads can scatter momentum. Closing one loop often feels better than opening three.",
+            "zh-TW": "同時展開太多線頭，動能容易分散。收好一條線，往往比開三條新線更踏實。"
+          },
+          "action": {
+            "en": "Choose one open conversation or task this week and bring it to a close.",
+            "zh-TW": "本週選一件懸而未決的事，把它好好收尾。"
+          }
+        }
+      },
+      "ASTRO_SUN_WATER": {
+        "leanInto": {
+          "title": {
+            "en": "Empathy and intuition",
+            "zh-TW": "同理與直覺"
+          },
+          "body": {
+            "en": "A water-sign sun is associated with empathy and emotional depth. Your read on people and rooms is unusually reliable right now.",
+            "zh-TW": "水象太陽與同理心和情感深度相關。此刻你對人與氛圍的感知格外敏銳可靠。"
+          },
+          "action": {
+            "en": "Trust one well-grounded gut feeling this week and note how it plays out.",
+            "zh-TW": "本週相信一次有憑有據的直覺，並記下後續的發展。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Boundaries for the feelings",
+            "zh-TW": "為感受設立界線"
+          },
+          "body": {
+            "en": "Deep empathy can absorb moods that are not yours to carry. Naming what belongs to whom keeps your energy clear.",
+            "zh-TW": "深刻的同理心可能吸收不屬於你的情緒。分清楚哪些是自己的、哪些是別人的，能讓你的能量保持清澈。"
+          },
+          "action": {
+            "en": "After a heavy conversation, take ten quiet minutes before the next thing.",
+            "zh-TW": "在一場沉重的對話之後，留十分鐘安靜地沉澱再繼續。"
+          }
+        }
+      },
+      "ASTRO_SUN_CARDINAL": {
+        "leanInto": {
+          "title": {
+            "en": "A starter's energy",
+            "zh-TW": "開創者的能量"
+          },
+          "body": {
+            "en": "Cardinal signs are read as initiators. Kick-offs, first moves, and fresh chapters suit you this month.",
+            "zh-TW": "開創星座被解讀為擅長起頭。本月適合啟動新計畫、跨出第一步、翻開新篇章。"
+          },
+          "action": {
+            "en": "Schedule the kick-off you have been postponing.",
+            "zh-TW": "把你一直延後的起跑日，正式排進行事曆。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Finishing what starts",
+            "zh-TW": "有始也有終"
+          },
+          "body": {
+            "en": "Starters can leave a trail of half-done beginnings. Pairing every new start with one finish keeps the trail tidy.",
+            "zh-TW": "擅長起頭的人，身後容易留下一串未完成。每開啟一件新事，就搭配完成一件舊事。"
+          },
+          "action": {
+            "en": "List your open starts and finish the smallest one this week.",
+            "zh-TW": "列出手上進行中的事，本週先完成最小的那一件。"
+          }
+        }
+      },
+      "ASTRO_SUN_FIXED": {
+        "leanInto": {
+          "title": {
+            "en": "Staying power",
+            "zh-TW": "持久的定力"
+          },
+          "body": {
+            "en": "Fixed signs are read as endurance and loyalty. Long projects and long relationships both benefit from your steadiness now.",
+            "zh-TW": "固定星座被解讀為持久與忠誠。無論是長期計畫或長久的關係，此刻都受惠於你的穩定。"
+          },
+          "action": {
+            "en": "Recommit to one long-running project with a 20-minute session today.",
+            "zh-TW": "今天花20分鐘，重新投入一項長期進行的計畫。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Softening the grip",
+            "zh-TW": "適時鬆手"
+          },
+          "body": {
+            "en": "Persistence can drift into holding positions past their usefulness. Revisiting an old stance costs little and sometimes frees a lot.",
+            "zh-TW": "堅持有時會變成守著早已不合用的立場。重新檢視舊的堅持，成本很低，卻可能釋放很多空間。"
+          },
+          "action": {
+            "en": "Pick one opinion you have held a long time and ask what has changed.",
+            "zh-TW": "挑一個你抱持已久的想法，問問自己情況是否已經不同。"
+          }
+        }
+      },
+      "ASTRO_SUN_MUTABLE": {
+        "leanInto": {
+          "title": {
+            "en": "Adaptability",
+            "zh-TW": "隨機應變的彈性"
+          },
+          "body": {
+            "en": "Mutable signs are read as flexible and quick to adjust. Changing plans costs you less than most — use that agility.",
+            "zh-TW": "變動星座被解讀為靈活、調整得快。計畫改變對你的消耗比多數人小——善用這份敏捷。"
+          },
+          "action": {
+            "en": "Volunteer for the task where requirements keep shifting.",
+            "zh-TW": "主動接下那件需求一直在變的任務。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "An anchor amid change",
+            "zh-TW": "變動中的定錨"
+          },
+          "body": {
+            "en": "High flexibility can blur your own preferences. One fixed personal anchor makes all the adapting easier.",
+            "zh-TW": "太有彈性，有時會模糊自己真正想要什麼。留一個不變的個人錨點，適應反而更輕鬆。"
+          },
+          "action": {
+            "en": "Keep one non-negotiable slot for yourself this week and guard it.",
+            "zh-TW": "本週為自己保留一段不可讓步的時間，好好守住它。"
+          }
+        }
+      },
+      "ASTRO_MOON_FIRE": {
+        "leanInto": {
+          "title": {
+            "en": "Warm emotional drive",
+            "zh-TW": "溫熱的情感動力"
+          },
+          "body": {
+            "en": "A fire-sign moon reads as enthusiasm that lifts the people around you. Your excitement is contagious in the best way this month.",
+            "zh-TW": "火象月亮代表能感染他人的熱情。本月你的興奮會以最好的方式帶動身邊的人。"
+          },
+          "action": {
+            "en": "Invite someone to join a plan you are excited about.",
+            "zh-TW": "邀請一個人加入你正興致勃勃的計畫。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Cooling before reacting",
+            "zh-TW": "回應前先降溫"
+          },
+          "body": {
+            "en": "Quick-burning feelings can speak before you decide to. A brief pause turns heat into warmth.",
+            "zh-TW": "來得快的情緒，有時會搶在你決定之前開口。短短的停頓，能把火氣化成暖意。"
+          },
+          "action": {
+            "en": "When something stings this week, wait ten minutes before replying.",
+            "zh-TW": "本週若有話刺到你，先等十分鐘再回覆。"
+          }
+        }
+      },
+      "ASTRO_MOON_EARTH": {
+        "leanInto": {
+          "title": {
+            "en": "Calm under pressure",
+            "zh-TW": "臨壓不亂的沉穩"
+          },
+          "body": {
+            "en": "An earth-sign moon is read as emotional steadiness. Others may lean on your calm this month — it is a genuine strength.",
+            "zh-TW": "土象月亮被解讀為情緒上的穩定。本月旁人可能會依靠你的沉穩——這是一種真實的力量。"
+          },
+          "action": {
+            "en": "Offer your steady presence to someone having a chaotic week.",
+            "zh-TW": "為正處於忙亂中的人，提供你安穩的陪伴。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Letting feelings surface",
+            "zh-TW": "讓感受浮上來"
+          },
+          "body": {
+            "en": "Steady on the outside can mean unexpressed on the inside. Feelings said out loud weigh less.",
+            "zh-TW": "外表平穩，內心的感受可能還沒說出口。說出來的情緒，重量會輕一些。"
+          },
+          "action": {
+            "en": "Tell one trusted person how this week actually felt.",
+            "zh-TW": "找一位信任的人，說說這週真實的感受。"
+          }
+        }
+      },
+      "ASTRO_MOON_AIR": {
+        "leanInto": {
+          "title": {
+            "en": "Talking things through",
+            "zh-TW": "把心事說開"
+          },
+          "body": {
+            "en": "An air-sign moon processes feelings through words and perspective. Conversations genuinely settle things for you this month.",
+            "zh-TW": "風象月亮透過語言和視角來消化感受。本月好好聊一場，事情真的會安定下來。"
+          },
+          "action": {
+            "en": "Book a proper catch-up with a friend who listens well.",
+            "zh-TW": "和一位善於傾聽的朋友，約一次好好聊天的時間。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Feeling as well as analyzing",
+            "zh-TW": "分析之外，也要感受"
+          },
+          "body": {
+            "en": "Turning feelings into ideas can keep them at arm's length. Sometimes a feeling just wants to be felt, not solved.",
+            "zh-TW": "把感受變成想法，有時反而讓它離自己更遠。有些情緒只想被感受，不需要被解決。"
+          },
+          "action": {
+            "en": "Once this week, name a feeling without explaining or fixing it.",
+            "zh-TW": "本週練習一次：說出一種感受，不解釋也不急著處理。"
+          }
+        }
+      },
+      "ASTRO_MOON_WATER": {
+        "leanInto": {
+          "title": {
+            "en": "Deep emotional attunement",
+            "zh-TW": "深層的情感共鳴"
+          },
+          "body": {
+            "en": "A water-sign moon reads as fine-tuned emotional radar. You notice what others miss — a quiet gift in every close relationship.",
+            "zh-TW": "水象月亮代表細膩的情緒雷達。你察覺得到別人忽略的細節——這是親密關係裡安靜的天賦。"
+          },
+          "action": {
+            "en": "Check in on the person who has gone unusually quiet lately.",
+            "zh-TW": "關心一下最近變得特別安靜的那個人。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Coming up for air",
+            "zh-TW": "記得浮上水面換氣"
+          },
+          "body": {
+            "en": "Deep waters can hold on to moods longer than needed. Gentle routines help feelings move through instead of settling in.",
+            "zh-TW": "深水容易讓情緒停留得比需要的久。溫和的日常規律，能讓感受流動而不沉積。"
+          },
+          "action": {
+            "en": "Take one short walk outside on any heavy-feeling day this week.",
+            "zh-TW": "本週若有心情沉重的日子，出門短短散步一回。"
+          }
+        }
+      },
+      "ASTRO_ASC_FIRE": {
+        "leanInto": {
+          "title": {
+            "en": "A bold first impression",
+            "zh-TW": "鮮明的第一印象"
+          },
+          "body": {
+            "en": "A fire ascendant reads as presence and directness on first meeting. New rooms and new people tilt in your favor this month.",
+            "zh-TW": "火象上升代表初見面時的存在感與直率。本月面對新場合與新朋友，情勢對你有利。"
+          },
+          "action": {
+            "en": "Introduce yourself first at the next gathering you attend.",
+            "zh-TW": "下次聚會時，主動先自我介紹。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Leaving room for others",
+            "zh-TW": "為他人留些空間"
+          },
+          "body": {
+            "en": "A strong opening can unintentionally fill the room. Drawing quieter voices out doubles what the room can do.",
+            "zh-TW": "強烈的開場有時會不小心佔滿整個空間。把安靜的聲音邀請出來，場面會加倍精彩。"
+          },
+          "action": {
+            "en": "In one meeting this week, ask the quietest person what they think.",
+            "zh-TW": "本週在一場討論中，問問最安靜的人怎麼看。"
+          }
+        }
+      },
+      "ASTRO_ASC_EARTH": {
+        "leanInto": {
+          "title": {
+            "en": "Trustworthy presence",
+            "zh-TW": "值得信賴的氣質"
+          },
+          "body": {
+            "en": "An earth ascendant is read as dependable and composed at first sight. People hand you responsibility because you look ready for it.",
+            "zh-TW": "土象上升給人一眼可靠、從容的印象。人們願意把責任交給你，因為你看起來準備好了。"
+          },
+          "action": {
+            "en": "Accept one small responsibility that showcases your reliability.",
+            "zh-TW": "接下一件能展現你可靠特質的小任務。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Showing the playful side",
+            "zh-TW": "露出玩心的一面"
+          },
+          "body": {
+            "en": "Composed can be mistaken for distant. Letting a little lightness show makes your steadiness even more approachable.",
+            "zh-TW": "沉穩有時會被誤讀為疏遠。流露一點輕鬆，你的可靠會更平易近人。"
+          },
+          "action": {
+            "en": "Share one lighthearted story about yourself this week.",
+            "zh-TW": "本週分享一則關於自己的輕鬆小故事。"
+          }
+        }
+      },
+      "ASTRO_ASC_AIR": {
+        "leanInto": {
+          "title": {
+            "en": "An easy conversational bridge",
+            "zh-TW": "自然的交流橋樑"
+          },
+          "body": {
+            "en": "An air ascendant reads as approachable and quick to connect. You are the natural bridge in mixed groups this month.",
+            "zh-TW": "風象上升給人容易親近、反應敏捷的印象。本月在不同圈子之間，你是天生的橋樑。"
+          },
+          "action": {
+            "en": "Introduce two people who would enjoy knowing each other.",
+            "zh-TW": "介紹兩位彼此會投緣的朋友認識。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Depth beneath the charm",
+            "zh-TW": "健談之下的深度"
+          },
+          "body": {
+            "en": "Easy rapport can stay pleasantly on the surface. One layer deeper is where the good conversations live.",
+            "zh-TW": "輕鬆的交流有時停在愉快的表層。再深入一層，才是真正精彩的對話。"
+          },
+          "action": {
+            "en": "In one chat this week, ask a follow-up question instead of changing topics.",
+            "zh-TW": "本週聊天時，試著追問一句，而不是換話題。"
+          }
+        }
+      },
+      "ASTRO_ASC_WATER": {
+        "leanInto": {
+          "title": {
+            "en": "Instant emotional rapport",
+            "zh-TW": "瞬間的情感默契"
+          },
+          "body": {
+            "en": "A water ascendant reads as warmth people can feel immediately. Strangers open up to you faster than they expect to.",
+            "zh-TW": "水象上升散發讓人立刻感受到的溫度。連陌生人都會不知不覺對你敞開心房。"
+          },
+          "action": {
+            "en": "Use that ease to welcome someone new into a group this week.",
+            "zh-TW": "本週善用這份親和力，幫助一位新成員融入團體。"
+          }
+        },
+        "mindfulOf": {
+          "title": {
+            "en": "Choosing what to carry",
+            "zh-TW": "選擇要承接的重量"
+          },
+          "body": {
+            "en": "Being easy to open up to means hearing many heavy things. You can care fully without carrying it all.",
+            "zh-TW": "容易讓人傾訴，也意味著聽見許多沉重的事。你可以全心關懷，但不必全部背起來。"
+          },
+          "action": {
+            "en": "After listening deeply this week, do one small thing that refills you.",
+            "zh-TW": "本週在深度傾聽之後，做一件能為自己充電的小事。"
+          }
+        }
+      },
+      "ASTRO_SUN_ARIES": {
+        "leanInto": {
+          "title": {
+            "en": "Courage that moves first",
+            "zh-TW": "先行動的勇氣"
+          },
+          "body": {
+            "en": "Aries energy is read as courage and fresh starts. Beginning is your superpower.",
+            "zh-TW": "牡羊座的能量被解讀為勇氣與全新的開始。「開始」正是你的超能力。"
+          },
+          "action": {
+            "en": "Take the first small step on something new today.",
+            "zh-TW": "今天就為一件新事踏出第一小步。"
+          }
+        }
+      },
+      "ASTRO_SUN_TAURUS": {
+        "leanInto": {
+          "title": {
+            "en": "Patient, steady building",
+            "zh-TW": "耐心穩健的累積"
+          },
+          "body": {
+            "en": "Taurus energy reads as patience and appreciation of the tangible. Slow progress suits you beautifully.",
+            "zh-TW": "金牛座的能量代表耐心與對實在事物的珍惜。緩慢而穩定的進展最適合你。"
+          },
+          "action": {
+            "en": "Improve one small corner of your daily environment.",
+            "zh-TW": "改善日常環境中的一個小角落。"
+          }
+        }
+      },
+      "ASTRO_SUN_GEMINI": {
+        "leanInto": {
+          "title": {
+            "en": "Curiosity in motion",
+            "zh-TW": "流動的好奇心"
+          },
+          "body": {
+            "en": "Gemini energy is read as curiosity and quick connection between ideas.",
+            "zh-TW": "雙子座的能量被解讀為好奇心與想法之間的快速連結。"
+          },
+          "action": {
+            "en": "Learn one small new thing and share it with someone.",
+            "zh-TW": "學一件小小的新知，並分享給別人。"
+          }
+        }
+      },
+      "ASTRO_SUN_CANCER": {
+        "leanInto": {
+          "title": {
+            "en": "Care that builds home",
+            "zh-TW": "築起歸屬感的關懷"
+          },
+          "body": {
+            "en": "Cancer energy reads as nurture and belonging — you make places feel like home.",
+            "zh-TW": "巨蟹座的能量代表滋養與歸屬——你能讓一個地方有家的感覺。"
+          },
+          "action": {
+            "en": "Make one shared space a little warmer today.",
+            "zh-TW": "今天讓一個共享的空間更溫馨一點。"
+          }
+        }
+      },
+      "ASTRO_SUN_LEO": {
+        "leanInto": {
+          "title": {
+            "en": "Generous warmth",
+            "zh-TW": "慷慨的光和熱"
+          },
+          "body": {
+            "en": "Leo energy is read as warmth and generous encouragement of others.",
+            "zh-TW": "獅子座的能量被解讀為溫暖，以及對他人慷慨的鼓勵。"
+          },
+          "action": {
+            "en": "Celebrate someone else's win out loud today.",
+            "zh-TW": "今天大方地為別人的成就喝采。"
+          }
+        }
+      },
+      "ASTRO_SUN_VIRGO": {
+        "leanInto": {
+          "title": {
+            "en": "Craft and care in details",
+            "zh-TW": "細節裡的用心"
+          },
+          "body": {
+            "en": "Virgo energy reads as craftsmanship — care that shows in the details.",
+            "zh-TW": "處女座的能量代表職人精神——用心會在細節裡被看見。"
+          },
+          "action": {
+            "en": "Polish one small thing until you are proud of it.",
+            "zh-TW": "把一件小事打磨到讓自己滿意為止。"
+          }
+        }
+      },
+      "ASTRO_SUN_LIBRA": {
+        "leanInto": {
+          "title": {
+            "en": "A gift for balance",
+            "zh-TW": "平衡的天賦"
+          },
+          "body": {
+            "en": "Libra energy is read as fairness and an eye for harmony between people.",
+            "zh-TW": "天秤座的能量被解讀為公正，以及調和人際的眼光。"
+          },
+          "action": {
+            "en": "Help two viewpoints find their common ground today.",
+            "zh-TW": "今天幫兩種不同的觀點找到交集。"
+          }
+        }
+      },
+      "ASTRO_SUN_SCORPIO": {
+        "leanInto": {
+          "title": {
+            "en": "Focused depth",
+            "zh-TW": "專注的深度"
+          },
+          "body": {
+            "en": "Scorpio energy reads as depth and full commitment to what matters.",
+            "zh-TW": "天蠍座的能量代表深度，以及對重要事物的全然投入。"
+          },
+          "action": {
+            "en": "Give one priority your undivided attention for an hour.",
+            "zh-TW": "給一件要事一小時不受打擾的專注。"
+          }
+        }
+      },
+      "ASTRO_SUN_SAGITTARIUS": {
+        "leanInto": {
+          "title": {
+            "en": "An explorer's optimism",
+            "zh-TW": "探索者的樂觀"
+          },
+          "body": {
+            "en": "Sagittarius energy is read as optimism and the pull of the wider horizon.",
+            "zh-TW": "射手座的能量被解讀為樂觀，以及對更遼闊視野的嚮往。"
+          },
+          "action": {
+            "en": "Plan one small adventure within the next two weeks.",
+            "zh-TW": "在兩週內安排一場小小的冒險。"
+          }
+        }
+      },
+      "ASTRO_SUN_CAPRICORN": {
+        "leanInto": {
+          "title": {
+            "en": "Quiet, lasting ambition",
+            "zh-TW": "沉靜而長遠的企圖心"
+          },
+          "body": {
+            "en": "Capricorn energy reads as discipline pointed at long horizons.",
+            "zh-TW": "摩羯座的能量代表指向長遠目標的自律。"
+          },
+          "action": {
+            "en": "Do today's small piece of a five-year hope.",
+            "zh-TW": "為五年後的心願，完成今天的一小塊。"
+          }
+        }
+      },
+      "ASTRO_SUN_AQUARIUS": {
+        "leanInto": {
+          "title": {
+            "en": "Original perspective",
+            "zh-TW": "獨到的視角"
+          },
+          "body": {
+            "en": "Aquarius energy is read as originality and care for the wider group.",
+            "zh-TW": "水瓶座的能量被解讀為原創性，以及對群體的關懷。"
+          },
+          "action": {
+            "en": "Offer the unconventional idea you have been holding back.",
+            "zh-TW": "把你藏在心裡的非典型想法提出來。"
+          }
+        }
+      },
+      "ASTRO_SUN_PISCES": {
+        "leanInto": {
+          "title": {
+            "en": "Imagination and compassion",
+            "zh-TW": "想像力與慈悲"
+          },
+          "body": {
+            "en": "Pisces energy reads as imagination and gentle compassion for others.",
+            "zh-TW": "雙魚座的能量代表想像力，以及對他人溫柔的慈悲。"
+          },
+          "action": {
+            "en": "Turn one daydream into a single concrete note.",
+            "zh-TW": "把一個白日夢化成一則具體的筆記。"
+          }
+        }
+      }
+    },
+    "domains": {
+      "career": {
+        "strengths": {
+          "peak": {
+            "title": {
+              "en": "Career momentum at full strength",
+              "zh-TW": "事業動能全開"
+            },
+            "body": {
+              "en": "Career signals are aligned and strong. This is a month to be visible and say yes to the right stage.",
+              "zh-TW": "事業信號整齊而強勁。這個月適合被看見，並站上對的舞台。"
+            },
+            "action": {
+              "en": "Volunteer to lead one visible piece of work.",
+              "zh-TW": "主動承接一項會被看見的工作。"
+            }
+          },
+          "rising": {
+            "title": {
+              "en": "Steady professional progress",
+              "zh-TW": "穩定爬升的職涯"
+            },
+            "body": {
+              "en": "Career energy is on a healthy climb. Consistent effort is quietly compounding.",
+              "zh-TW": "事業能量正健康地向上。持續的努力正在悄悄累積。"
+            },
+            "action": {
+              "en": "Note one skill that grew this month and plan its next rep.",
+              "zh-TW": "記下這個月進步的一項能力，並安排下一次練習。"
+            }
+          },
+          "transition": {
+            "title": {
+              "en": "A stable base to build on",
+              "zh-TW": "可以依靠的穩固基礎"
+            },
+            "body": {
+              "en": "The career fundamentals are holding steady. Small focused moves can tip things upward.",
+              "zh-TW": "事業的基本盤穩穩守住。小而專注的行動就能讓局勢向上。"
+            },
+            "action": {
+              "en": "Choose one priority and give it your best hour each day.",
+              "zh-TW": "選定一個重點，每天投入狀態最好的一小時。"
+            }
+          },
+          "building": {
+            "title": {
+              "en": "Groundwork that will pay off",
+              "zh-TW": "正在打底的耕耘"
+            },
+            "body": {
+              "en": "This is a building month for work. Patient groundwork now becomes visible progress later.",
+              "zh-TW": "這是事業的打底月。此刻耐心的耕耘，之後會化為看得見的進展。"
+            },
+            "action": {
+              "en": "Tidy one system — files, notes, or a routine — that future you will thank.",
+              "zh-TW": "整理一個系統——檔案、筆記或流程——未來的你會感謝現在的自己。"
+            }
+          },
+          "attention": {
+            "title": {
+              "en": "Your care for your work",
+              "zh-TW": "你對工作的在乎"
+            },
+            "body": {
+              "en": "Even in a slower stretch, the fact that you keep showing up is itself a strength worth naming.",
+              "zh-TW": "即使腳步放慢，你仍持續到場努力——這本身就是值得肯定的力量。"
+            },
+            "action": {
+              "en": "Write down one thing at work you are still proud of.",
+              "zh-TW": "寫下工作中一件你依然自豪的事。"
+            }
+          }
+        },
+        "mindful": {
+          "peak": {
+            "title": {
+              "en": "Protecting the pace",
+              "zh-TW": "守住步調"
+            },
+            "body": {
+              "en": "With momentum this strong, overcommitment is the quiet risk. Great months also need white space.",
+              "zh-TW": "動能正強時，過度承諾是安靜的風險。再好的月份也需要留白。"
+            },
+            "action": {
+              "en": "Decline or defer one non-essential request this week.",
+              "zh-TW": "本週婉拒或延後一項非必要的請求。"
+            }
+          },
+          "rising": {
+            "title": {
+              "en": "Growing without overreaching",
+              "zh-TW": "成長但不過度伸展"
+            },
+            "body": {
+              "en": "Progress invites bigger bets. Keep the stretch challenging but honest about your hours.",
+              "zh-TW": "進步會招來更大的目標。挑戰可以拉高，但要誠實面對自己的時間。"
+            },
+            "action": {
+              "en": "Before adding a new commitment, write down what it will cost in time.",
+              "zh-TW": "接受新任務前，先寫下它需要花費的時間。"
+            }
+          },
+          "transition": {
+            "title": {
+              "en": "Focus over spread",
+              "zh-TW": "聚焦勝過分散"
+            },
+            "body": {
+              "en": "In a transition month, energy scattered across everything moves nothing. Fewer targets, better aim.",
+              "zh-TW": "轉換期裡，力氣撒得太開反而什麼都推不動。目標少一點，準頭好一點。"
+            },
+            "action": {
+              "en": "Park one back-burner project officially until next month.",
+              "zh-TW": "把一項次要計畫正式擱置到下個月。"
+            }
+          },
+          "building": {
+            "title": {
+              "en": "Patience with the timeline",
+              "zh-TW": "對時程多點耐心"
+            },
+            "body": {
+              "en": "Building phases test patience. Comparing your chapter one to someone's chapter ten helps no one.",
+              "zh-TW": "打底期最考驗耐心。拿自己的第一章去比別人的第十章，對誰都沒有幫助。"
+            },
+            "action": {
+              "en": "Replace one comparison thought with a note on your own progress.",
+              "zh-TW": "下次想比較時，改成記錄一項自己的進展。"
+            }
+          },
+          "attention": {
+            "title": {
+              "en": "Gentle attention, not pressure",
+              "zh-TW": "溫柔關注，而非施壓"
+            },
+            "body": {
+              "en": "Career readings ask for a lighter touch this month. Recalibrating beats forcing; small resets count.",
+              "zh-TW": "本月的事業訊號需要輕一點的力道。重新校準勝過硬撐，小小的重整也算數。"
+            },
+            "action": {
+              "en": "Pick the single smallest work task and finish just that one today.",
+              "zh-TW": "挑一件最小的工作事項，今天只完成它就好。"
+            }
+          }
+        },
+        "monthPlan": {
+          "high": {
+            "en": "Week 1 — Career: ride the momentum; pick one meaningful goal and give it your best hours.",
+            "zh-TW": "第一週・事業：乘著動能，選定一個有意義的目標，投入你狀態最好的時段。"
+          },
+          "low": {
+            "en": "Week 1 — Career: keep it light; one small finished task beats three ambitious starts.",
+            "zh-TW": "第一週・事業：放輕力道，完成一件小事勝過同時開三個大頭。"
+          }
+        }
+      },
+      "wealth": {
+        "strengths": {
+          "peak": {
+            "title": {
+              "en": "Sharp money awareness",
+              "zh-TW": "敏銳的金錢覺察"
+            },
+            "body": {
+              "en": "Wealth signals read clear and steady. Your sense of where money goes is a real asset this month.",
+              "zh-TW": "財富信號清晰而穩定。你對金錢流向的掌握，本月是實實在在的資產。"
+            },
+            "action": {
+              "en": "Write down your three money priorities for the month.",
+              "zh-TW": "寫下本月最重要的三個用錢優先順序。"
+            }
+          },
+          "rising": {
+            "title": {
+              "en": "Habits quietly compounding",
+              "zh-TW": "悄悄累積的好習慣"
+            },
+            "body": {
+              "en": "Money habits are trending well. Small consistent choices are doing the heavy lifting.",
+              "zh-TW": "理財習慣正朝好的方向前進。持續的小選擇正默默發揮大作用。"
+            },
+            "action": {
+              "en": "Automate one good money habit you already do manually.",
+              "zh-TW": "把一個你手動維持的好習慣改成自動化。"
+            }
+          },
+          "transition": {
+            "title": {
+              "en": "A workable money rhythm",
+              "zh-TW": "運作中的金錢節奏"
+            },
+            "body": {
+              "en": "Day-to-day money life is steady. A little attention to small leaks could free up real room.",
+              "zh-TW": "日常的金錢運作大致穩定。留意小漏洞，就能騰出可觀的空間。"
+            },
+            "action": {
+              "en": "Scan last month's spending for one recurring surprise.",
+              "zh-TW": "檢視上個月的支出，找出一筆反覆出現的意外花費。"
+            }
+          },
+          "building": {
+            "title": {
+              "en": "Foundations before leaps",
+              "zh-TW": "先築基，再跳躍"
+            },
+            "body": {
+              "en": "This is a planning month for money. Tracking and small buffers beat big commitments right now.",
+              "zh-TW": "這是財務的規劃月。此刻記帳與小小的緩衝，勝過重大的承諾。"
+            },
+            "action": {
+              "en": "Set up one tiny automatic buffer, even a small amount counts.",
+              "zh-TW": "設定一筆小小的自動預備金，金額再小都算數。"
+            }
+          },
+          "attention": {
+            "title": {
+              "en": "Awareness is the first win",
+              "zh-TW": "覺察就是第一步的勝利"
+            },
+            "body": {
+              "en": "Money signals ask for gentleness this month. Simply knowing your numbers is already progress.",
+              "zh-TW": "本月的財務訊號需要溫柔以待。光是清楚自己的數字，就已經是進步。"
+            },
+            "action": {
+              "en": "Write down today's balance without judging it.",
+              "zh-TW": "不帶批判地記下今天的帳戶數字。"
+            }
+          }
+        },
+        "mindful": {
+          "peak": {
+            "title": {
+              "en": "Guarding against lifestyle creep",
+              "zh-TW": "留意生活開銷悄悄上升"
+            },
+            "body": {
+              "en": "Good money months invite quiet spending expansion. Keeping wants and needs labeled keeps the gains.",
+              "zh-TW": "財務順遂的月份，支出容易悄悄擴張。分清「想要」和「需要」，才守得住成果。"
+            },
+            "action": {
+              "en": "Wait 48 hours before any non-essential purchase this week.",
+              "zh-TW": "本週非必要的購物，先等48小時再決定。"
+            }
+          },
+          "rising": {
+            "title": {
+              "en": "Confidence with guardrails",
+              "zh-TW": "有護欄的自信"
+            },
+            "body": {
+              "en": "Rising confidence can loosen careful habits. The routines that got you here still deserve their place.",
+              "zh-TW": "信心上升時，謹慎的習慣容易鬆動。帶你走到這裡的規律，仍值得保留。"
+            },
+            "action": {
+              "en": "Keep your usual money check-in even if things feel fine.",
+              "zh-TW": "即使感覺一切都好，也維持原本的對帳習慣。"
+            }
+          },
+          "transition": {
+            "title": {
+              "en": "Small leaks, gentle fixes",
+              "zh-TW": "小漏洞，溫柔補"
+            },
+            "body": {
+              "en": "Transition months reward noticing over overhauling. One small fix beats a dramatic new system.",
+              "zh-TW": "轉換期適合觀察，而非大改。補好一個小洞，勝過打造一套全新制度。"
+            },
+            "action": {
+              "en": "Cancel or downsize one recurring cost that no longer fits.",
+              "zh-TW": "取消或縮減一項不再適合的固定支出。"
+            }
+          },
+          "building": {
+            "title": {
+              "en": "Steady beats sudden",
+              "zh-TW": "細水長流勝過急躁"
+            },
+            "body": {
+              "en": "Building phases can tempt quick fixes. Gentle consistency protects you better than bold swings.",
+              "zh-TW": "累積期容易讓人想走捷徑。溫和的持續，比大起大落更能保護你。"
+            },
+            "action": {
+              "en": "Choose one money habit to repeat daily for seven days.",
+              "zh-TW": "選一個理財小習慣，連續七天執行。"
+            }
+          },
+          "attention": {
+            "title": {
+              "en": "Softness with the numbers",
+              "zh-TW": "溫柔面對數字"
+            },
+            "body": {
+              "en": "When money feels tight, both panic-saving and stress-spending call loudly. Neither needs an answer today.",
+              "zh-TW": "手頭緊的時候，恐慌性節省和壓力性消費都會大聲呼喊。今天都不必回應它們。"
+            },
+            "action": {
+              "en": "Do one free thing you genuinely enjoy this week.",
+              "zh-TW": "本週做一件你真心喜歡的免費小事。"
+            }
+          }
+        },
+        "monthPlan": {
+          "high": {
+            "en": "Week 2 — Wealth: bank the good habits; automate one and note what is working.",
+            "zh-TW": "第二週・財富：把好習慣存起來，自動化一項並記下有效的做法。"
+          },
+          "low": {
+            "en": "Week 2 — Wealth: observe before adjusting; know your numbers and let big decisions wait.",
+            "zh-TW": "第二週・財富：先觀察再調整，看清數字，讓重大決定再等一等。"
+          }
+        }
+      },
+      "family": {
+        "strengths": {
+          "peak": {
+            "title": {
+              "en": "Warm, open connections",
+              "zh-TW": "溫暖敞開的關係"
+            },
+            "body": {
+              "en": "Family signals read warm and aligned. Connection comes easily — enjoy it and treasure it.",
+              "zh-TW": "家庭信號溫暖而和諧。連結來得自然——好好享受，也好好珍藏。"
+            },
+            "action": {
+              "en": "Plan one shared moment this week purely for enjoyment.",
+              "zh-TW": "本週安排一段純粹享受的共處時光。"
+            }
+          },
+          "rising": {
+            "title": {
+              "en": "Bonds gaining ease",
+              "zh-TW": "越來越自在的羈絆"
+            },
+            "body": {
+              "en": "Family energy is warming. Repair after friction comes quicker, and small gestures land well.",
+              "zh-TW": "家庭能量正在回溫。摩擦後的修復變快了，小小的心意也更容易被接收。"
+            },
+            "action": {
+              "en": "Send one just-thinking-of-you message today.",
+              "zh-TW": "今天傳一則「想到你」的訊息。"
+            }
+          },
+          "transition": {
+            "title": {
+              "en": "Stable ties, room to warm",
+              "zh-TW": "穩定的關係，還能更暖"
+            },
+            "body": {
+              "en": "Bonds are steady, and a few would flourish with a bit more light. Attention is the simplest gift.",
+              "zh-TW": "關係基礎穩定，有幾段再多點陽光就會盛開。「關注」是最簡單的禮物。"
+            },
+            "action": {
+              "en": "Give one family member fifteen undistracted minutes today.",
+              "zh-TW": "今天給一位家人十五分鐘不分心的陪伴。"
+            }
+          },
+          "building": {
+            "title": {
+              "en": "Small gestures, real glue",
+              "zh-TW": "小舉動是真正的黏著劑"
+            },
+            "body": {
+              "en": "This is a building month for relationships. Tiny consistent gestures bond deeper than grand plans.",
+              "zh-TW": "這是關係的累積月。持續的小舉動，比盛大的計畫更能加深感情。"
+            },
+            "action": {
+              "en": "Start one tiny ritual — a good-morning text, a shared tea.",
+              "zh-TW": "開始一個小儀式——一句早安訊息、一杯一起喝的茶。"
+            }
+          },
+          "attention": {
+            "title": {
+              "en": "The care you still carry",
+              "zh-TW": "你仍放在心上的牽掛"
+            },
+            "body": {
+              "en": "Even when connection feels distant, caring about it is the thread that rebuilds it.",
+              "zh-TW": "即使關係感覺有些遙遠，你的在乎本身，就是重新織回連結的那條線。"
+            },
+            "action": {
+              "en": "Write down what you miss about one relationship.",
+              "zh-TW": "寫下你想念某段關係的哪一點。"
+            }
+          }
+        },
+        "mindful": {
+          "peak": {
+            "title": {
+              "en": "Hearing the quiet ones",
+              "zh-TW": "聽見安靜的聲音"
+            },
+            "body": {
+              "en": "When harmony is high, it is easy to assume everyone is fine. The quietest person may want the most.",
+              "zh-TW": "氣氛和樂時，容易以為每個人都好。最安靜的那位，也許最需要被關心。"
+            },
+            "action": {
+              "en": "Check in privately with the least talkative family member.",
+              "zh-TW": "私下關心一下家中最不多話的成員。"
+            }
+          },
+          "rising": {
+            "title": {
+              "en": "Keeping the momentum kind",
+              "zh-TW": "讓好的勢頭保持溫柔"
+            },
+            "body": {
+              "en": "Improving bonds can raise expectations quickly. Let relationships warm at their own pace.",
+              "zh-TW": "關係好轉時，期待容易升得太快。讓感情用自己的步調回溫。"
+            },
+            "action": {
+              "en": "Appreciate one small gesture out loud instead of expecting more.",
+              "zh-TW": "大聲感謝一個小舉動，而不是期待更多。"
+            }
+          },
+          "transition": {
+            "title": {
+              "en": "Naming the small distances",
+              "zh-TW": "說出小小的距離"
+            },
+            "body": {
+              "en": "Mild distance grows in silence. A light, honest sentence usually shrinks it fast.",
+              "zh-TW": "淡淡的距離會在沉默中變大。一句輕鬆而誠實的話，通常能很快拉近。"
+            },
+            "action": {
+              "en": "Gently name one thing you have both been avoiding.",
+              "zh-TW": "溫和地說出一件你們都在迴避的小事。"
+            }
+          },
+          "building": {
+            "title": {
+              "en": "Patience with repair",
+              "zh-TW": "給修復多一點時間"
+            },
+            "body": {
+              "en": "Rebuilding closeness takes repetitions, not speeches. Showing up small and often is the path.",
+              "zh-TW": "重建親近靠的是一次次出現，而不是一場演說。常常出現、小小付出，就是那條路。"
+            },
+            "action": {
+              "en": "Show up once this week with no agenda at all.",
+              "zh-TW": "本週不帶任何目的地出現一次。"
+            }
+          },
+          "attention": {
+            "title": {
+              "en": "Space is not rejection",
+              "zh-TW": "空間不等於拒絕"
+            },
+            "body": {
+              "en": "In strained seasons, distance is sometimes just breathing room. Keep the door open without forcing it.",
+              "zh-TW": "關係緊繃的季節，距離有時只是喘息的空間。把門留著，不必硬推。"
+            },
+            "action": {
+              "en": "Send one no-pressure message that expects nothing back.",
+              "zh-TW": "傳一則不求回覆、沒有壓力的問候。"
+            }
+          }
+        },
+        "monthPlan": {
+          "high": {
+            "en": "Week 3 — Family: enjoy the warmth on purpose; plan one shared moment and be fully there.",
+            "zh-TW": "第三週・家庭：刻意享受這份溫暖，安排一段共處時光並全心投入。"
+          },
+          "low": {
+            "en": "Week 3 — Family: reconnect gently; one honest, low-pressure conversation is plenty.",
+            "zh-TW": "第三週・家庭：溫柔地重新連上線，一次誠實而沒有壓力的對話就足夠。"
+          }
+        }
+      },
+      "health": {
+        "strengths": {
+          "peak": {
+            "title": {
+              "en": "Energy working for you",
+              "zh-TW": "為你效力的充沛精力"
+            },
+            "body": {
+              "en": "Well-being signals are strong and synchronized. Your rhythm is an engine — feed it well.",
+              "zh-TW": "健康信號強勁且同步。你的節奏就像引擎——好好保養它。"
+            },
+            "action": {
+              "en": "Do one activity today that makes your body feel alive.",
+              "zh-TW": "今天做一件讓身體有活力的事。"
+            }
+          },
+          "rising": {
+            "title": {
+              "en": "A rhythm worth protecting",
+              "zh-TW": "值得守護的節奏"
+            },
+            "body": {
+              "en": "Energy and recovery are trending well. The habits behind this deserve deliberate protection.",
+              "zh-TW": "精力與恢復都朝好的方向走。背後的好習慣值得刻意守護。"
+            },
+            "action": {
+              "en": "Name the habit helping most and schedule it like a meeting.",
+              "zh-TW": "找出幫助最大的習慣，把它像會議一樣排進行程。"
+            }
+          },
+          "transition": {
+            "title": {
+              "en": "Routines holding steady",
+              "zh-TW": "穩住陣腳的作息"
+            },
+            "body": {
+              "en": "Your basic rhythm is holding. Small tune-ups — light, water, movement — can lift the whole week.",
+              "zh-TW": "基本作息守得不錯。小小的微調——陽光、喝水、活動——就能點亮一整週。"
+            },
+            "action": {
+              "en": "Add ten minutes of daylight movement to your mornings.",
+              "zh-TW": "早晨加上十分鐘曬得到光的活動。"
+            }
+          },
+          "building": {
+            "title": {
+              "en": "Rest as a strategy",
+              "zh-TW": "把休息當作策略"
+            },
+            "body": {
+              "en": "This is a rebuilding month for energy. Rest is not the absence of progress — it is the progress.",
+              "zh-TW": "這是精力重建的月份。休息不是進度的暫停——休息本身就是進度。"
+            },
+            "action": {
+              "en": "Protect one full evening this week for genuine downtime.",
+              "zh-TW": "本週守住一個完整的夜晚，純粹放鬆。"
+            }
+          },
+          "attention": {
+            "title": {
+              "en": "Listening to your body",
+              "zh-TW": "傾聽身體的聲音"
+            },
+            "body": {
+              "en": "Your body is asking for a softer month, and noticing that is itself good self-care.",
+              "zh-TW": "身體正在請求一個溫柔一點的月份，而你能察覺這件事，本身就是很好的自我照顧。"
+            },
+            "action": {
+              "en": "Choose the gentler option once a day — swap a rush for a stroll.",
+              "zh-TW": "每天選一次比較溫和的選項——把趕路換成散步。"
+            }
+          }
+        },
+        "mindful": {
+          "peak": {
+            "title": {
+              "en": "Not trading sleep for output",
+              "zh-TW": "別拿睡眠換產出"
+            },
+            "body": {
+              "en": "Feeling great tempts late nights. The rhythm creating this energy is the thing to keep.",
+              "zh-TW": "狀態好時最容易熬夜。創造這份活力的節奏，正是最該留住的東西。"
+            },
+            "action": {
+              "en": "Keep your usual bedtime tonight even if you feel unstoppable.",
+              "zh-TW": "就算精神再好，今晚也照常時間睡覺。"
+            }
+          },
+          "rising": {
+            "title": {
+              "en": "Building without overloading",
+              "zh-TW": "進步但不超載"
+            },
+            "body": {
+              "en": "Improving energy invites bigger goals. Let capacity grow a step ahead of ambition.",
+              "zh-TW": "精力變好，目標就想加大。讓身體的餘裕永遠走在企圖心前面一步。"
+            },
+            "action": {
+              "en": "Increase any routine by ten percent at most this week.",
+              "zh-TW": "本週任何訓練或活動，最多加量一成就好。"
+            }
+          },
+          "transition": {
+            "title": {
+              "en": "The basics before the extras",
+              "zh-TW": "先顧基本，再談進階"
+            },
+            "body": {
+              "en": "Mid-range energy does best on fundamentals. Sleep, water, and daylight beat any clever optimization.",
+              "zh-TW": "中等能量的時期最需要基本功。睡眠、喝水、曬太陽，勝過任何花俏的優化。"
+            },
+            "action": {
+              "en": "Pick the weakest basic — sleep, water, movement — and tend it first.",
+              "zh-TW": "找出最弱的基本項——睡眠、喝水或活動——先照顧它。"
+            }
+          },
+          "building": {
+            "title": {
+              "en": "Not borrowing from next week",
+              "zh-TW": "別向下週預支"
+            },
+            "body": {
+              "en": "Pushing through tiredness borrows energy you will want next week. Gentle pacing repays itself.",
+              "zh-TW": "硬撐疲勞，等於預支下週需要的精力。溫和的配速，很快就會回本。"
+            },
+            "action": {
+              "en": "Swap one intense plan this week for a restful one.",
+              "zh-TW": "把本週一個高強度的安排，換成放鬆的版本。"
+            }
+          },
+          "attention": {
+            "title": {
+              "en": "Softness first",
+              "zh-TW": "先溫柔對待自己"
+            },
+            "body": {
+              "en": "Low-energy stretches are for maintenance, not performance. If something feels off and worries you, talking to a professional is a caring step.",
+              "zh-TW": "低能量的時期用來保養，不是用來衝刺。若有讓你擔心的不適，找專業人士聊聊也是一種好好照顧自己。"
+            },
+            "action": {
+              "en": "Tonight, choose rest over one optional obligation.",
+              "zh-TW": "今晚在休息和一件可有可無的事之間，選擇休息。"
+            }
+          }
+        },
+        "monthPlan": {
+          "high": {
+            "en": "Week 4 — Health: protect the rhythm that is working; keep sleep and movement anchored.",
+            "zh-TW": "第四週・健康：守護正在運作的節奏，讓睡眠與活動保持定錨。"
+          },
+          "low": {
+            "en": "Week 4 — Health: go gently; favor rest, water, and daylight over intensity.",
+            "zh-TW": "第四週・健康：放慢腳步，以休息、喝水和陽光取代高強度安排。"
+          }
+        }
+      }
+    },
+    "monthTheme": {
+      "Growing": {
+        "en": "A month of momentum — trust what is working and enjoy the climb.",
+        "zh-TW": "充滿動能的月份——相信正在奏效的方法，享受向上的過程。"
+      },
+      "Stable": {
+        "en": "A month of steady ground — a good time to deepen what already works.",
+        "zh-TW": "腳步穩健的月份——正適合深耕已經運作良好的事。"
+      },
+      "Building": {
+        "en": "A month of quiet building — small consistent steps are doing more than they show.",
+        "zh-TW": "安靜累積的月份——持續的小步伐，正發揮超出表面的作用。"
+      },
+      "Watchout": {
+        "en": "A month for gentle rebuilding — slow down, simplify, and let small wins lead.",
+        "zh-TW": "溫柔重整的月份——放慢腳步、化繁為簡，讓小小的勝利帶路。"
       }
     }
   }

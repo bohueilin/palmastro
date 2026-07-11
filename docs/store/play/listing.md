@@ -35,6 +35,11 @@ PalmAstro is a privacy-first self-reflection app. It combines on-device palm fea
 
 PalmAstro is not fortune telling. It does not predict your future, diagnose your health, or give financial advice. It turns patterns into prompts: things to notice, one action to try today, one for this week, and a question worth journaling about.
 
+UNDERSTAND YOUR READING
+• Each month's reading distills into simple guidance: what to lean into right now, and what to be mindful of.
+• "Be mindful of" means gentle awareness, never a warning — the app doesn't predict misfortune, it points at habits worth watching.
+• Every guidance item links back to the signals behind it, so you always know why it's there.
+
 HOW IT WORKS
 • Scan your palm with a guided seven-angle capture and live quality feedback.
 • On-device analysis extracts categorical line features (clarity, continuity, depth) — never a biometric identity template. Nothing is uploaded.
@@ -79,6 +84,11 @@ Questions? support@palmastro.app
 
 掌紋星象不是算命。它不預測你的未來、不診斷健康、也不提供理財建議。它把觀察到的模式化為引導：值得留意的傾向、今天可以嘗試的一個行動、本週的一個練習，以及一個值得寫進日記的問題。
 
+看懂你的解讀
+• 每個月的報告都會整理成一份簡單的指引：這個月值得多發揮什麼、需要多留意什麼。
+• 「留意」是溫和的提醒，不是警告——App 不預言厄運，只是點出值得觀察的習慣。
+• 每一條指引都能回溯到背後的訊號，你隨時知道它為什麼出現。
+
 運作方式
 • 依照引導完成七個角度的手掌掃描，即時回饋拍攝品質。
 • 掌紋分析完全在裝置上進行，只產出分類型的線條特徵（清晰度、連續度、深淺）——不是生物辨識模板，也不會上傳任何影像。
@@ -119,6 +129,11 @@ Questions? support@palmastro.app
 ## Copy safety check (PRD §§30–32, 65)
 
 Both descriptions were checked against the prohibited list: no guaranteed predictions, no health/disease claims, no wealth promises, no "know your future" / "100% accurate" phrasing, no medical or financial advice; disclaimers included; IAP status stated (free, none at launch). Do not edit the copy without re-running this check.
+
+Re-checked 2026-07-11 after adding the "Understand your reading / 看懂你的解讀" guidance
+section: "what to lean into / what to be mindful of" (值得多發揮什麼 / 需要多留意什麼) is
+awareness framing, not prediction; the copy explicitly disclaims warnings and misfortune
+prediction (不預言厄運) and names no health or money outcomes — compliant with PRD §§30–32.
 
 ## Not part of this listing
 

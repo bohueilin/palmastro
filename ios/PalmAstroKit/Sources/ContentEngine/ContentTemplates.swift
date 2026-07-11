@@ -176,6 +176,107 @@ public struct ToneTemplate: Codable, Equatable, Sendable {
     }
 }
 
+// MARK: - Guidance templates ("Understand your reading", templates v2.1.0)
+
+/// One guidance card's copy: short title, one-to-two-sentence body, concrete
+/// micro-action (mirrors Kotlin `GuidanceCopy`). Tolerant decoding — every
+/// field is optional in the JSON.
+public struct GuidanceCopy: Codable, Equatable, Sendable {
+    public let title: LocalizedText
+    public let body: LocalizedText
+    public let action: LocalizedText
+
+    public init(title: LocalizedText = [:], body: LocalizedText = [:], action: LocalizedText = [:]) {
+        self.title = title
+        self.body = body
+        self.action = action
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        title = try c.decodeIfPresent(LocalizedText.self, forKey: .title) ?? [:]
+        body = try c.decodeIfPresent(LocalizedText.self, forKey: .body) ?? [:]
+        action = try c.decodeIfPresent(LocalizedText.self, forKey: .action) ?? [:]
+    }
+}
+
+/// Per-signal guidance vocabulary (PRD §11-§13): `leanInto` for what to feel
+/// positive about, `mindfulOf` for gentle attention-pointers.
+/// Positive-direction palm signals carry only leanInto, negative-direction
+/// ones only mindfulOf, astro element/modality signals carry both.
+public struct GuidanceSignalTemplate: Codable, Equatable, Sendable {
+    public let leanInto: GuidanceCopy?
+    public let mindfulOf: GuidanceCopy?
+
+    public init(leanInto: GuidanceCopy? = nil, mindfulOf: GuidanceCopy? = nil) {
+        self.leanInto = leanInto
+        self.mindfulOf = mindfulOf
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        leanInto = try c.decodeIfPresent(GuidanceCopy.self, forKey: .leanInto)
+        mindfulOf = try c.decodeIfPresent(GuidanceCopy.self, forKey: .mindfulOf)
+    }
+}
+
+/// Per-domain guidance: bucket-keyed generic `strengths` and `mindful`
+/// fallbacks (peak/rising/transition/building/attention) used when no
+/// signal-backed entry exists, plus `monthPlan` weekly focus lines keyed
+/// "high"/"low".
+public struct GuidanceDomainTemplate: Codable, Equatable, Sendable {
+    public let strengths: [String: GuidanceCopy]
+    public let mindful: [String: GuidanceCopy]
+    public let monthPlan: [String: LocalizedText]
+
+    public init(
+        strengths: [String: GuidanceCopy] = [:],
+        mindful: [String: GuidanceCopy] = [:],
+        monthPlan: [String: LocalizedText] = [:]
+    ) {
+        self.strengths = strengths
+        self.mindful = mindful
+        self.monthPlan = monthPlan
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        strengths = try c.decodeIfPresent([String: GuidanceCopy].self, forKey: .strengths) ?? [:]
+        mindful = try c.decodeIfPresent([String: GuidanceCopy].self, forKey: .mindful) ?? [:]
+        monthPlan = try c.decodeIfPresent([String: LocalizedText].self, forKey: .monthPlan) ?? [:]
+    }
+}
+
+/// "Understand your reading" guidance layer (templates v2.1.0, PRD §11-§13,
+/// §30-§32). `monthTheme` is keyed by overall grade. Guidance copy ships
+/// complete in en + zh-TW; zh-CN/ja/hi resolve through the existing chain
+/// (`resolveLanguage` keeps them supported, then `localized` falls back
+/// per-field to the default "en"). Decodes tolerantly: an absent or partial
+/// section yields empty maps, so the verbatim canonical Android file always
+/// parses.
+public struct GuidanceTemplates: Codable, Equatable, Sendable {
+    public let signals: [String: GuidanceSignalTemplate]
+    public let domains: [String: GuidanceDomainTemplate]
+    public let monthTheme: [String: LocalizedText]
+
+    public init(
+        signals: [String: GuidanceSignalTemplate] = [:],
+        domains: [String: GuidanceDomainTemplate] = [:],
+        monthTheme: [String: LocalizedText] = [:]
+    ) {
+        self.signals = signals
+        self.domains = domains
+        self.monthTheme = monthTheme
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        signals = try c.decodeIfPresent([String: GuidanceSignalTemplate].self, forKey: .signals) ?? [:]
+        domains = try c.decodeIfPresent([String: GuidanceDomainTemplate].self, forKey: .domains) ?? [:]
+        monthTheme = try c.decodeIfPresent([String: LocalizedText].self, forKey: .monthTheme) ?? [:]
+    }
+}
+
 /// Localized section labels used by the renderer for plain-text reports.
 public struct ReportLabels: Codable, Equatable, Sendable {
     public let actionToday: LocalizedText
@@ -222,6 +323,7 @@ public struct ContentTemplates: Codable, Equatable, Sendable {
     public let fallback: FallbackTemplate
     public let tones: [String: ToneTemplate]
     public let labels: ReportLabels
+    public let guidance: GuidanceTemplates
 
     public init(
         version: String,
@@ -233,7 +335,8 @@ public struct ContentTemplates: Codable, Equatable, Sendable {
         observationFallbackEvidence: LocalizedText = [:],
         fallback: FallbackTemplate = FallbackTemplate(),
         tones: [String: ToneTemplate] = [:],
-        labels: ReportLabels = ReportLabels()
+        labels: ReportLabels = ReportLabels(),
+        guidance: GuidanceTemplates = GuidanceTemplates()
     ) {
         self.version = version
         self.defaultLanguage = defaultLanguage
@@ -245,6 +348,7 @@ public struct ContentTemplates: Codable, Equatable, Sendable {
         self.fallback = fallback
         self.tones = tones
         self.labels = labels
+        self.guidance = guidance
     }
 
     public init(from decoder: Decoder) throws {
@@ -259,6 +363,7 @@ public struct ContentTemplates: Codable, Equatable, Sendable {
         fallback = try c.decodeIfPresent(FallbackTemplate.self, forKey: .fallback) ?? FallbackTemplate()
         tones = try c.decodeIfPresent([String: ToneTemplate].self, forKey: .tones) ?? [:]
         labels = try c.decodeIfPresent(ReportLabels.self, forKey: .labels) ?? ReportLabels()
+        guidance = try c.decodeIfPresent(GuidanceTemplates.self, forKey: .guidance) ?? GuidanceTemplates()
     }
 
     // MARK: - Lookup helpers (Kotlin parity)
@@ -291,6 +396,17 @@ public struct ContentTemplates: Codable, Equatable, Sendable {
         }
         guard let bucketId = match, let text = field[bucketId] else { return "" }
         return localized(text, language: language)
+    }
+
+    /// Generic bucket resolution for non-text bucket-keyed maps (guidance
+    /// entries, month-plan lines). Same deterministic sorted-key scan as
+    /// `bucketText`; bucket ranges within one field are disjoint in the
+    /// canonical data.
+    public func bucketValue<T>(_ field: [String: T], score: Int) -> T? {
+        let match = field.keys.sorted().first { bucketId in
+            buckets[bucketId]?.contains(score) == true
+        }
+        return match.flatMap { field[$0] }
     }
 
     // MARK: - Loading

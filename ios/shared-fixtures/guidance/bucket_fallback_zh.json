@@ -1,0 +1,190 @@
+{
+    "input": {
+        "payloads": {
+            "career": {
+                "domain": "career",
+                "monthKey": "2026-07",
+                "calcLevel": "L1",
+                "confidence": "med",
+                "confidenceReasons": [
+                    "missing_birth_time"
+                ],
+                "language": "zh-TW",
+                "observations": [
+                ],
+                "interpretation": {
+                    "pattern": "你的事業指標正在提醒你需要留心。這不是警告，而是重新調整的邀請。",
+                    "trigger": "當期限堆疊、優先事項互相競爭時，阻力最容易出現。",
+                    "cost": "若置之不理，小小的挫折可能累積成對工作的倦怠感。"
+                },
+                "blindspot": "在事業低潮期，避免做出衝動的決定。給自己至少48小時的冷靜期。",
+                "actionToday": "花10分鐘列出你事業中順利的事——而非需要修正的。",
+                "actionWeek": "本週安排兩段30分鐘的「思考時間」——不開會、不做任務。",
+                "prompt": "如果你現在的職業挑戰正在試圖教你什麼，那個教訓會是什麼？",
+                "safetyNotes": [
+                ],
+                "explainability": [
+                ],
+                "scoreCard": {
+                    "totalScore": 34,
+                    "grade": "Building",
+                    "delta": null,
+                    "comparabilityScore": null,
+                    "subdims": {
+                    }
+                }
+            },
+            "wealth": {
+                "domain": "wealth",
+                "monthKey": "2026-07",
+                "calcLevel": "L1",
+                "confidence": "med",
+                "confidenceReasons": [
+                    "missing_birth_time"
+                ],
+                "language": "zh-TW",
+                "observations": [
+                ],
+                "interpretation": {
+                    "pattern": "你的財富正在累積階段。本月適合記錄與規劃，而非重大的承諾。",
+                    "trigger": "金錢壓力常在帳單、比較心態與深夜瀏覽購物時升高。",
+                    "cost": "若放任不管，金錢焦慮會消耗你本可用在改善上的注意力。"
+                },
+                "blindspot": "當財務信號較低時，避免恐慌性儲蓄或壓力性消費。",
+                "actionToday": "找出一個真正讓你開心的免費活動。",
+                "actionWeek": "本週和一個你信任的人坦誠地談談金錢。",
+                "prompt": "如果你明天可以改變一個理財習慣，哪一個會產生最大的漣漪效應？",
+                "safetyNotes": [
+                    "本內容僅供個人成長參考，不提供任何投資、理財或稅務方面的指引。"
+                ],
+                "explainability": [
+                ],
+                "scoreCard": {
+                    "totalScore": 37,
+                    "grade": "Building",
+                    "delta": null,
+                    "comparabilityScore": null,
+                    "subdims": {
+                    }
+                }
+            },
+            "family": {
+                "domain": "family",
+                "monthKey": "2026-07",
+                "calcLevel": "L1",
+                "confidence": "med",
+                "confidenceReasons": [
+                    "missing_birth_time"
+                ],
+                "language": "zh-TW",
+                "observations": [
+                ],
+                "interpretation": {
+                    "pattern": "你的家庭正在累積階段。此刻持續的小舉動勝過盛大的計畫。",
+                    "trigger": "距離常在忙碌的日子與一再延後的對話中悄悄拉開。",
+                    "cost": "未說出口的張力，往往讓你最在乎的關係付出最大代價。"
+                },
+                "blindspot": "家庭關係困難時期，記住距離並不總是拒絕——有時人們需要空間。",
+                "actionToday": "寫下一件你感謝某位家人但從未說過的事。",
+                "actionWeek": "本週花20分鐘在一段需要關注的家庭關係上。",
+                "prompt": "你對家庭關係抱持的某個期望，值得重新審視嗎？",
+                "safetyNotes": [
+                ],
+                "explainability": [
+                ],
+                "scoreCard": {
+                    "totalScore": 38,
+                    "grade": "Building",
+                    "delta": null,
+                    "comparabilityScore": null,
+                    "subdims": {
+                    }
+                }
+            },
+            "health": {
+                "domain": "health",
+                "monthKey": "2026-07",
+                "calcLevel": "L1",
+                "confidence": "med",
+                "confidenceReasons": [
+                    "missing_birth_time"
+                ],
+                "language": "zh-TW",
+                "observations": [
+                ],
+                "interpretation": {
+                    "pattern": "你的健康正在累積階段。優先安排休息與簡單的日常，而非高強度挑戰。",
+                    "trigger": "精力下滑常跟隨著睡眠不足、略過休息與睡前滑手機。",
+                    "cost": "硬撐著疲憊前進，通常是向下週的精力預支。"
+                },
+                "blindspot": "較低的健康指標不是預測——而是優先照顧自己的邀請。從基本做起：睡眠、補水、運動。",
+                "actionToday": "今晚早睡30分鐘。睡眠是一切的基礎。",
+                "actionWeek": "如果你最近沒做過健康檢查，安排一次。",
+                "prompt": "如果你的身體現在可以寫一封信給你，它會說什麼？",
+                "safetyNotes": [
+                    "本內容僅供自我覺察參考，不提供任何醫療或健康方面的指引。"
+                ],
+                "explainability": [
+                ],
+                "scoreCard": {
+                    "totalScore": 35,
+                    "grade": "Building",
+                    "delta": null,
+                    "comparabilityScore": null,
+                    "subdims": {
+                    }
+                }
+            }
+        },
+        "overallGrade": "Building",
+        "language": "zh-TW"
+    },
+    "expected": {
+        "monthTheme": "安靜累積的月份——持續的小步伐，正發揮超出表面的作用。",
+        "strengths": [
+            {
+                "domain": "family",
+                "signalId": null,
+                "title": "小舉動是真正的黏著劑",
+                "body": "這是關係的累積月。持續的小舉動，比盛大的計畫更能加深感情。",
+                "action": "開始一個小儀式——一句早安訊息、一杯一起喝的茶。"
+            },
+            {
+                "domain": "wealth",
+                "signalId": null,
+                "title": "先築基，再跳躍",
+                "body": "這是財務的規劃月。此刻記帳與小小的緩衝，勝過重大的承諾。",
+                "action": "設定一筆小小的自動預備金，金額再小都算數。"
+            },
+            {
+                "domain": "health",
+                "signalId": null,
+                "title": "把休息當作策略",
+                "body": "這是精力重建的月份。休息不是進度的暫停——休息本身就是進度。",
+                "action": "本週守住一個完整的夜晚，純粹放鬆。"
+            }
+        ],
+        "mindful": [
+            {
+                "domain": "career",
+                "signalId": null,
+                "title": "溫柔關注，而非施壓",
+                "body": "本月的事業訊號需要輕一點的力道。重新校準勝過硬撐，小小的重整也算數。",
+                "action": "挑一件最小的工作事項，今天只完成它就好。"
+            },
+            {
+                "domain": "health",
+                "signalId": null,
+                "title": "別向下週預支",
+                "body": "硬撐疲勞，等於預支下週需要的精力。溫和的配速，很快就會回本。",
+                "action": "把本週一個高強度的安排，換成放鬆的版本。"
+            }
+        ],
+        "weekPlan": [
+            "第一週・事業：放輕力道，完成一件小事勝過同時開三個大頭。",
+            "第二週・財富：先觀察再調整，看清數字，讓重大決定再等一等。",
+            "第三週・家庭：溫柔地重新連上線，一次誠實而沒有壓力的對話就足夠。",
+            "第四週・健康：放慢腳步，以休息、喝水和陽光取代高強度安排。"
+        ]
+    }
+}

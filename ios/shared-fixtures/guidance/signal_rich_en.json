@@ -1,0 +1,294 @@
+{
+    "input": {
+        "payloads": {
+            "career": {
+                "domain": "career",
+                "monthKey": "2026-07",
+                "calcLevel": "L2",
+                "confidence": "high",
+                "observations": [
+                    {
+                        "signalId": "PALM_HEADLINE_LONG_CLEAR",
+                        "displayName": "Head line — long and clear",
+                        "evidenceSummary": "The head line region reads long and well defined in this scan, a pattern linked to focus and structured thinking."
+                    },
+                    {
+                        "signalId": "PALM_FATELINE_STRONG",
+                        "displayName": "Fate line — strong",
+                        "evidenceSummary": "The fate line region reads strong and well defined, a pattern associated with direction and sense of purpose."
+                    },
+                    {
+                        "signalId": "ASTRO_MOON_FIRE",
+                        "displayName": "Moon Fire",
+                        "evidenceSummary": "This signal contributes to your overall reading."
+                    }
+                ],
+                "interpretation": {
+                    "pattern": "Your career is in a transitional stretch. The fundamentals hold steady, and a few focused moves could unlock real progress.",
+                    "trigger": "Friction tends to appear when deadlines stack up and priorities compete for the same hours.",
+                    "cost": "Ignored, small frustrations can harden into cynicism about work that still matters."
+                },
+                "blindspot": "During challenging career periods, avoid making reactive decisions. Give yourself at least 48 hours before responding to stressful situations.",
+                "actionToday": "Spend 10 minutes listing what's going well in your career — not what needs fixing.",
+                "actionWeek": "Block two 30-minute 'thinking time' slots this week — no meetings, no tasks.",
+                "prompt": "If your career challenges right now are trying to teach you something, what would that lesson be?",
+                "safetyNotes": [
+                ],
+                "explainability": [
+                    {
+                        "signalId": "PALM_HEADLINE_LONG_CLEAR",
+                        "mapping": "PALM_HEADLINE_LONG_CLEAR → career",
+                        "contribution": 3.6
+                    },
+                    {
+                        "signalId": "PALM_FATELINE_STRONG",
+                        "mapping": "PALM_FATELINE_STRONG → career",
+                        "contribution": 3.2
+                    },
+                    {
+                        "signalId": "ASTRO_MOON_FIRE",
+                        "mapping": "ASTRO_MOON_FIRE → career",
+                        "contribution": 1.0
+                    },
+                    {
+                        "signalId": "ASTRO_ASC_EARTH",
+                        "mapping": "ASTRO_ASC_EARTH → career",
+                        "contribution": 1.0
+                    },
+                    {
+                        "signalId": "ASTRO_SUN_CARDINAL",
+                        "mapping": "ASTRO_SUN_CARDINAL → career",
+                        "contribution": 0.5
+                    }
+                ],
+                "scoreCard": {
+                    "totalScore": 61,
+                    "grade": "Stable",
+                    "delta": null,
+                    "comparabilityScore": null,
+                    "subdims": {
+                    }
+                }
+            },
+            "wealth": {
+                "domain": "wealth",
+                "monthKey": "2026-07",
+                "calcLevel": "L2",
+                "confidence": "high",
+                "observations": [
+                    {
+                        "signalId": "PALM_FATELINE_STRONG",
+                        "displayName": "Fate line — strong",
+                        "evidenceSummary": "The fate line region reads strong and well defined, a pattern associated with direction and sense of purpose."
+                    },
+                    {
+                        "signalId": "PALM_HEADLINE_LONG_CLEAR",
+                        "displayName": "Head line — long and clear",
+                        "evidenceSummary": "The head line region reads long and well defined in this scan, a pattern linked to focus and structured thinking."
+                    },
+                    {
+                        "signalId": "ASTRO_ASC_EARTH",
+                        "displayName": "Asc Earth",
+                        "evidenceSummary": "This signal contributes to your overall reading."
+                    }
+                ],
+                "interpretation": {
+                    "pattern": "Your wealth picture is in transition. Day-to-day habits are stable, but attention to small leaks could pay off.",
+                    "trigger": "Money stress tends to spike around bills, comparisons, and late-night browsing.",
+                    "cost": "Left alone, money worry drains focus from the places it could actually help."
+                },
+                "blindspot": "When wealth signals are lower, avoid both panic-saving and stress-spending.",
+                "actionToday": "Identify one free activity that genuinely makes you happy.",
+                "actionWeek": "Have one honest conversation about money with someone you trust this week.",
+                "prompt": "If you could change one financial habit tomorrow, which one would have the biggest ripple effect?",
+                "safetyNotes": [
+                    "For personal reflection only. This is not financial, investment, or tax guidance."
+                ],
+                "explainability": [
+                    {
+                        "signalId": "PALM_FATELINE_STRONG",
+                        "mapping": "PALM_FATELINE_STRONG → wealth",
+                        "contribution": 2.8
+                    },
+                    {
+                        "signalId": "PALM_HEADLINE_LONG_CLEAR",
+                        "mapping": "PALM_HEADLINE_LONG_CLEAR → wealth",
+                        "contribution": 2.4
+                    },
+                    {
+                        "signalId": "ASTRO_ASC_EARTH",
+                        "mapping": "ASTRO_ASC_EARTH → wealth",
+                        "contribution": 1.0
+                    }
+                ],
+                "scoreCard": {
+                    "totalScore": 58,
+                    "grade": "Stable",
+                    "delta": null,
+                    "comparabilityScore": null,
+                    "subdims": {
+                    }
+                }
+            },
+            "family": {
+                "domain": "family",
+                "monthKey": "2026-07",
+                "calcLevel": "L2",
+                "confidence": "high",
+                "observations": [
+                    {
+                        "signalId": "PALM_HEARTLINE_STRONG",
+                        "displayName": "Heart line — deep and curved",
+                        "evidenceSummary": "The heart line region reads deep and curved, a pattern associated with emotional openness and strong connections."
+                    },
+                    {
+                        "signalId": "ASTRO_SUN_WATER",
+                        "displayName": "Sun in a water sign",
+                        "evidenceSummary": "Your sun sign sits in the water element, associated with empathy, intuition, and emotional depth."
+                    }
+                ],
+                "interpretation": {
+                    "pattern": "Family life is in a transitional stretch. Bonds are stable, though a few relationships would welcome more attention.",
+                    "trigger": "Distance tends to grow quietly through busy weeks and postponed conversations.",
+                    "cost": "Unspoken tension tends to cost the most in the relationships you value most."
+                },
+                "blindspot": "During challenging family periods, remember that distance isn't always rejection. Sometimes people need space.",
+                "actionToday": "Write down one thing you appreciate about a family member but haven't told them.",
+                "actionWeek": "Spend 20 minutes this week on a family relationship that needs attention.",
+                "prompt": "What's one expectation you hold for a family relationship that might be worth examining?",
+                "safetyNotes": [
+                ],
+                "explainability": [
+                    {
+                        "signalId": "PALM_HEARTLINE_STRONG",
+                        "mapping": "PALM_HEARTLINE_STRONG → family",
+                        "contribution": 2.4000000000000004
+                    },
+                    {
+                        "signalId": "ASTRO_SUN_WATER",
+                        "mapping": "ASTRO_SUN_WATER → family",
+                        "contribution": 1.2
+                    }
+                ],
+                "scoreCard": {
+                    "totalScore": 57,
+                    "grade": "Stable",
+                    "delta": null,
+                    "comparabilityScore": null,
+                    "subdims": {
+                    }
+                }
+            },
+            "health": {
+                "domain": "health",
+                "monthKey": "2026-07",
+                "calcLevel": "L2",
+                "confidence": "high",
+                "observations": [
+                    {
+                        "signalId": "PALM_LIFELINE_CLEAR",
+                        "displayName": "Life line — clear",
+                        "evidenceSummary": "The life line region reads clear and continuous, traditionally linked with vitality and steady routines."
+                    },
+                    {
+                        "signalId": "PALM_HEARTLINE_STRONG",
+                        "displayName": "Heart line — deep and curved",
+                        "evidenceSummary": "The heart line region reads deep and curved, a pattern associated with emotional openness and strong connections."
+                    },
+                    {
+                        "signalId": "ASTRO_SUN_WATER",
+                        "displayName": "Sun in a water sign",
+                        "evidenceSummary": "Your sun sign sits in the water element, associated with empathy, intuition, and emotional depth."
+                    }
+                ],
+                "interpretation": {
+                    "pattern": "Your well-being is in a transitional stretch. Routines are holding, and small adjustments could lift your energy.",
+                    "trigger": "Energy dips tend to follow short nights, skipped breaks, and screens before bed.",
+                    "cost": "Pushing through tiredness usually borrows energy you will need next week."
+                },
+                "blindspot": "Lower well-being indicators aren't predictions — they're invitations to prioritize yourself. Start with basics: sleep, hydration, movement.",
+                "actionToday": "Go to bed 30 minutes earlier tonight. Sleep is the foundation.",
+                "actionWeek": "Schedule a wellness check if you haven't had one recently.",
+                "prompt": "If your body could write you a letter, what would it say?",
+                "safetyNotes": [
+                    "For self-awareness only. This is not medical or health guidance."
+                ],
+                "explainability": [
+                    {
+                        "signalId": "PALM_LIFELINE_CLEAR",
+                        "mapping": "PALM_LIFELINE_CLEAR → health",
+                        "contribution": 2.7
+                    },
+                    {
+                        "signalId": "PALM_HEARTLINE_STRONG",
+                        "mapping": "PALM_HEARTLINE_STRONG → health",
+                        "contribution": 1.5
+                    },
+                    {
+                        "signalId": "ASTRO_SUN_WATER",
+                        "mapping": "ASTRO_SUN_WATER → health",
+                        "contribution": 1.0
+                    }
+                ],
+                "scoreCard": {
+                    "totalScore": 57,
+                    "grade": "Stable",
+                    "delta": null,
+                    "comparabilityScore": null,
+                    "subdims": {
+                    }
+                }
+            }
+        },
+        "overallGrade": "Stable",
+        "language": "en"
+    },
+    "expected": {
+        "monthTheme": "A month of steady ground — a good time to deepen what already works.",
+        "strengths": [
+            {
+                "domain": "career",
+                "signalId": "PALM_HEADLINE_LONG_CLEAR",
+                "title": "Clear, structured thinking",
+                "body": "Your head line reads long and well defined — a pattern linked to focus and follow-through. Plans you sketch this month tend to hold their shape.",
+                "action": "Pick one idea you keep revisiting and outline the first three steps on paper."
+            },
+            {
+                "domain": "wealth",
+                "signalId": "PALM_FATELINE_STRONG",
+                "title": "A strong sense of direction",
+                "body": "A well-defined fate line is read as purpose and momentum along a chosen path. Decisions about direction come easier while this signal is strong.",
+                "action": "Write down where you want one project to be in three months."
+            },
+            {
+                "domain": "health",
+                "signalId": "PALM_LIFELINE_CLEAR",
+                "title": "Steady vitality",
+                "body": "A clear, continuous life line is linked with steady energy and reliable routines. Your daily rhythm is an asset worth protecting right now.",
+                "action": "Keep one anchor habit — a walk, a set bedtime — every day this week."
+            }
+        ],
+        "mindful": [
+            {
+                "domain": "family",
+                "signalId": null,
+                "title": "Naming the small distances",
+                "body": "Mild distance grows in silence. A light, honest sentence usually shrinks it fast.",
+                "action": "Gently name one thing you have both been avoiding."
+            },
+            {
+                "domain": "health",
+                "signalId": null,
+                "title": "The basics before the extras",
+                "body": "Mid-range energy does best on fundamentals. Sleep, water, and daylight beat any clever optimization.",
+                "action": "Pick the weakest basic — sleep, water, movement — and tend it first."
+            }
+        ],
+        "weekPlan": [
+            "Week 1 — Career: keep it light; one small finished task beats three ambitious starts.",
+            "Week 2 — Wealth: observe before adjusting; know your numbers and let big decisions wait.",
+            "Week 3 — Family: reconnect gently; one honest, low-pressure conversation is plenty.",
+            "Week 4 — Health: go gently; favor rest, water, and daylight over intensity."
+        ]
+    }
+}

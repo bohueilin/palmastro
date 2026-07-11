@@ -108,10 +108,11 @@ style:
     maxLineLength: 140
     excludeImportStatements: true
     excludeCommentStatements: true
+  # Wildcard imports are the established convention in this codebase
+  # (Compose material3.*, contracts.*, mockk.* across every module) —
+  # enforcing the rule fights the repo's own style, so it is disabled.
   WildcardImport:
-    active: true
-    excludeImports:
-      - 'java.util.*'
+    active: false
   ReturnCount:
     active: true
     max: 4
