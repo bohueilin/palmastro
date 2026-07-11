@@ -1,0 +1,140 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PalmAstro — an open palm whose lines become constellations in a night sky">
+  <defs>
+    <radialGradient id="sky" cx="42%" cy="30%" r="90%">
+      <stop offset="0%" stop-color="#2A1A52"/>
+      <stop offset="45%" stop-color="#1A1033"/>
+      <stop offset="100%" stop-color="#0B0714"/>
+    </radialGradient>
+    <radialGradient id="nebula" cx="30%" cy="25%" r="45%">
+      <stop offset="0%" stop-color="#6B46C1" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#6B46C1" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#6B46C1" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowTeal" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4FD1C5" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#4FD1C5" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="lineGlow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4FD1C5" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#9F7AEA" stop-opacity="0.85"/>
+    </linearGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.2"/>
+    </filter>
+    <filter id="soft4" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <!-- sky -->
+  <rect width="1280" height="640" fill="url(#sky)"/>
+  <rect width="1280" height="640" fill="url(#nebula)"/>
+
+  <!-- zodiac instrument hairlines -->
+  <g stroke="#9F7AEA" stroke-opacity="0.14" fill="none">
+    <circle cx="430" cy="270" r="215"/>
+    <circle cx="430" cy="270" r="168"/>
+    <g stroke-opacity="0.10">
+      <path d="M430 55 L430 485"/>
+      <path d="M215 270 L645 270"/>
+      <path d="M278 118 L582 422"/>
+      <path d="M582 118 L278 422"/>
+    </g>
+    <g stroke-opacity="0.22">
+      <path d="M430 55 l0 12"/><path d="M430 473 l0 12"/>
+      <path d="M215 270 l12 0"/><path d="M633 270 l12 0"/>
+      <path d="M582 118 l-8 8"/><path d="M278 422 l8 -8"/>
+      <path d="M278 118 l8 8"/><path d="M582 422 l-8 -8"/>
+    </g>
+  </g>
+
+  <!-- star field -->
+  <g fill="#FFFFFF">
+    <circle cx="105" cy="88" r="1.4" opacity="0.85"/><circle cx="188" cy="205" r="1.0" opacity="0.5"/>
+    <circle cx="266" cy="72" r="1.7" opacity="0.9"/><circle cx="352" cy="150" r="1.1" opacity="0.6"/>
+    <circle cx="472" cy="96" r="1.3" opacity="0.7"/><circle cx="540" cy="188" r="0.9" opacity="0.5"/>
+    <circle cx="610" cy="66" r="1.5" opacity="0.85"/><circle cx="684" cy="140" r="1.0" opacity="0.55"/>
+    <circle cx="748" cy="228" r="1.3" opacity="0.7"/><circle cx="94" cy="330" r="1.1" opacity="0.5"/>
+    <circle cx="160" cy="428" r="1.4" opacity="0.7"/><circle cx="248" cy="512" r="1.0" opacity="0.45"/>
+    <circle cx="708" cy="352" r="1.2" opacity="0.6"/><circle cx="655" cy="470" r="1.0" opacity="0.5"/>
+    <circle cx="580" cy="300" r="1.6" opacity="0.9"/><circle cx="330" cy="336" r="1.2" opacity="0.6"/>
+    <circle cx="1180" cy="500" r="1.2" opacity="0.6"/><circle cx="1230" cy="380" r="1.0" opacity="0.5"/>
+    <circle cx="1120" cy="560" r="1.4" opacity="0.7"/><circle cx="835" cy="580" r="1.1" opacity="0.5"/>
+  </g>
+
+  <!-- crescent moon (true cutout via mask, no shadow disk) -->
+  <mask id="moonMask">
+    <rect x="-40" y="-40" width="80" height="80" fill="white"/>
+    <circle cx="13" cy="-7" r="30" fill="black"/>
+  </mask>
+  <g transform="translate(1176,96)">
+    <circle r="34" fill="#E9E4F7" opacity="0.92" mask="url(#moonMask)"/>
+  </g>
+
+  <!-- open palm: stylized silhouette rising from bottom -->
+  <g transform="translate(430,640)">
+    <path d="M -128 0
+             L -126 -128 Q -126 -160 -112 -172 Q -98 -182 -92 -166 L -74 -108
+             L -78 -196 Q -80 -232 -62 -238 Q -44 -242 -40 -210 L -30 -122
+             L -26 -216 Q -24 -252 -4 -252 Q 16 -252 16 -216 L 18 -122
+             L 30 -204 Q 36 -238 54 -232 Q 70 -226 66 -194 L 54 -104
+             L 92 -152 Q 108 -170 120 -158 Q 130 -146 116 -124 L 66 -40 Q 40 0 0 0 Z"
+          fill="#241645" stroke="#9F7AEA" stroke-opacity="0.5" stroke-width="1.5"/>
+    <!-- glowing palm lines: heart + head from the pinky side, life hugging the
+         thumb side, fate vertical — classic, uncluttered layout -->
+    <g fill="none" stroke="url(#lineGlow)" stroke-width="3" stroke-linecap="round">
+      <path d="M -58 -124 Q -4 -142 46 -128" filter="url(#soft)"/>
+      <path d="M -64 -94 Q -8 -108 44 -94" filter="url(#soft)"/>
+      <path d="M -52 -148 Q -96 -92 -106 -16" filter="url(#soft)"/>
+      <path d="M 8 -14 Q 5 -85 0 -150" filter="url(#soft)"/>
+    </g>
+  </g>
+
+  <!-- palm lines continuing into constellations -->
+  <g stroke="#4FD1C5" stroke-opacity="0.75" stroke-width="1.6" fill="none">
+    <path d="M474 544 Q 520 470 588 430 L 664 384 L 726 396 L 788 340"/>
+    <path d="M482 584 Q 560 540 636 528 L 712 512 L 776 536"/>
+    <path d="M412 522 Q 400 430 428 350 L 452 288 L 430 226"/>
+    <path d="M436 490 Q 470 420 530 372 L 566 316 L 636 296"/>
+  </g>
+  <!-- constellation nodes -->
+  <g>
+    <g fill="url(#glowTeal)">
+      <circle cx="664" cy="384" r="9"/><circle cx="788" cy="340" r="11"/>
+      <circle cx="712" cy="512" r="8"/><circle cx="776" cy="536" r="10"/>
+      <circle cx="452" cy="288" r="9"/><circle cx="430" cy="226" r="11"/>
+      <circle cx="566" cy="316" r="8"/><circle cx="636" cy="296" r="10"/>
+      <circle cx="726" cy="396" r="7"/>
+    </g>
+    <g fill="#EFFFFD">
+      <circle cx="664" cy="384" r="2.4"/><circle cx="788" cy="340" r="3"/>
+      <circle cx="712" cy="512" r="2.2"/><circle cx="776" cy="536" r="2.7"/>
+      <circle cx="452" cy="288" r="2.4"/><circle cx="430" cy="226" r="3"/>
+      <circle cx="566" cy="316" r="2.2"/><circle cx="636" cy="296" r="2.7"/>
+      <circle cx="726" cy="396" r="2"/>
+    </g>
+  </g>
+
+  <!-- stardust drifting up -->
+  <g fill="#4FD1C5">
+    <circle cx="500" cy="470" r="1.4" opacity="0.7"/><circle cx="536" cy="410" r="1.1" opacity="0.5"/>
+    <circle cx="470" cy="380" r="1.2" opacity="0.55"/><circle cx="558" cy="470" r="1.0" opacity="0.45"/>
+    <circle cx="610" cy="356" r="1.3" opacity="0.6"/><circle cx="486" cy="322" r="1.0" opacity="0.4"/>
+  </g>
+
+  <!-- title block, right-aligned in clear sky -->
+  <g text-anchor="middle">
+    <text x="950" y="208" font-family="Avenir Next, Futura, Helvetica Neue, Arial, sans-serif"
+          font-size="64" font-weight="600" letter-spacing="14" fill="#FFFFFF">PALMASTRO</text>
+    <text x="950" y="208" font-family="Avenir Next, Futura, Helvetica Neue, Arial, sans-serif"
+          font-size="64" font-weight="600" letter-spacing="14" fill="#4FD1C5" opacity="0.35" filter="url(#soft4)">PALMASTRO</text>
+    <text x="950" y="268" font-family="Songti TC, STSong, PMingLiU, serif"
+          font-size="38" font-weight="300" letter-spacing="20" fill="#D9CFF2">掌紋星象</text>
+    <text x="950" y="322" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif"
+          font-size="15.5" font-weight="500" letter-spacing="4.5" fill="#9F8FC4">SCAN YOUR PALM · UNDERSTAND YOUR PATTERNS</text>
+    <g font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" fill="#6E5F96">
+      <text x="950" y="586" font-size="10.5" letter-spacing="2.5">ON-DEVICE ANALYSIS · EXPLAINABLE SCORES · PRIVATE BY DESIGN</text>
+      <text x="950" y="606" font-size="9" letter-spacing="1.8" opacity="0.8">ANDROID · iOS — ENGLISH · 繁體中文</text>
+    </g>
+  </g>
+</svg>
