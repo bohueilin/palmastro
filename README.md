@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/poster.svg" alt="PalmAstro — scan your palm, understand your patterns" width="720"/>
+<img src="docs/assets/poster.png" alt="PalmAstro — scan your palm, understand your patterns" width="720"/>
 
 # PalmAstro · 掌紋星象
 
