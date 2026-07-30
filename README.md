@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/poster.png" alt="PalmAstro — scan your palm, understand your patterns" width="720"/>
+<img src="docs/assets/astraeus_banner.png" alt="PalmAstro — Astraeus, titan of the stars, holding an orrery above a night-sky mountain range"/>
 
 # PalmAstro · 掌紋星象
 
