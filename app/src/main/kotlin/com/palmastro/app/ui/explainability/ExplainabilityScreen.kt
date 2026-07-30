@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -74,7 +75,8 @@ fun ExplainabilityScreen(
         when {
             state.isLoading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             payload == null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.detail_not_found), color = MaterialTheme.colorScheme.error)
+                // Calm empty state, not an error: red is reserved for true errors (PRD 37/42).
+                Text(stringResource(R.string.detail_not_found), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             else -> {
                 val palmEntries = payload.explainability.filter { it.signalId.startsWith("PALM", ignoreCase = true) }
@@ -88,7 +90,11 @@ fun ExplainabilityScreen(
                         .padding(horizontal = 20.dp),
                 ) {
                     Spacer(Modifier.height(16.dp))
-                    Text(domainDisplayName(state.domain), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        domainDisplayName(state.domain),
+                        fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(R.string.explain_intro),
@@ -102,11 +108,18 @@ fun ExplainabilityScreen(
                             Icon(Icons.Outlined.Balance, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                             Spacer(Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(stringResource(R.string.explain_baseline_label), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    stringResource(R.string.explain_baseline_label),
+                                    fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold,
+                                )
                                 Text(stringResource(R.string.explain_baseline_desc), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
                             }
                             Spacer(Modifier.width(12.dp))
-                            Text("$BASELINE_SCORE", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(
+                                "$BASELINE_SCORE",
+                                fontSize = 28.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
                         }
                     }
 
@@ -134,14 +147,18 @@ fun ExplainabilityScreen(
                     Spacer(Modifier.height(24.dp))
                     SectionHeader(Icons.Outlined.Verified, stringResource(R.string.explain_confidence_label))
                     Spacer(Modifier.height(8.dp))
-                    Text(confidenceDisplayName(payload.confidence), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(confidenceDisplayName(payload.confidence), fontSize = 16.sp, lineHeight = 23.sp, fontWeight = FontWeight.SemiBold)
                     if (payload.confidenceReasons.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
-                        Text(stringResource(R.string.explain_confidence_reasons), fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            stringResource(R.string.explain_confidence_reasons),
+                            fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                         Spacer(Modifier.height(4.dp))
                         payload.confidenceReasons.forEach { reason ->
                             Row(modifier = Modifier.padding(vertical = 2.dp), verticalAlignment = Alignment.Top) {
-                                Text("•", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("•", fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.width(8.dp))
                                 Text(reason, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
                             }
@@ -178,10 +195,17 @@ fun ExplainabilityScreen(
 
 @Composable
 private fun SectionHeader(icon: ImageVector, title: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.semantics(mergeDescendants = true) { heading() },
+    ) {
         Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.width(8.dp))
-        Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp)
+        Text(
+            title,
+            fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp,
+        )
     }
 }
 
@@ -228,9 +252,13 @@ private fun ContributionRow(entry: ExplainEntry, maxAbs: Double, displayName: St
 
     Column(modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) { contentDescription = rowDesc }) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(displayName, fontSize = 14.sp, modifier = Modifier.weight(1f))
+            Text(displayName, fontSize = 14.sp, lineHeight = 20.sp, modifier = Modifier.weight(1f))
             // Signed number is the non-color indicator of direction.
-            Text(valueText, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = barColor)
+            Text(
+                valueText,
+                fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold,
+                color = barColor, modifier = Modifier.padding(start = 8.dp),
+            )
         }
         Spacer(Modifier.height(4.dp))
         Box(

@@ -80,8 +80,15 @@ fun AppNavigation(
         }
         composable(Route.Scan.path) {
             ScanScreen(onComplete = {
+                // Results loads once (one-shot): after an in-app rescan the Results beneath
+                // the scanner is STALE, so pop it (plus the scanner) and load a fresh one.
+                // On the first-run onboarding -> scan path no Results exists yet; popping the
+                // scan screen itself keeps start-destination/back behavior unchanged there.
+                val staleResults =
+                    runCatching { navController.getBackStackEntry(Route.Results.path) }.isSuccess
+                val popTarget = if (staleResults) Route.Results.path else Route.Scan.path
                 navController.navigate("results") {
-                    popUpTo(Route.Scan.path) { inclusive = true }
+                    popUpTo(popTarget) { inclusive = true }
                 }
             })
         }

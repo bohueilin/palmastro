@@ -79,6 +79,9 @@ let package = Package(
             "ParityTests",
             dependencies: ["CoreContracts", "ScoringEngine", "ContentEngine", "SafetyEngine", "AstroEngine"]
         ),
+        // Guards the App layer's launch-critical bundled resources (legal
+        // documents, reminder strings) via #filePath, like ParityTests.
+        engineTestTarget("AppResourcesTests", dependencies: []),
     ],
     swiftLanguageModes: [.v5]
 )

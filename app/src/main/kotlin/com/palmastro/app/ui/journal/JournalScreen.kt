@@ -11,6 +11,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,6 +53,7 @@ fun JournalScreen(
                 Text(
                     domainDisplayName(state.domain!!),
                     fontSize = 14.sp,
+                    lineHeight = 20.sp,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium,
                 )
@@ -60,6 +63,7 @@ fun JournalScreen(
             Text(
                 state.monthKey,
                 fontSize = 12.sp,
+                lineHeight = 17.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
@@ -85,6 +89,7 @@ fun JournalScreen(
                 Text(
                     stringResource(R.string.journal_char_count, state.charCount, state.maxChars),
                     fontSize = 12.sp,
+                    lineHeight = 17.sp,
                     color = if (state.charCount >= state.maxChars)
                         MaterialTheme.colorScheme.error
                     else
@@ -95,6 +100,7 @@ fun JournalScreen(
                     Text(
                         stringResource(R.string.journal_saved),
                         fontSize = 12.sp,
+                        lineHeight = 17.sp,
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
@@ -121,7 +127,9 @@ fun JournalScreen(
                 Text(
                     stringResource(R.string.journal_title),
                     fontSize = 16.sp,
+                    lineHeight = 23.sp,
                     fontWeight = FontWeight.Medium,
+                    modifier = Modifier.semantics { heading() },
                 )
                 Spacer(Modifier.height(8.dp))
                 state.existingEntries.forEach { entry ->
@@ -134,6 +142,7 @@ fun JournalScreen(
                                 Text(
                                     entry.domain?.let { domainDisplayName(it) } ?: stringResource(R.string.journal_general_entry),
                                     fontSize = 12.sp,
+                                    lineHeight = 17.sp,
                                     color = MaterialTheme.colorScheme.primary,
                                 )
                                 Spacer(Modifier.height(2.dp))

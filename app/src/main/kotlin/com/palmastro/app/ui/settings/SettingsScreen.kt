@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -134,8 +135,12 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.settings_retention_title), fontSize = 16.sp)
-                        Text(stringResource(R.string.settings_retention_desc), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.settings_retention_title), fontSize = 16.sp, lineHeight = 23.sp)
+                        Text(
+                            stringResource(R.string.settings_retention_desc),
+                            fontSize = 13.sp, lineHeight = 19.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     Switch(checked = state.rawMediaRetention, onCheckedChange = { viewModel.setRetention(it) })
                 }
@@ -179,7 +184,7 @@ fun SettingsScreen(
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(R.string.settings_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
-                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -195,7 +200,11 @@ fun SettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.settings_wipe), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error, letterSpacing = 0.5.sp)
+                        Text(
+                            stringResource(R.string.settings_wipe),
+                            fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.error, letterSpacing = 0.5.sp,
+                        )
                     }
                     Spacer(Modifier.height(12.dp))
                     Text(stringResource(R.string.settings_wipe_warning), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
@@ -204,7 +213,7 @@ fun SettingsScreen(
                         onClick = { showWipeDialog = true },
                         enabled = !state.isWiping,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                         shape = RoundedCornerShape(12.dp),
                     ) {
                         if (state.isWiping) {
@@ -260,10 +269,17 @@ fun SettingsScreen(
 @Composable
 private fun SettingsSection(icon: ImageVector, title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier = Modifier.padding(top = 24.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 20.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 20.dp).semantics(mergeDescendants = true) { heading() },
+        ) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(8.dp))
-            Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp)
+            Text(
+                title,
+                fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp,
+            )
         }
         Spacer(Modifier.height(8.dp))
         content()
@@ -280,7 +296,7 @@ private fun SettingsRadioItem(label: String, selected: Boolean, onClick: () -> U
     ) {
         RadioButton(selected = selected, onClick = null)
         Spacer(Modifier.width(12.dp))
-        Text(label, fontSize = 16.sp)
+        Text(label, fontSize = 16.sp, lineHeight = 23.sp, modifier = Modifier.padding(vertical = 8.dp))
     }
 }
 
@@ -295,7 +311,7 @@ private fun SettingsLinkRow(icon: ImageVector, label: String, onClick: () -> Uni
     ) {
         Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.width(12.dp))
-        Text(label, fontSize = 16.sp, modifier = Modifier.weight(1f))
+        Text(label, fontSize = 16.sp, lineHeight = 23.sp, modifier = Modifier.weight(1f).padding(vertical = 8.dp))
         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

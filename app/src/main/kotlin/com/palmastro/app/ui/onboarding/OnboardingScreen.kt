@@ -94,7 +94,11 @@ fun OnboardingScreen(onComplete: () -> Unit, viewModel: OnboardingViewModel = hi
                     Spacer(Modifier.size(48.dp))
                 }
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(R.string.app_name), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.app_name),
+                        fontSize = 20.sp, lineHeight = 29.sp, fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Spacer(Modifier.height(8.dp))
                     val progressDesc = stringResource(R.string.ob_progress, state.step + 1, OnboardingSteps.TOTAL)
                     LinearProgressIndicator(
@@ -152,23 +156,31 @@ private fun Illustration(resId: Int) {
 
 @Composable
 private fun Title(title: String, subtitle: String) {
-    Text(title, fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
+    Text(
+        title,
+        fontSize = 24.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() },
+    )
     Spacer(Modifier.height(6.dp))
-    Text(subtitle, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+    Text(subtitle, fontSize = 14.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
     Spacer(Modifier.height(24.dp))
 }
 
 @Composable
 private fun MainButton(text: String, enabled: Boolean = true, onClick: () -> Unit) {
     Button(onClick = onClick, modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp), shape = RoundedCornerShape(14.dp), enabled = enabled) {
-        Text(text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        Text(text, fontSize = 16.sp, lineHeight = 23.sp, fontWeight = FontWeight.SemiBold)
     }
     Spacer(Modifier.height(16.dp))
 }
 
 @Composable
 private fun Label(text: String) {
-    Text(text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+    Text(
+        text,
+        fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.fillMaxWidth().semantics { heading() },
+    )
     Spacer(Modifier.height(10.dp))
 }
 
@@ -210,9 +222,9 @@ private fun OptionRow(
             RadioButton(selected = selected, onClick = null)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(label, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text(label, fontSize = 16.sp, lineHeight = 23.sp, fontWeight = FontWeight.SemiBold)
                 if (description != null) {
-                    Text(description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(description, fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -332,17 +344,25 @@ private fun BirthdayStep(existing: LocalDate?, onConfirm: (LocalDate) -> Unit) {
     Spacer(Modifier.height(16.dp))
     Surface(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f), shape = RoundedCornerShape(14.dp)) {
         Row(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-            Text(zodiacEmoji, fontSize = 28.sp)
+            Text(zodiacEmoji, fontSize = 28.sp, lineHeight = 40.sp)
             Spacer(Modifier.width(10.dp))
             Column {
-                Text(stringResource(zodiacRes), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                Text(stringResource(R.string.ob_zodiac_caption), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    stringResource(zodiacRes),
+                    fontSize = 17.sp, lineHeight = 25.sp, fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    stringResource(R.string.ob_zodiac_caption),
+                    fontSize = 12.sp, lineHeight = 17.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
     errorRes?.let {
         Spacer(Modifier.height(8.dp))
-        Text(stringResource(it), color = MaterialTheme.colorScheme.error, fontSize = 14.sp)
+        Text(stringResource(it), color = MaterialTheme.colorScheme.error, fontSize = 14.sp, lineHeight = 20.sp)
     }
     Spacer(Modifier.height(24.dp))
     MainButton(stringResource(R.string.ob_next)) {
@@ -542,8 +562,11 @@ private fun SummaryStep(state: OnboardingState, onNext: () -> Unit) {
 @Composable
 private fun SummaryRow(label: String, value: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End, modifier = Modifier.padding(start = 12.dp))
+        Text(label, fontSize = 15.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            value, fontSize = 15.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.End, modifier = Modifier.weight(1f).padding(start = 12.dp),
+        )
     }
 }
 

@@ -149,13 +149,16 @@ class ResultsViewModel @Inject constructor(
     /**
      * Guidance preview for the "This month" entry card. Deterministic build from
      * the stored payloads; any failure degrades to "no card", never an error state.
+     * Uses the language the payloads were composed in (falling back to the resolver)
+     * so the preview never mixes languages with the stored content.
      */
     private fun buildGuidanceSummary(
         grade: String,
         payloads: Map<String, SemanticPayload>,
         profileLanguage: String?,
     ): GuidanceSummary? = runCatching {
-        val guidance = guidanceBuilder.build(payloads, grade, resolveContentLanguage(profileLanguage))
+        val language = storedPayloadLanguage(payloads) ?: resolveContentLanguage(profileLanguage)
+        val guidance = guidanceBuilder.build(payloads, grade, language)
         GuidanceSummary(
             monthTheme = guidance.monthTheme,
             firstStrengthTitle = guidance.strengths.firstOrNull()?.title.orEmpty(),

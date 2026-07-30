@@ -33,8 +33,11 @@ class GuidanceViewModelTest {
 
     private lateinit var savedLocale: Locale
 
-    private fun makePayload(domain: String) = SemanticPayload(
+    // language defaults to blank so resolver-fallback tests exercise the profile/locale path;
+    // stored-language tests pass an explicit value.
+    private fun makePayload(domain: String, language: String = "") = SemanticPayload(
         domain = domain, monthKey = "2026-03", calcLevel = CalcLevel.L2, confidence = "high",
+        language = language,
         observations = emptyList(), interpretation = Interpretation("穩定的分析"), blindspot = "盲點",
         actionToday = "今天行動", actionWeek = "本週行動", prompt = "反思問題",
         safetyNotes = emptyList(), explainability = emptyList(),
@@ -131,6 +134,33 @@ class GuidanceViewModelTest {
     }
 
     // --- Language resolution ---
+
+    @Test
+    fun `stored payload language wins over profile and device locale`() = runTest {
+        Locale.setDefault(Locale.US)
+        val payloads = mapOf("career" to makePayload("career", language = "zh-TW"))
+        coEvery { resultRepository.getByMonth("2026-03") } returns makeEntity(payloads)
+        coEvery { userRepository.get() } returns makeProfile(language = "en")
+        every { guidanceBuilder.build(any(), any(), any()) } returns makeGuidance()
+
+        createViewModel()
+
+        // Guidance must match the language the payloads were COMPOSED in, never a re-resolve.
+        verify { guidanceBuilder.build(any(), any(), "zh-TW") }
+    }
+
+    @Test
+    fun `blank payload language falls back to the resolver`() = runTest {
+        Locale.setDefault(Locale.US)
+        val payloads = mapOf("career" to makePayload("career", language = ""))
+        coEvery { resultRepository.getByMonth("2026-03") } returns makeEntity(payloads)
+        coEvery { userRepository.get() } returns makeProfile(language = "zh-TW")
+        every { guidanceBuilder.build(any(), any(), any()) } returns makeGuidance()
+
+        createViewModel()
+
+        verify { guidanceBuilder.build(any(), any(), "zh-TW") }
+    }
 
     @Test
     fun `explicit profile language wins over device locale`() = runTest {

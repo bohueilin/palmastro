@@ -1,6 +1,8 @@
 package com.palmastro.app.viewmodel
 
 import android.content.Context
+import android.graphics.Bitmap
+import androidx.lifecycle.ViewModelStore
 import com.palmastro.app.config.FeatureFlags
 import com.palmastro.app.share.ModelManager
 import com.palmastro.app.share.ModelSource
@@ -8,6 +10,7 @@ import com.palmastro.app.share.ScanError
 import com.palmastro.app.share.ScanErrorException
 import com.palmastro.app.ui.scan.ImageQualityAnalyzer
 import com.palmastro.app.ui.scan.ImageQualityAnalyzerFactory
+import com.palmastro.app.ui.scan.ImageQualityMetrics
 import com.palmastro.content.ContentComposerImpl
 import com.palmastro.content.SafetyFilterImpl
 import com.palmastro.contracts.*
@@ -205,6 +208,14 @@ class ScanViewModelTest {
         return entitySlot.captured
     }
 
+    /** Drives ViewModel.onCleared through the real androidx path. */
+    private fun clearViewModel(vm: ScanViewModel) {
+        ViewModelStore().apply {
+            put("scan", vm)
+            clear()
+        }
+    }
+
     // ------------------------------------------------------------------ model errors
 
     @Test
@@ -397,5 +408,71 @@ class ScanViewModelTest {
                 match { it["confidence"] == "high" && it["calc_level"] == "l2" },
             )
         }
+    }
+
+    // ------------------------------------------------------------------ capture guard
+
+    @Test
+    fun `capture past the last angle is a no-op instead of IndexOutOfBounds`() = runTest {
+        val vm = buildViewModel()
+        seedAllAngles(vm)
+        vm.seedAngleIndex(Angle.entries.size)
+
+        vm.captureCurrentAngle()
+        advanceUntilIdle()
+
+        assertFalse(vm.state.value.isCapturing)
+        assertEquals(Angle.entries.size, vm.state.value.currentAngleIndex)
+        verify(exactly = 0) { analytics.emit("scan_start", any()) }
+    }
+
+    // ------------------------------------------------------------------ retry processing
+
+    @Test
+    fun `retryProcessing re-runs the pipeline when all angles are captured`() = runTest {
+        every { scoringEngine.score(any()) } throws IllegalStateException("transient failure")
+        val vm = buildViewModel()
+        seedAllAngles(vm)
+        vm.seedAngleIndex(Angle.entries.size)
+        vm.runPipeline()
+        advanceUntilIdle()
+        assertEquals(ScanError.PROCESSING_FAILED, vm.state.value.error)
+
+        every { scoringEngine.score(any()) } returns makeScoringResult()
+        vm.retryProcessing()
+        advanceUntilIdle()
+
+        assertNull(vm.state.value.error)
+        assertTrue(vm.state.value.isComplete)
+        coVerify { resultRepository.saveResult(any()) }
+    }
+
+    @Test
+    fun `retryProcessing mid-scan clears the error without running the pipeline`() = runTest {
+        val vm = buildViewModel()
+        vm.retryProcessing()
+        advanceUntilIdle()
+
+        assertNull(vm.state.value.error)
+        assertFalse(vm.state.value.isProcessing)
+        verify(exactly = 0) { analytics.emit("inference_start", any()) }
+    }
+
+    // ------------------------------------------------------------------ analyzer close race
+
+    @Test
+    fun `analyze delegates before close and returns null after close without throwing`() = runTest {
+        val metrics = ImageQualityMetrics(blur = 0.8f, glare = 0.9f, exposure = 0.9f, coverage = 0.85f)
+        every { analyzer.analyze(any()) } returns metrics
+        val bitmap = mockk<Bitmap>()
+        val vm = buildViewModel()
+
+        assertEquals(metrics, vm.analyzeGuarded(bitmap))
+
+        clearViewModel(vm)
+
+        assertNull(vm.analyzeGuarded(bitmap))
+        verify(exactly = 1) { analyzer.close() }
+        verify(exactly = 1) { analyzer.analyze(any()) }
     }
 }

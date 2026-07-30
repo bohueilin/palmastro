@@ -23,7 +23,17 @@ class ResultRepository @Inject constructor(
     private val json = Json { ignoreUnknownKeys = true }
     private val deltaMapSerializer = MapSerializer(String.serializer(), DeltaValue.serializer())
 
-    suspend fun saveResult(result: MonthlyResultEntity) = monthlyResultDao.insert(result)
+    /**
+     * Persists [result], REPLACING any earlier scan stored for the same month. The entity
+     * PK is a fresh UUID per scan, so without the delete a same-month rescan would leave
+     * two rows behind (duplicate History entries, bogus intra-month delta). Mirrors the
+     * delete-then-insert pattern of [saveDelta].
+     */
+    suspend fun saveResult(result: MonthlyResultEntity) {
+        monthlyResultDao.deleteByMonth(result.monthKey)
+        monthlyResultDao.insert(result)
+    }
+
     suspend fun getByMonth(monthKey: String): MonthlyResultEntity? = monthlyResultDao.getByMonth(monthKey)
     fun observeAll(): Flow<List<MonthlyResultEntity>> = monthlyResultDao.observeAll()
     suspend fun getRecent(limit: Int): List<MonthlyResultEntity> = monthlyResultDao.getRecent(limit)

@@ -1,5 +1,4 @@
 import SwiftUI
-import UserNotifications
 import CoreContracts
 
 /// Settings (PRD §13.8): language, tone (Analytical/Gentle/Direct display
@@ -46,12 +45,20 @@ struct SettingsView: View {
 
             Section {
                 NavigationLink {
-                    LegalViewer(titleKey: "settings_privacy_policy", resourceName: "privacy-policy")
+                    LegalViewer(
+                        titleKey: "settings_privacy_policy",
+                        resourceName: "privacy-policy",
+                        language: model.contentLanguage
+                    )
                 } label: {
                     Text("settings_privacy_policy")
                 }
                 NavigationLink {
-                    LegalViewer(titleKey: "settings_terms", resourceName: "terms-of-service")
+                    LegalViewer(
+                        titleKey: "settings_terms",
+                        resourceName: "terms-of-service",
+                        language: model.contentLanguage
+                    )
                 } label: {
                     Text("settings_terms")
                 }
@@ -146,7 +153,9 @@ struct SettingsView: View {
     }
 
     /// Reminders are opt-in (EXECUTION_SPEC): notification permission is
-    /// requested only when the user turns this on.
+    /// requested only when the user turns this on. Enabling schedules the
+    /// repeating monthly reminder; disabling cancels it; denial reverts the
+    /// toggle gracefully.
     private var remindersBinding: Binding<Bool> {
         Binding(
             get: { model.profile.reminders == "monthly" },
@@ -155,51 +164,113 @@ struct SettingsView: View {
                 model.saveProfile()
                 model.analytics.emit(eventName: "reminders_change", props: ["frequency": newValue ? "monthly" : "off"])
                 if newValue {
-                    requestNotificationPermission()
+                    enableReminders()
+                } else {
+                    ReminderScheduler.disable()
                 }
             }
         )
     }
 
-    private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, _ in
+    private func enableReminders() {
+        ReminderScheduler.enable(lastScanDate: lastScanDate) { granted in
             if !granted {
-                DispatchQueue.main.async {
-                    model.profile.reminders = "off"
-                    model.saveProfile()
-                }
+                model.profile.reminders = "off"
+                model.saveProfile()
             }
         }
+    }
+
+    /// Anchor for the monthly reminder: when the latest result was created.
+    private var lastScanDate: Date? {
+        model.latestResult.map { Date(timeIntervalSince1970: Double($0.createdAt) / 1000) }
     }
 }
 
 /// Renders a bundled legal document (PRD §13.8 legal viewers). The canonical
-/// legal texts live in docs/store and the Android assets; copies are bundled
-/// at integration time as App resources.
+/// Markdown documents live in App/Resources/Legal (converted from the Android
+/// assets); the viewer resolves `<resourceName>_<language>.md` with an
+/// English fallback so the policy is always reachable.
 struct LegalViewer: View {
 
     let titleKey: LocalizedStringKey
     let resourceName: String
+    let language: String
+
+    private enum Block {
+        case title(String)
+        case heading(String)
+        case bullet(String)
+        case paragraph(String)
+    }
 
     var body: some View {
         ScrollView {
-            Text(loadedText)
-                .font(.body)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-                .textSelection(.enabled)
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+                    blockView(block)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .textSelection(.enabled)
         }
         .navigationTitle(Text(titleKey))
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    private var blocks: [Block] {
+        Self.parse(markdown: loadedText)
+    }
+
     private var loadedText: String {
-        for ext in ["md", "txt"] {
-            if let url = Bundle.main.url(forResource: resourceName, withExtension: ext),
-               let text = try? String(contentsOf: url, encoding: .utf8) {
-                return text
+        for name in ["\(resourceName)_\(language)", "\(resourceName)_en"] {
+            for ext in ["md", "txt"] {
+                if let url = Bundle.main.url(forResource: name, withExtension: ext),
+                   let text = try? String(contentsOf: url, encoding: .utf8) {
+                    return text
+                }
             }
         }
         return String(localized: "legal_missing_placeholder")
+    }
+
+    /// Line-oriented Markdown: the bundled documents keep one block per line.
+    private static func parse(markdown: String) -> [Block] {
+        markdown
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .map { line -> Block in
+                if line.hasPrefix("# ") { return .title(String(line.dropFirst(2))) }
+                if line.hasPrefix("## ") { return .heading(String(line.dropFirst(3))) }
+                if line.hasPrefix("- ") { return .bullet(String(line.dropFirst(2))) }
+                return .paragraph(line)
+            }
+    }
+
+    @ViewBuilder
+    private func blockView(_ block: Block) -> some View {
+        switch block {
+        case .title(let text):
+            inlineText(text).font(.title2.bold()).padding(.top, 4)
+        case .heading(let text):
+            inlineText(text).font(.headline).padding(.top, 8)
+        case .bullet(let text):
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(verbatim: "•")
+                inlineText(text)
+            }
+        case .paragraph(let text):
+            inlineText(text)
+        }
+    }
+
+    /// Renders inline emphasis (`**bold**` etc.); falls back to the raw line.
+    private func inlineText(_ raw: String) -> Text {
+        if let attributed = try? AttributedString(markdown: raw) {
+            return Text(attributed)
+        }
+        return Text(raw)
     }
 }

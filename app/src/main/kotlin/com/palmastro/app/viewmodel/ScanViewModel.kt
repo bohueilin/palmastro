@@ -1,10 +1,14 @@
 package com.palmastro.app.viewmodel
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Size
 import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +19,7 @@ import com.palmastro.app.share.ScanError
 import com.palmastro.app.share.ScanErrorException
 import com.palmastro.app.ui.scan.ImageQualityAnalyzer
 import com.palmastro.app.ui.scan.ImageQualityAnalyzerFactory
+import com.palmastro.app.ui.scan.ImageQualityMetrics
 import com.palmastro.content.ContentComposerImpl
 import com.palmastro.content.SafetyFilterImpl
 import com.palmastro.contracts.*
@@ -93,16 +98,34 @@ class ScanViewModel @Inject constructor(
     private val qualityResults = mutableMapOf<Angle, QualityScores>()
     private val palmMetricsByAngle = mutableMapOf<Angle, PalmMetrics?>()
     private var analyzer: ImageQualityAnalyzer? = null
+
+    /** Serializes [analyzeGuarded] against [onCleared]: close waits for in-flight analysis. */
+    private val analyzerLock = Any()
+
+    @Volatile
+    private var analyzerClosed = false
     private var scanStartEmitted = false
     private var scanStartTimeMs = 0L
 
     private val json = Json { encodeDefaults = true }
 
     // Lazy: CameraX objects cannot be constructed on the JVM, and the UI only needs
-    // this once the preview is bound.
+    // this once the preview is bound. The resolution cap keeps captures near 2MP:
+    // full-sensor 12MP frames would cost IntArray(w*h)+FloatArray(w*h) in analysis
+    // (OOM risk) and seconds of per-frame work for no quality-gate benefit.
     val imageCapture: ImageCapture by lazy {
         ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .setResolutionSelector(
+                ResolutionSelector.Builder()
+                    .setResolutionStrategy(
+                        ResolutionStrategy(
+                            Size(CAPTURE_TARGET_WIDTH, CAPTURE_TARGET_HEIGHT),
+                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER,
+                        )
+                    )
+                    .build()
+            )
             .build()
     }
 
@@ -157,6 +180,10 @@ class ScanViewModel @Inject constructor(
 
     fun captureCurrentAngle() {
         if (_state.value.isCapturing) return
+        val idx = _state.value.currentAngleIndex
+        // No angle left to capture: a stray tap during the 200ms flash window after the
+        // last angle (or after PROCESSING_FAILED) must be a no-op, not an IndexOutOfBounds.
+        if (idx >= angles.size) return
         if (!scanStartEmitted) {
             scanStartEmitted = true
             scanStartTimeMs = System.currentTimeMillis()
@@ -164,7 +191,7 @@ class ScanViewModel @Inject constructor(
         }
         _state.update { it.copy(isCapturing = true, coachingHintKey = null) }
 
-        val angle = angles[_state.value.currentAngleIndex]
+        val angle = angles[idx]
         val monthKey = YearMonth.now().toString()
         val scanDir = File(appContext.filesDir, "scans/$monthKey")
         scanDir.mkdirs()
@@ -191,10 +218,9 @@ class ScanViewModel @Inject constructor(
     private fun onFrameCaptured(angle: Angle, file: File) {
         viewModelScope.launch {
             val metrics = withContext(ioDispatcher) {
-                val currentAnalyzer = analyzer ?: return@withContext null
-                val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                val bitmap = decodeSampledBitmap(file.absolutePath)
                     ?: return@withContext null
-                val result = runCatching { currentAnalyzer.analyze(bitmap) }.getOrNull()
+                val result = analyzeGuarded(bitmap)
                 bitmap.recycle()
                 result
             }
@@ -270,11 +296,56 @@ class ScanViewModel @Inject constructor(
 
     fun dismissError() = _state.update { it.copy(error = null) }
 
+    /**
+     * Error action for PROCESSING_FAILED: when all angles are already captured the
+     * failure happened in the pipeline, so retry it directly instead of stranding the
+     * user on the capture screen with nothing left to capture. Mid-scan failures just
+     * clear the error and return to the capture flow.
+     */
+    fun retryProcessing() {
+        _state.update { it.copy(error = null) }
+        if (_state.value.currentAngleIndex >= angles.size) {
+            runPipeline()
+        }
+    }
+
     fun dismissCoachingHint() = _state.update { it.copy(coachingHintKey = null) }
 
     override fun onCleared() {
         super.onCleared()
-        analyzer?.close()
+        synchronized(analyzerLock) {
+            analyzerClosed = true
+            analyzer?.close()
+            analyzer = null
+        }
+    }
+
+    /**
+     * Two-pass decode: read bounds only, then decode with an inSampleSize that caps the
+     * analyzed bitmap near [MAX_ANALYSIS_PIXELS] regardless of what the camera produced
+     * (the ResolutionSelector is a request, not a guarantee).
+     */
+    private fun decodeSampledBitmap(path: String): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        var sample = 1
+        while ((bounds.outWidth / sample).toLong() * (bounds.outHeight / sample) > MAX_ANALYSIS_PIXELS) {
+            sample *= 2
+        }
+        return BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sample })
+    }
+
+    /**
+     * Runs the analyzer under [analyzerLock] so [onCleared] cannot free the underlying
+     * HandLandmarker while a frame is mid-analysis; after close this returns null
+     * gracefully instead of touching a released native handle.
+     */
+    @VisibleForTesting
+    internal fun analyzeGuarded(bitmap: Bitmap): ImageQualityMetrics? = synchronized(analyzerLock) {
+        if (analyzerClosed) return@synchronized null
+        val currentAnalyzer = analyzer ?: return@synchronized null
+        runCatching { currentAnalyzer.analyze(bitmap) }.getOrNull()
     }
 
     /** Test seam: registers a captured frame without going through CameraX. */
@@ -288,6 +359,12 @@ class ScanViewModel @Inject constructor(
         capturedPaths[angle] = path
         qualityResults[angle] = scores
         palmMetricsByAngle[angle] = palmMetrics
+    }
+
+    /** Test seam: places the UI at a given angle index without driving CameraX. */
+    @VisibleForTesting
+    internal fun seedAngleIndex(index: Int) {
+        _state.update { it.copy(currentAngleIndex = index) }
     }
 
     @VisibleForTesting
@@ -516,5 +593,13 @@ class ScanViewModel @Inject constructor(
             featureCoverage = featureCoverage,
             createdAt = createdAt
         )
+    }
+
+    private companion object {
+        /** Capture target (~2MP): plenty for the quality gate + palm-line sampling. */
+        const val CAPTURE_TARGET_WIDTH = 1600
+        const val CAPTURE_TARGET_HEIGHT = 1200
+        /** Hard cap on the decoded analysis bitmap, whatever the camera delivered. */
+        const val MAX_ANALYSIS_PIXELS = 2_000_000L
     }
 }

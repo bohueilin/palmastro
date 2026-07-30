@@ -16,8 +16,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -82,7 +84,11 @@ private fun EmptyHistory(padding: PaddingValues) {
             contentScale = ContentScale.Fit,
         )
         Spacer(Modifier.height(24.dp))
-        Text(stringResource(R.string.history_empty_title), fontSize = 20.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+        Text(
+            stringResource(R.string.history_empty_title),
+            fontSize = 20.sp, lineHeight = 29.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
+        )
         Spacer(Modifier.height(8.dp))
         Text(
             stringResource(R.string.history_empty_desc),
@@ -98,15 +104,19 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
     val gc = gradeColor(month.grade)
     val confidenceText = confidenceDisplayName(month.confidence)
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick, role = Role.Button)
             .semantics(mergeDescendants = true) { contentDescription = "${month.monthKey} $gradeText" },
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(month.monthKey, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                Text(month.monthKey, fontSize = 18.sp, lineHeight = 26.sp, fontWeight = FontWeight.Medium)
                 Surface(color = gc.copy(alpha = 0.15f), shape = MaterialTheme.shapes.small) {
-                    Text(gradeText, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = gc, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
+                    Text(
+                        gradeText,
+                        fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium,
+                        color = gc, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -122,20 +132,24 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
                         },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(domainText, fontSize = 13.sp, modifier = Modifier.width(64.dp))
+                    Text(domainText, fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.widthIn(min = 64.dp))
                     LinearProgressIndicator(
                         progress = { score / 100f },
                         modifier = Modifier.weight(1f).height(6.dp).clearAndSetSemantics {},
                         color = gc,
                     )
-                    Text("$score", fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.width(36.dp).padding(start = 8.dp).clearAndSetSemantics {})
+                    Text(
+                        "$score",
+                        fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium,
+                        modifier = Modifier.widthIn(min = 36.dp).padding(start = 8.dp).clearAndSetSemantics {},
+                    )
                     DeltaText(delta)
                 }
             }
             Spacer(Modifier.height(4.dp))
             Text(
                 stringResource(R.string.results_confidence, confidenceText),
-                fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -152,7 +166,7 @@ private fun DeltaText(delta: Int?) {
     }
     Text(
         text,
-        fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = color,
-        modifier = Modifier.width(48.dp).padding(start = 6.dp).clearAndSetSemantics {},
+        fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.SemiBold, color = color,
+        modifier = Modifier.widthIn(min = 48.dp).padding(start = 6.dp).clearAndSetSemantics {},
     )
 }

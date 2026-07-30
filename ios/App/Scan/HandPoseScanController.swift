@@ -19,6 +19,10 @@ final class HandPoseScanController: NSObject, ObservableObject {
 
     @Published private(set) var currentAngleIndex = 0
     @Published private(set) var lastHintKey: String?
+    /// Increments once per failed quality-gate evaluation (at most once per
+    /// collected frame batch) so the UI can pair coaching with one gentle
+    /// haptic — never a per-frame buzz.
+    @Published private(set) var qualityFailCount = 0
     @Published private(set) var isHandDetected = false
     @Published private(set) var finishedSummary: ScanSessionSummary?
     @Published var permissionDenied = false
@@ -51,6 +55,7 @@ final class HandPoseScanController: NSObject, ObservableObject {
         startedAt = Date()
         currentAngleIndex = 0
         totalAttempts = 0
+        qualityFailCount = 0
         candidateFrames = []
         bestFrames = [:]
         finishedSummary = nil
@@ -158,6 +163,7 @@ final class HandPoseScanController: NSObject, ObservableObject {
         } else {
             candidateFrames = []
             DispatchQueue.main.async {
+                self.qualityFailCount += 1
                 self.lastHintKey = CoachingHints.keyFor(failReason: gateResult.failReason ?? "")
             }
         }

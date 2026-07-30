@@ -18,24 +18,31 @@ struct DomainDetailView: View {
     var body: some View {
         List {
             Section {
-                HStack {
-                    Text(verbatim: "\(payload.scoreCard.totalScore)")
-                        .font(.system(size: 44, weight: .bold).monospacedDigit())
-                    VStack(alignment: .leading) {
-                        Text(payload.scoreCard.grade).font(.headline)
+                HStack(spacing: 20) {
+                    ScoreGaugeView(
+                        score: payload.scoreCard.totalScore,
+                        grade: payload.scoreCard.grade,
+                        titleText: domainDisplayName(payload.domain),
+                        style: .hero
+                    )
+                    VStack(alignment: .leading, spacing: 8) {
                         ConfidenceChip(confidence: payload.confidence)
+                        if let delta = payload.scoreCard.delta, delta.value != 0 {
+                            Label {
+                                Text(verbatim: "\(abs(delta.value))")
+                            } icon: {
+                                Image(systemName: delta.arrow == "up" ? "arrow.up" : "arrow.down")
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(delta.arrow == "up" ? .green : .orange)
+                            .accessibilityLabel(Text(
+                                delta.arrow == "up" ? "results_delta_up_a11y" : "results_delta_down_a11y"
+                            ))
+                        }
                     }
                     Spacer()
-                    if let delta = payload.scoreCard.delta, delta.value != 0 {
-                        Label {
-                            Text(verbatim: "\(abs(delta.value))")
-                        } icon: {
-                            Image(systemName: delta.arrow == "up" ? "arrow.up" : "arrow.down")
-                        }
-                        .foregroundStyle(delta.arrow == "up" ? .green : .orange)
-                    }
                 }
-                .accessibilityElement(children: .combine)
+                .padding(.vertical, 4)
 
                 if !payload.confidenceReasons.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
@@ -163,6 +170,17 @@ struct DomainDetailView: View {
         case Domains.family: return "domain_family"
         case Domains.health: return "domain_health"
         default: return LocalizedStringKey(domain)
+        }
+    }
+
+    /// Resolved (non-key) display name for the gauge accessibility label.
+    private func domainDisplayName(_ domain: String) -> String {
+        switch domain {
+        case Domains.career: return NSLocalizedString("domain_career", comment: "")
+        case Domains.wealth: return NSLocalizedString("domain_wealth", comment: "")
+        case Domains.family: return NSLocalizedString("domain_family", comment: "")
+        case Domains.health: return NSLocalizedString("domain_health", comment: "")
+        default: return domain
         }
     }
 }

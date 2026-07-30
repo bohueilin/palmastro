@@ -30,6 +30,13 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: App
+        excludes:
+          - "Resources/Legal/**"
+      # Legal documents (PRD §13.8) must ship inside the bundle. XcodeGen
+      # assigns .md files no build phase by default, so the Legal folder is
+      # listed separately with an explicit resources phase.
+      - path: App/Resources/Legal
+        buildPhase: resources
     dependencies:
       - package: PalmAstroKit
         product: PalmAstroKit

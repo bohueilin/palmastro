@@ -53,4 +53,8 @@
     <!-- Reminder notification (worker) -->
     <string name="sc_reminder_notif_title">每月手掌檢視時間</string>
     <string name="sc_reminder_notif_body">本月的新解讀可以開始建立了，打開掌紋星象進行掃描吧。</string>
+
+    <!-- Constellation reveal (signature processing moment, UX_ROADMAP 1.2 / PRD 41) -->
+    <string name="sc_reveal_analyzing">正在解讀您的掌紋…</string>
+    <string name="sc_reveal_canvas_desc">您的掌紋正連成星座，分析同時進行中</string>
 </resources>

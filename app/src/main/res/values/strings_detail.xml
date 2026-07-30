@@ -52,4 +52,9 @@
     <string name="journal_delete_confirm_title">Delete this entry?</string>
     <string name="journal_delete_confirm_message">This journal entry will be permanently deleted.</string>
     <string name="journal_general_entry">General reflection</string>
+
+    <!-- Score gauge component (ui/components/ScoreGauge.kt) — shared by the Domain Detail
+         hero and the Results overall gauge. Announced as one merged element. -->
+    <string name="gauge_content_desc">%1$s score %2$d of 100, %3$s</string>
+    <string name="gauge_overall_label">Overall</string>
 </resources>

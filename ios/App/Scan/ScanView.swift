@@ -29,12 +29,11 @@ struct ScanView: View {
                 permissionFallback
             }
             if processing {
-                ProgressView("scan_processing")
-                    .padding()
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                processingReveal
             }
         }
         .onAppear {
+            Haptics.shared.prepare()
             model.analytics.emit(eventName: "scan_start", props: [:])
             controller.begin(hand: model.profile.dominantHand)
         }
@@ -43,17 +42,48 @@ struct ScanView: View {
         }
         .onChange(of: controller.finishedSummary) { _, summary in
             guard let summary else { return }
+            // Haptic moment 2 (thumpQualityPass): the quality gate passed the
+            // full seven-angle session.
+            Haptics.shared.thumpQualityPass()
             processing = true
             model.analytics.emit(eventName: "scan_complete", props: [
                 "duration_ms": Int(summary.totalDurationMs),
                 "attempt": summary.totalAttempts,
             ])
             model.processScanSession(summary)
-            processing = false
-            dismiss()
+            // Dismissal waits for the constellation reveal to finish
+            // (instant static frame under Reduce Motion).
         }
         .onChange(of: controller.currentAngleIndex) { _, index in
+            // Haptic moment 1 (tickCapture): one angle captured successfully.
+            Haptics.shared.tickCapture()
             model.analytics.emit(eventName: "scan_angle_pass", props: ["angle": angleToken(at: index - 1)])
+        }
+        .onChange(of: controller.qualityFailCount) { _, _ in
+            // Haptic moment 3 (buzzQualityFail): gentle, once per gate
+            // evaluation — coaching, never an alarm (PRD §12.3).
+            Haptics.shared.buzzQualityFail()
+        }
+    }
+
+    /// Signature processing state: the constellation reveal plays once over a
+    /// dimmed camera, then hands off to results. The caption below the canvas
+    /// keeps loading visible and screen-reader accessible (PRD §41: motion
+    /// never hides loading).
+    private var processingReveal: some View {
+        ZStack {
+            Color.black.opacity(0.6).ignoresSafeArea()
+            VStack(spacing: 20) {
+                ConstellationRevealView {
+                    // Haptic moment 4 (shimmerReveal): the reading is ready.
+                    Haptics.shared.shimmerReveal()
+                    dismiss()
+                }
+                .frame(width: 260, height: 260)
+                Text("scan_processing")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+            }
         }
     }
 

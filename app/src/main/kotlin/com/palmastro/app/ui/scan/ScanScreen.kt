@@ -2,6 +2,7 @@ package com.palmastro.app.ui.scan
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -39,9 +41,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.palmastro.app.R
+import com.palmastro.app.haptics.rememberHapticPlayer
 import com.palmastro.app.share.ScanError
+import com.palmastro.app.viewmodel.ScanState
 import com.palmastro.app.viewmodel.ScanViewModel
 import com.palmastro.contracts.Angle
 
@@ -92,7 +99,12 @@ private enum class ScanErrorKind(
 ) {
     MODEL_DOWNLOAD_FAILED(R.string.sc_err_download_what, R.string.sc_err_download_why, R.string.sc_err_download_next, R.string.sc_err_download_action),
     MODEL_CORRUPT(R.string.sc_err_corrupt_what, R.string.sc_err_corrupt_why, R.string.sc_err_corrupt_next, R.string.sc_err_corrupt_action),
-    PROCESSING_FAILED(R.string.sc_err_processing_what, R.string.sc_err_processing_why, R.string.sc_err_processing_next, R.string.sc_err_processing_action),
+    // Action is the shared "Retry" (strings_scan_errors.xml): it either re-runs the
+    // pipeline (all angles captured) or returns to capture, and "Retry" covers both.
+    PROCESSING_FAILED(
+        R.string.sc_err_processing_what, R.string.sc_err_processing_why,
+        R.string.sc_err_processing_next, R.string.scan_error_retry,
+    ),
 }
 
 private enum class PreScanPhase { EXPLAINER, TIPS, CAPTURE }
@@ -101,7 +113,6 @@ private enum class PreScanPhase { EXPLAINER, TIPS, CAPTURE }
 fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    val view = LocalView.current
 
     // Respect the system "remove animations" preference for animated overlays.
     val reduceMotion = remember {
@@ -115,6 +126,8 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
         hasPermission = granted
         permissionDenied = !granted
     }
+    // The launcher callback stays the only place that sets permissionDenied = true.
+    CameraPermissionResumeEffect(onGranted = { hasPermission = true; permissionDenied = false })
     // Camera permission is requested only when actually needed (after explainer + tips).
     LaunchedEffect(phase) {
         if (phase == PreScanPhase.CAPTURE && !hasPermission) {
@@ -123,10 +136,8 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
     }
     LaunchedEffect(state.isComplete) { if (state.isComplete) onComplete() }
 
-    val captureDoneAnnounce = stringResource(R.string.scan_capture_done)
-    LaunchedEffect(state.showFlash) { if (state.showFlash) view.announceForAccessibility(captureDoneAnnounce) }
-    val completeAnnounce = stringResource(R.string.sc_complete_announce)
-    LaunchedEffect(state.isProcessing) { if (state.isProcessing) view.announceForAccessibility(completeAnnounce) }
+    ScanFeedbackEffects(state)
+    val haptics = rememberHapticPlayer()
 
     when {
         phase == PreScanPhase.EXPLAINER -> ExplainerScreen(onNext = { phase = PreScanPhase.TIPS })
@@ -143,8 +154,10 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
             onAction = { viewModel.retryModelDownload() },
         )
         !state.modelReady -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-        state.isProcessing -> CompletionProcessingScreen()
-        state.error != null -> ErrorScreen(kind = ScanErrorKind.PROCESSING_FAILED, onAction = { viewModel.dismissError() })
+        state.isProcessing -> ConstellationProcessingScreen(reduceMotion = reduceMotion)
+        // retryProcessing re-runs the pipeline when all angles are captured (pipeline
+        // failure) and otherwise returns to the capture flow (mid-scan failure).
+        state.error != null -> ErrorScreen(kind = ScanErrorKind.PROCESSING_FAILED, onAction = { viewModel.retryProcessing() })
         else -> CaptureScreen(
             currentAngleIndex = state.currentAngleIndex,
             totalAngles = Angle.entries.size,
@@ -154,13 +167,69 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
             showFlash = state.showFlash,
             reduceMotion = reduceMotion,
             imageCapture = viewModel.imageCapture,
-            onCapture = { viewModel.captureCurrentAngle() },
+            onCapture = {
+                haptics.tickCapture()
+                viewModel.captureCurrentAngle()
+            },
             onRetake = { viewModel.retakePreviousAngle() },
         )
     }
 }
 
+/**
+ * Re-checks the actual CAMERA grant on every ON_RESUME: the user can deny in-app, grant
+ * via system Settings, and come back — the denied screen must clear itself. Observer
+ * registration replays up to the current state, so an already-granted permission is
+ * detected immediately on first composition as well.
+ */
+@Composable
+private fun CameraPermissionResumeEffect(onGranted: () -> Unit) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentOnGranted by rememberUpdatedState(onGranted)
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val granted = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+                if (granted) currentOnGranted()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+}
+
 // ── PRD 13.2 step 1: explain scan requirements ──
+/**
+ * Haptic vocabulary + paired announcements (UX_ROADMAP 1.1): pass/fail/reveal cues give
+ * the quality gate a second, non-visual channel (PRD 40). Fail is two gentle pulses —
+ * coaching, never punitive (PRD 12.3). The player no-ops when haptics are unavailable.
+ */
+@Composable
+private fun ScanFeedbackEffects(state: ScanState) {
+    val view = LocalView.current
+    val haptics = rememberHapticPlayer()
+    val captureDoneAnnounce = stringResource(R.string.scan_capture_done)
+    LaunchedEffect(state.showFlash) {
+        if (state.showFlash) {
+            haptics.thumpQualityPass()
+            view.announceForAccessibility(captureDoneAnnounce)
+        }
+    }
+    val completeAnnounce = stringResource(R.string.sc_complete_announce)
+    LaunchedEffect(state.isProcessing) {
+        if (state.isProcessing) {
+            haptics.shimmerReveal()
+            view.announceForAccessibility(completeAnnounce)
+        }
+    }
+    LaunchedEffect(state.coachingHintKey) {
+        if (state.coachingHintKey != null) haptics.buzzQualityFail()
+    }
+}
+
 @Composable
 private fun ExplainerScreen(onNext: () -> Unit) {
     Column(
@@ -318,30 +387,8 @@ private fun ModelDownloadingScreen() {
     }
 }
 
-// ── PRD 13.2 step 6: scan completion, shown while analysis runs ──
-@Composable
-private fun CompletionProcessingScreen() {
-    Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Icon(
-            Icons.Filled.CheckCircle,
-            contentDescription = stringResource(R.string.sc_complete_icon),
-            tint = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.size(64.dp),
-        )
-        Spacer(Modifier.height(16.dp))
-        Text(
-            stringResource(R.string.sc_complete_title),
-            fontSize = 22.sp, fontWeight = FontWeight.Bold,
-            modifier = Modifier.semantics { heading() },
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(stringResource(R.string.sc_complete_body), fontSize = 16.sp, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(24.dp))
-        CircularProgressIndicator(modifier = Modifier.size(40.dp))
-        Spacer(Modifier.height(8.dp))
-        Text(stringResource(R.string.sc_complete_hint), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
-    }
-}
+// PRD 13.2 step 6 (scan completion while analysis runs) now lives in
+// ConstellationReveal.kt as the app's signature moment (UX_ROADMAP 1.2).
 
 @Composable
 private fun ErrorScreen(kind: ScanErrorKind, onAction: () -> Unit) {

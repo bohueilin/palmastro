@@ -14,9 +14,13 @@ import androidx.compose.material.icons.outlined.TrendingUp
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
+import com.palmastro.app.haptics.rememberHapticPlayer
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
 import com.palmastro.app.viewmodel.GuidanceViewModel
@@ -64,6 +69,16 @@ fun GuidanceScreen(
     viewModel: GuidanceViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val haptics = rememberHapticPlayer()
+    // One gentle shimmer when the guidance content first reveals (award-polish haptic vocabulary).
+    // Gated via rememberSaveable so rotation / config change never re-fires the reveal.
+    var revealed by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(state.guidance != null) {
+        if (state.guidance != null && !revealed) {
+            revealed = true
+            haptics.shimmerReveal()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -196,11 +211,11 @@ private fun MonthThemeHero(monthKey: String, grade: String, monthTheme: String) 
             .padding(24.dp),
     ) {
         Column {
-            Text(monthTitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(monthTitle, fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(6.dp))
             Text(
                 stringResource(R.string.guidance_theme_label),
-                fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp,
             )
             Spacer(Modifier.height(4.dp))
@@ -215,7 +230,11 @@ private fun GuidanceSectionHeader(icon: ImageVector, title: String, description:
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(8.dp))
-            Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp)
+            Text(
+                title,
+                fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp,
+            )
         }
         Spacer(Modifier.height(4.dp))
         Text(description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
@@ -234,7 +253,7 @@ private fun GuidanceItemCard(item: GuidanceItem, accentColor: Color, containerCo
             Surface(color = accentColor.copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
                 Text(
                     domainDisplayName(item.domain),
-                    fontSize = 11.sp, fontWeight = FontWeight.Bold, color = accentColor,
+                    fontSize = 11.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold, color = accentColor,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 )
             }
@@ -248,7 +267,7 @@ private fun GuidanceItemCard(item: GuidanceItem, accentColor: Color, containerCo
                     Surface(color = accentColor.copy(alpha = 0.15f), shape = RoundedCornerShape(6.dp)) {
                         Text(
                             stringResource(R.string.guidance_action_label),
-                            fontSize = 11.sp, fontWeight = FontWeight.Bold, color = accentColor,
+                            fontSize = 11.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold, color = accentColor,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         )
                     }
@@ -270,8 +289,16 @@ private fun WeekPlanRow(index: Int, text: String) {
         verticalAlignment = Alignment.Top,
     ) {
         Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), shape = CircleShape) {
-            Box(modifier = Modifier.size(28.dp), contentAlignment = Alignment.Center) {
-                Text("$index", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+            // Min-size (not fixed) so the step number never clips at large font scales.
+            Box(
+                modifier = Modifier.sizeIn(minWidth = 28.dp, minHeight = 28.dp).padding(4.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    "$index",
+                    fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
         }
         Spacer(Modifier.width(12.dp))
@@ -296,7 +323,7 @@ private fun GuidanceFooter() {
             )
             Spacer(Modifier.width(12.dp))
             Column {
-                Text(stringResource(R.string.results_safety_title), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.results_safety_title), fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     stringResource(R.string.guidance_footer_reflection),

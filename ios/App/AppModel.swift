@@ -238,6 +238,7 @@ final class AppModel: ObservableObject {
             UserDefaults.standard.removePersistentDomain(forName: bundleId)
         }
         KeychainInstallId.rotate()
+        ReminderScheduler.disable()
         profile = UserProfile()
         latestResult = nil
         history = []

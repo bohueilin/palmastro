@@ -35,6 +35,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
 import com.palmastro.app.share.ShareCardRenderer
 import com.palmastro.app.share.ShareHelper
+import com.palmastro.app.ui.components.ScoreGauge
+import com.palmastro.app.ui.components.ScoreGaugeMath
 import com.palmastro.app.ui.results.SharePreviewDialog
 import com.palmastro.app.ui.results.confidenceDisplayName
 import com.palmastro.app.ui.results.domainDisplayName
@@ -120,21 +122,13 @@ fun DomainDetailScreen(
                 val payload = state.payload!!
                 val gc = gradeColor(payload.scoreCard.grade)
                 Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
-                    // 1. Score header
-                    Box(
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
-                            .background(Brush.verticalGradient(listOf(gc.copy(alpha = 0.15f), Color.Transparent)))
-                            .padding(24.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text("${payload.scoreCard.totalScore}", fontSize = 56.sp, fontWeight = FontWeight.Bold, color = gc)
-                            Spacer(Modifier.width(8.dp))
-                            Column(modifier = Modifier.padding(bottom = 10.dp)) {
-                                Text(stringResource(R.string.detail_score_out_of), fontSize = 16.sp, color = gc.copy(alpha = 0.7f))
-                                Text(gradeDisplayName(payload.scoreCard.grade), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = gc)
-                            }
-                        }
-                    }
+                    // 1. Score gauge hero (PRD 13.4 item 1)
+                    DetailHero(
+                        gradeTint = gc,
+                        score = payload.scoreCard.totalScore,
+                        gradeDisplay = gradeDisplayName(payload.scoreCard.grade),
+                        domainDisplay = displayName,
+                    )
 
                     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                         Spacer(Modifier.height(24.dp))
@@ -242,6 +236,31 @@ fun DomainDetailScreen(
                 ShareHelper.share(context, bitmap, shareText, chooserTitle)
                 previewBitmap = null
             },
+        )
+    }
+}
+
+/**
+ * Domain-detail hero: the large brand score gauge (PRD 13.4 "Score gauge") on the
+ * grade-tinted wash. The numeral takes the grade color while the arc keeps the brand
+ * teal-to-purple sweep for every grade, so all four domains read as one family.
+ */
+@Composable
+private fun DetailHero(gradeTint: Color, score: Int, gradeDisplay: String, domainDisplay: String) {
+    val gaugeDesc = stringResource(
+        R.string.gauge_content_desc, domainDisplay, ScoreGaugeMath.clampScore(score), gradeDisplay,
+    )
+    Box(
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+            .background(Brush.verticalGradient(listOf(gradeTint.copy(alpha = 0.15f), Color.Transparent)))
+            .padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        ScoreGauge(
+            score = score,
+            contentDescription = gaugeDesc,
+            numeralColor = gradeTint,
+            gradeLabel = gradeDisplay,
         )
     }
 }

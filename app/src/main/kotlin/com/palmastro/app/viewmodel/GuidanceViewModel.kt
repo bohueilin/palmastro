@@ -61,7 +61,8 @@ class GuidanceViewModel @Inject constructor(
 
                 val payloads: Map<String, SemanticPayload> =
                     json.decodeFromString(entity.semanticPayloadsJson)
-                val language = resolveContentLanguage(userRepository.get()?.language)
+                val language = storedPayloadLanguage(payloads)
+                    ?: resolveContentLanguage(userRepository.get()?.language)
                 val guidance = guidanceBuilder.build(payloads, entity.grade, language)
 
                 _state.update {
@@ -83,9 +84,19 @@ class GuidanceViewModel @Inject constructor(
 }
 
 /**
+ * The language the stored payloads were COMPOSED in, or null when absent. Guidance built
+ * from stored payloads must use this language: re-resolving from the current profile or
+ * device locale can disagree with historical payloads (profile/locale changed since the
+ * scan) and would render mixed-language guidance.
+ */
+internal fun storedPayloadLanguage(payloads: Map<String, SemanticPayload>): String? =
+    payloads.values.firstOrNull()?.language?.takeIf { it.isNotBlank() }
+
+/**
  * Resolves the content language: explicit profile choice wins; "system" (the v3 default)
  * follows the device locale, restricted to the engine-supported set. Mirrors the private
- * resolver in ScanViewModel so guidance renders in the same language as composed payloads.
+ * resolver in ScanViewModel. Fallback only — payloads that carry their own language win
+ * via [storedPayloadLanguage].
  */
 internal fun resolveContentLanguage(profileLanguage: String?): String {
     val explicit = profileLanguage?.takeUnless { it.isBlank() || it == "system" }

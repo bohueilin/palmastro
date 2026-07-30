@@ -181,4 +181,14 @@
 "settings_delete_final_confirm" = "刪除所有資料";
 "settings_delete_final_message" = "確定嗎？沒有備份，資料將無法復原。";
 "settings_deleted_title" = "資料已全部刪除";
-"legal_missing_placeholder" = "此文件將包含在正式版本中。";
+"legal_missing_placeholder" = "無法載入此文件。請重新安裝App，或來信 support@palmastro.app。";
+
+/* 每月重掃提醒通知（PRD §23）：於本機排程、送達時解析字串，
+   絕不包含解讀或個人資料內容。 */
+"reminder_notification_title" = "每月掌紋時間到了";
+"reminder_notification_body" = "花一分鐘靜下來，重新掃描手掌，看看這個月的解讀。";
+
+/* Award polish — 分數量表與整體概覽。gauge_a11y_format 是分數量表的單一
+   無障礙元素：名稱、分數、等級。 */
+"results_overall_label" = "整體";
+"gauge_a11y_format" = "%1$@分數%2$ld分（滿分100分），等級%3$@。";

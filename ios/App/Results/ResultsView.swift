@@ -37,6 +37,20 @@ struct ResultsView: View {
     private func resultList(_ result: MonthlyResult) -> some View {
         List {
             Section {
+                // Compact overall hero: mean of the four domain scores with
+                // the engine's overall grade (same aggregation the guidance
+                // layer receives; display-only — no new interpretation).
+                HStack {
+                    Spacer()
+                    ScoreGaugeView(
+                        score: overallScore(result),
+                        grade: result.scoringResult.grade,
+                        titleText: NSLocalizedString("results_overall_label", comment: ""),
+                        style: .compact
+                    )
+                    Spacer()
+                }
+                .padding(.vertical, 4)
                 HStack {
                     Text("results_month_label").foregroundStyle(.secondary)
                     Spacer()
@@ -76,6 +90,13 @@ struct ResultsView: View {
                 DomainDetailView(payload: payload)
             }
         }
+    }
+
+    /// Whole-reading score: rounded mean of the per-domain scores.
+    private func overallScore(_ result: MonthlyResult) -> Int {
+        let scores = result.scoringResult.domainScores.values
+        guard !scores.isEmpty else { return 0 }
+        return Int((Double(scores.reduce(0, +)) / Double(scores.count)).rounded())
     }
 
     private var emptyState: some View {

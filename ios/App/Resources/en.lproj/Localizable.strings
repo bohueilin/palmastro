@@ -182,4 +182,14 @@
 "settings_delete_final_confirm" = "Delete everything";
 "settings_delete_final_message" = "Are you sure? There is no backup and no way to recover this data.";
 "settings_deleted_title" = "All data deleted";
-"legal_missing_placeholder" = "This document will be included in the release build.";
+"legal_missing_placeholder" = "This document could not be loaded. Please reinstall the app or contact support@palmastro.app.";
+
+/* Monthly rescan reminder notification (PRD §23): scheduled locally,
+   resolved at delivery time, never contains reading or profile content. */
+"reminder_notification_title" = "Your monthly palm check-in";
+"reminder_notification_body" = "Take a calm minute to rescan your palm and see this month's reading.";
+
+/* Award polish — score gauge + overall hero. gauge_a11y_format is the score
+   gauge's single accessibility element: title, score, grade. */
+"results_overall_label" = "Overall";
+"gauge_a11y_format" = "%1$@ score %2$ld of 100, grade %3$@.";

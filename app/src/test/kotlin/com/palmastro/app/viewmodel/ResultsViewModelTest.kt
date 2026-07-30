@@ -2,6 +2,8 @@ package com.palmastro.app.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
 import com.palmastro.app.config.FeatureFlags
+import com.palmastro.content.Guidance
+import com.palmastro.content.GuidanceBuilder
 import com.palmastro.contracts.*
 import com.palmastro.data.entities.MonthlyResultEntity
 import com.palmastro.data.entities.UserProfileEntity
@@ -26,8 +28,9 @@ class ResultsViewModelTest {
     private val featureFlags = mockk<FeatureFlags>()
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private fun makePayload(domain: String, pattern: String) = SemanticPayload(
+    private fun makePayload(domain: String, pattern: String, language: String = "en") = SemanticPayload(
         domain = domain, monthKey = "2026-03", calcLevel = CalcLevel.L2, confidence = "med",
+        language = language,
         observations = emptyList(), interpretation = Interpretation(pattern), blindspot = "b",
         actionToday = "t", actionWeek = "w", prompt = "p",
         safetyNotes = emptyList(), explainability = emptyList(),
@@ -49,8 +52,8 @@ class ResultsViewModelTest {
         scanQualityScore = 85, featureCoverage = 0.9f,
     )
 
-    private fun makeProfile() = UserProfileEntity(
-        dominantHand = "right", birthdayEpochDay = 7384, tone = "scientific",
+    private fun makeProfile(language: String = "system") = UserProfileEntity(
+        dominantHand = "right", birthdayEpochDay = 7384, tone = "scientific", language = language,
     )
 
     private fun makeDelta(bucket: ComparabilityBucket) = DeltaResult(
@@ -173,6 +176,36 @@ class ResultsViewModelTest {
         coEvery { userRepository.get() } returns null
         val vm = createViewModel()
         assertEquals("scientific", vm.state.value.tone)
+    }
+
+    @Test
+    fun `guidance summary is built in the language stored in the payloads`() = runTest {
+        val builder = mockk<GuidanceBuilder>()
+        val payloads = mapOf("career" to makePayload("career", "穩定。", language = "zh-TW"))
+        coEvery { resultRepository.getRecent(1) } returns listOf(makeEntity(payloads = payloads))
+        coEvery { userRepository.get() } returns makeProfile(language = "en")
+        every { builder.build(any(), any(), any()) } returns
+            Guidance(monthTheme = "主題", strengths = emptyList(), mindful = emptyList(), weekPlan = emptyList())
+
+        val vm = ResultsViewModel(SavedStateHandle(), resultRepository, userRepository, featureFlags, builder)
+
+        // Preview must match the language the payloads were COMPOSED in, not the current profile.
+        verify { builder.build(any(), "Stable", "zh-TW") }
+        assertEquals("主題", vm.state.value.guidance?.monthTheme)
+    }
+
+    @Test
+    fun `guidance summary falls back to profile language when payload language is blank`() = runTest {
+        val builder = mockk<GuidanceBuilder>()
+        val payloads = mapOf("career" to makePayload("career", "steady.", language = ""))
+        coEvery { resultRepository.getRecent(1) } returns listOf(makeEntity(payloads = payloads))
+        coEvery { userRepository.get() } returns makeProfile(language = "zh-TW")
+        every { builder.build(any(), any(), any()) } returns
+            Guidance(monthTheme = "t", strengths = emptyList(), mindful = emptyList(), weekPlan = emptyList())
+
+        ResultsViewModel(SavedStateHandle(), resultRepository, userRepository, featureFlags, builder)
+
+        verify { builder.build(any(), "Stable", "zh-TW") }
     }
 
     @Test

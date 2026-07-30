@@ -53,4 +53,8 @@
     <!-- Reminder notification (worker) -->
     <string name="sc_reminder_notif_title">Monthly palm check-in</string>
     <string name="sc_reminder_notif_body">Your new monthly reading is ready to be created. Open PalmAstro to scan.</string>
+
+    <!-- Constellation reveal (signature processing moment, UX_ROADMAP 1.2 / PRD 41) -->
+    <string name="sc_reveal_analyzing">Reading your lines…</string>
+    <string name="sc_reveal_canvas_desc">Your palm lines are joining into a constellation while the analysis runs</string>
 </resources>

@@ -41,6 +41,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
 import com.palmastro.app.share.ShareCardRenderer
 import com.palmastro.app.share.ShareHelper
+import com.palmastro.app.ui.components.ScoreGauge
+import com.palmastro.app.ui.components.ScoreGaugeMath
+import com.palmastro.app.ui.components.ScoreGaugeStyle
 import com.palmastro.app.viewmodel.DomainCard
 import com.palmastro.app.viewmodel.GuidanceSummary
 import com.palmastro.app.viewmodel.ResultsState
@@ -167,7 +170,16 @@ private fun ResultsList(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(vertical = 16.dp),
     ) {
-        item { HeroCard(state.monthKey, state.grade, state.confidence, state.topDomain, state.scanQualityScore) }
+        item {
+            HeroCard(
+                monthKey = state.monthKey,
+                grade = state.grade,
+                confidence = state.confidence,
+                topDomain = state.topDomain,
+                scanQualityScore = state.scanQualityScore,
+                averageScore = ScoreGaugeMath.averageScore(state.domainCards.map { it.score }),
+            )
+        }
         state.guidance?.let { summary ->
             item {
                 GuidanceEntryCard(summary = summary, onClick = { onGuidanceClick(state.monthKey) })
@@ -220,18 +232,15 @@ private fun EmptyResults(padding: PaddingValues, onScanClick: () -> Unit) {
 }
 
 @Composable
-private fun HeroCard(monthKey: String, grade: String, confidence: String, topDomain: String?, scanQualityScore: Int) {
+private fun HeroCard(
+    monthKey: String,
+    grade: String,
+    confidence: String,
+    topDomain: String?,
+    scanQualityScore: Int,
+    averageScore: Int,
+) {
     val gc = gradeColor(grade)
-    val datePattern = stringResource(R.string.results_date_pattern)
-    val configuration = LocalConfiguration.current
-    // Hero date is derived from the result's monthKey, never from "now", so
-    // historical months render their own date.
-    val monthTitle = remember(monthKey, datePattern, configuration) {
-        runCatching {
-            val locale = configuration.locales.get(0)
-            YearMonth.parse(monthKey).atDay(1).format(DateTimeFormatter.ofPattern(datePattern, locale))
-        }.getOrDefault(monthKey)
-    }
     val themeRes = when (grade) {
         "Growing" -> R.string.results_theme_growing
         "Stable" -> R.string.results_theme_stable
@@ -240,13 +249,14 @@ private fun HeroCard(monthKey: String, grade: String, confidence: String, topDom
     }
 
     Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
-        Box(
+        Row(
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
                 .background(Brush.horizontalGradient(listOf(gc.copy(alpha = 0.15f), gc.copy(alpha = 0.05f))))
                 .padding(24.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column {
-                Text(monthTitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(rememberHeroMonthTitle(monthKey), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(4.dp))
                 Text(gradeDisplayName(grade), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = gc)
                 if (topDomain != null) {
@@ -257,30 +267,79 @@ private fun HeroCard(monthKey: String, grade: String, confidence: String, topDom
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        stringResource(R.string.results_confidence, confidenceDisplayName(confidence)),
-                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Surface(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), shape = RoundedCornerShape(8.dp)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        ) {
-                            Icon(
-                                Icons.Outlined.PhotoCamera, contentDescription = null,
-                                modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Text(
-                                stringResource(R.string.results_scan_quality_chip, scanQualityScore),
-                                fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                }
+                HeroMetaRow(confidence = confidence, scanQualityScore = scanQualityScore)
+            }
+            Spacer(Modifier.width(16.dp))
+            HeroOverallGauge(averageScore = averageScore, grade = grade, numeralColor = gc)
+        }
+    }
+}
+
+/** Hero date derived from the result's monthKey, never "now", so history months keep their own date. */
+@Composable
+private fun rememberHeroMonthTitle(monthKey: String): String {
+    val datePattern = stringResource(R.string.results_date_pattern)
+    val configuration = LocalConfiguration.current
+    return remember(monthKey, datePattern, configuration) {
+        runCatching {
+            val locale = configuration.locales.get(0)
+            YearMonth.parse(monthKey).atDay(1).format(DateTimeFormatter.ofPattern(datePattern, locale))
+        }.getOrDefault(monthKey)
+    }
+}
+
+@Composable
+private fun HeroMetaRow(confidence: String, scanQualityScore: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            stringResource(R.string.results_confidence, confidenceDisplayName(confidence)),
+            fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Surface(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), shape = RoundedCornerShape(8.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.PhotoCamera, contentDescription = null,
+                    modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    stringResource(R.string.results_scan_quality_chip, scanQualityScore),
+                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
+    }
+}
+
+/**
+ * Compact overall gauge on the right of the hero: the average of the domain scores,
+ * labeled "overall" (PRD 13.3 dashboard score-at-a-glance). One merged TalkBack
+ * element — caption and numeral are announced only via the gauge description.
+ */
+@Composable
+private fun HeroOverallGauge(averageScore: Int, grade: String, numeralColor: Color) {
+    val overallLabel = stringResource(R.string.gauge_overall_label)
+    val desc = stringResource(R.string.gauge_content_desc, overallLabel, averageScore, gradeDisplayName(grade))
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clearAndSetSemantics { contentDescription = desc },
+    ) {
+        ScoreGauge(
+            score = averageScore,
+            contentDescription = desc,
+            style = ScoreGaugeStyle.Compact,
+            numeralColor = numeralColor,
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            overallLabel,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

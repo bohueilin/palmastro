@@ -52,4 +52,9 @@
     <string name="journal_delete_confirm_title">要刪除這則日記嗎？</string>
     <string name="journal_delete_confirm_message">這則日記將被永久刪除。</string>
     <string name="journal_general_entry">一般反思</string>
+
+    <!-- 分數儀表元件（ui/components/ScoreGauge.kt）— 領域詳情主視覺與結果總覽共用，
+         以單一元素向螢幕閱讀器朗讀。 -->
+    <string name="gauge_content_desc">%1$s分數 %2$d 分（滿分 100），%3$s</string>
+    <string name="gauge_overall_label">整體</string>
 </resources>
