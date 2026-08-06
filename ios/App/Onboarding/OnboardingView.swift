@@ -16,6 +16,7 @@ struct OnboardingView: View {
     }
 
     @EnvironmentObject private var model: AppModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var step: Step = .welcome
     @State private var displayName = ""
@@ -226,7 +227,7 @@ struct OnboardingView: View {
         HStack {
             if step != .welcome {
                 Button {
-                    withAnimation { step = Step(rawValue: step.rawValue - 1) ?? .welcome }
+                    withAnimation(reduceMotion ? nil : .default) { step = Step(rawValue: step.rawValue - 1) ?? .welcome }
                 } label: {
                     Text("common_back").frame(minHeight: 44)
                 }
@@ -234,7 +235,7 @@ struct OnboardingView: View {
             Spacer()
             if step != .scanEntry {
                 Button {
-                    withAnimation { step = Step(rawValue: step.rawValue + 1) ?? .scanEntry }
+                    withAnimation(reduceMotion ? nil : .default) { step = Step(rawValue: step.rawValue + 1) ?? .scanEntry }
                 } label: {
                     Text("common_next").frame(minWidth: 88, minHeight: 44)
                 }

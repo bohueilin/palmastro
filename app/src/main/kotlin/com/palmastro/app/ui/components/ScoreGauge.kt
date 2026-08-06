@@ -1,6 +1,5 @@
 package com.palmastro.app.ui.components
 
-import android.provider.Settings
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -21,7 +20,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -154,18 +152,6 @@ fun ScoreGauge(
             modifier = Modifier.fillMaxSize(),
         )
         GaugeCenterText(score = score, style = style, numeralColor = numeralColor, gradeLabel = gradeLabel)
-    }
-}
-
-/**
- * Same reduced-motion signal the scan screen uses: the system "remove animations"
- * accessibility setting drives ANIMATOR_DURATION_SCALE to zero.
- */
-@Composable
-private fun rememberReduceMotion(): Boolean {
-    val context = LocalContext.current
-    return remember {
-        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
     }
 }
 

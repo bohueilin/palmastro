@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
 import com.palmastro.app.haptics.rememberHapticPlayer
+import com.palmastro.app.ui.components.entranceReveal
+import com.palmastro.app.ui.components.rememberReduceMotion
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
 import com.palmastro.app.viewmodel.GuidanceViewModel
@@ -59,8 +61,8 @@ fun guidanceRoute(monthKey: String) = "guidance/$monthKey"
 /**
  * Guidance layer: what to lean into and what to be mindful of, plus a gentle week plan.
  * Positivity-first and calm by default (PRD 12.3): mindful cards use tertiary theme
- * colors, never error red; copy is action-oriented, never fear-based. Static layout —
- * no animations, so it is reduced-motion safe.
+ * colors, never error red; copy is action-oriented, never fear-based. The one-shot
+ * entrance reveal is skipped under reduced motion and on revisits/restores.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,9 +72,13 @@ fun GuidanceScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val haptics = rememberHapticPlayer()
+    // Entrance plays only on the same one-shot reveal event that fires the haptic:
+    // sound, touch, and motion are one moment. Restores/revisits render settled.
+    val reduceMotion = rememberReduceMotion()
     // One gentle shimmer when the guidance content first reveals (award-polish haptic vocabulary).
     // Gated via rememberSaveable so rotation / config change never re-fires the reveal.
     var revealed by rememberSaveable { mutableStateOf(false) }
+    val playEntrance = remember { !revealed } && !reduceMotion
     LaunchedEffect(state.guidance != null) {
         if (state.guidance != null && !revealed) {
             revealed = true
@@ -110,6 +116,7 @@ fun GuidanceScreen(
                 grade = state.grade,
                 guidance = guidance,
                 padding = padding,
+                playEntrance = playEntrance,
             )
         }
     }
@@ -121,6 +128,7 @@ private fun GuidanceContent(
     grade: String,
     guidance: Guidance,
     padding: PaddingValues,
+    playEntrance: Boolean,
 ) {
     Column(
         modifier = Modifier.fillMaxSize().padding(padding)
@@ -128,9 +136,12 @@ private fun GuidanceContent(
             .padding(horizontal = 20.dp),
     ) {
         Spacer(Modifier.height(16.dp))
-        MonthThemeHero(monthKey = monthKey, grade = grade, monthTheme = guidance.monthTheme)
+        Box(Modifier.entranceReveal(playEntrance, index = 0, staggerMs = 50L)) {
+            MonthThemeHero(monthKey = monthKey, grade = grade, monthTheme = guidance.monthTheme)
+        }
 
         GuidanceItemsSection(
+            modifier = Modifier.entranceReveal(playEntrance, index = 1, staggerMs = 50L),
             items = guidance.strengths,
             icon = Icons.Outlined.TrendingUp,
             title = stringResource(R.string.guidance_lean_into_title),
@@ -142,6 +153,7 @@ private fun GuidanceContent(
 
         // Gentle by design: tertiary palette, NOT error red (PRD 12.3).
         GuidanceItemsSection(
+            modifier = Modifier.entranceReveal(playEntrance, index = 2, staggerMs = 50L),
             items = guidance.mindful,
             icon = Icons.Outlined.Visibility,
             title = stringResource(R.string.guidance_mindful_title),
@@ -179,14 +191,17 @@ private fun GuidanceItemsSection(
     accentColor: Color,
     containerColor: Color,
     topSpacing: Dp,
+    modifier: Modifier = Modifier,
 ) {
     if (items.isEmpty()) return
-    Spacer(Modifier.height(topSpacing))
-    GuidanceSectionHeader(icon = icon, title = title, description = description)
-    Spacer(Modifier.height(12.dp))
-    items.forEach { item ->
-        GuidanceItemCard(item = item, accentColor = accentColor, containerColor = containerColor)
-        Spacer(Modifier.height(10.dp))
+    Column(modifier) {
+        Spacer(Modifier.height(topSpacing))
+        GuidanceSectionHeader(icon = icon, title = title, description = description)
+        Spacer(Modifier.height(12.dp))
+        items.forEach { item ->
+            GuidanceItemCard(item = item, accentColor = accentColor, containerColor = containerColor)
+            Spacer(Modifier.height(10.dp))
+        }
     }
 }
 

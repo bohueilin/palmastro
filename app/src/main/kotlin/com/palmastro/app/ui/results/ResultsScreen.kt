@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -16,6 +15,7 @@ import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +38,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.foundation.lazy.itemsIndexed
+import com.palmastro.app.ui.components.entranceReveal
+import com.palmastro.app.ui.components.rememberReduceMotion
 import com.palmastro.app.R
 import com.palmastro.app.share.ShareCardRenderer
 import com.palmastro.app.share.ShareHelper
@@ -54,6 +57,7 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultsScreen(
+    freshArrival: Boolean = false,
     onScanClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onDomainClick: (String, String) -> Unit,
@@ -94,6 +98,7 @@ fun ResultsScreen(
             else -> ResultsList(
                 state = state,
                 padding = padding,
+                freshArrival = freshArrival,
                 onScanClick = onScanClick,
                 onDomainClick = onDomainClick,
                 onHistoryClick = onHistoryClick,
@@ -160,11 +165,19 @@ private fun rememberShareContent(state: ResultsState): ShareContent {
 private fun ResultsList(
     state: ResultsState,
     padding: PaddingValues,
+    freshArrival: Boolean,
     onScanClick: () -> Unit,
     onDomainClick: (String, String) -> Unit,
     onHistoryClick: () -> Unit,
     onGuidanceClick: (String) -> Unit,
 ) {
+    // The "your month is ready" reveal (PRD §41: reinforce scan success): plays exactly
+    // once, only when arriving from a completed scan - never on revisits, restores, or
+    // under reduced motion. Motion is additive; content is fully readable without it.
+    var entrancePlayed by rememberSaveable { mutableStateOf(false) }
+    val play = freshArrival && !entrancePlayed && !rememberReduceMotion()
+    LaunchedEffect(Unit) { entrancePlayed = true }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -178,15 +191,24 @@ private fun ResultsList(
                 topDomain = state.topDomain,
                 scanQualityScore = state.scanQualityScore,
                 averageScore = ScoreGaugeMath.averageScore(state.domainCards.map { it.score }),
+                modifier = Modifier.entranceReveal(play, index = 0),
             )
         }
         state.guidance?.let { summary ->
             item {
-                GuidanceEntryCard(summary = summary, onClick = { onGuidanceClick(state.monthKey) })
+                GuidanceEntryCard(
+                    summary = summary,
+                    onClick = { onGuidanceClick(state.monthKey) },
+                    modifier = Modifier.entranceReveal(play, index = 1),
+                )
             }
         }
-        items(state.domainCards) { card ->
-            DomainCardItem(card = card, onClick = { onDomainClick(card.domain, state.monthKey) })
+        itemsIndexed(state.domainCards) { i, card ->
+            DomainCardItem(
+                card = card,
+                onClick = { onDomainClick(card.domain, state.monthKey) },
+                modifier = Modifier.entranceReveal(play, index = i + 2),
+            )
         }
         item {
             Spacer(Modifier.height(4.dp))
@@ -239,6 +261,7 @@ private fun HeroCard(
     topDomain: String?,
     scanQualityScore: Int,
     averageScore: Int,
+    modifier: Modifier = Modifier,
 ) {
     val gc = gradeColor(grade)
     val themeRes = when (grade) {
@@ -248,7 +271,7 @@ private fun HeroCard(
         else -> R.string.results_theme_watchout
     }
 
-    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
+    Card(modifier = modifier, shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
         Row(
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
                 .background(Brush.horizontalGradient(listOf(gc.copy(alpha = 0.15f), gc.copy(alpha = 0.05f))))
@@ -348,9 +371,13 @@ private fun HeroOverallGauge(averageScore: Int, grade: String, numeralColor: Col
  * mindful item, navigating to the full "Understand your reading" screen.
  */
 @Composable
-private fun GuidanceEntryCard(summary: GuidanceSummary, onClick: () -> Unit) {
+private fun GuidanceEntryCard(
+    summary: GuidanceSummary,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick)
             .semantics(mergeDescendants = true) { role = Role.Button },
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = RoundedCornerShape(16.dp),
@@ -407,59 +434,80 @@ private val domainImages = mapOf(
 )
 
 @Composable
-private fun DomainCardItem(card: DomainCard, onClick: () -> Unit) {
-    val gc = gradeColor(card.grade)
-    val displayName = domainDisplayName(card.domain)
-    val gradeText = gradeDisplayName(card.grade)
-    val confidenceText = stringResource(R.string.results_card_confidence, confidenceDisplayName(card.confidence))
+private fun DomainCardHeader(
+    card: DomainCard,
+    displayName: String,
+    gradeText: String,
+    confidenceText: String,
+    gc: Color,
+) {
+    Row(
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp).fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+            Image(
+                painter = painterResource(domainImages[card.domain] ?: R.drawable.img_domain_career),
+                contentDescription = null,
+                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop,
+            )
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(displayName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(gradeText, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("·", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(confidenceText, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.Bottom) {
+            DeltaIndicator(arrow = card.deltaArrow, delta = card.delta)
+            Spacer(Modifier.width(8.dp))
+            Text("${card.score}", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = gc)
+        }
+    }
+}
+
+@Composable
+private fun domainCardDescription(
+    card: DomainCard,
+    displayName: String,
+    gradeText: String,
+    confidenceText: String,
+): String {
     val deltaDesc = when (card.deltaArrow) {
         "up" -> stringResource(R.string.results_delta_up, card.delta ?: 0)
         "down" -> stringResource(R.string.results_delta_down, -(card.delta ?: 0))
         "flat" -> stringResource(R.string.results_delta_flat)
         else -> null
     }
-    val cardDesc = listOfNotNull(
+    return listOfNotNull(
         stringResource(R.string.results_score_desc, displayName, card.score, gradeText),
         confidenceText,
         deltaDesc,
     ).joinToString(", ")
+}
+
+@Composable
+private fun DomainCardItem(card: DomainCard, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val gc = gradeColor(card.grade)
+    val displayName = domainDisplayName(card.domain)
+    val gradeText = gradeDisplayName(card.grade)
+    val confidenceText = stringResource(R.string.results_card_confidence, confidenceDisplayName(card.confidence))
+    val cardDesc = domainCardDescription(card, displayName, gradeText, confidenceText)
 
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = cardDesc },
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column {
-            Row(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                    Image(
-                        painter = painterResource(domainImages[card.domain] ?: R.drawable.img_domain_career),
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.Crop,
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Column {
-                        Text(displayName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(gradeText, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("·", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(confidenceText, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                }
-                Row(verticalAlignment = Alignment.Bottom) {
-                    DeltaIndicator(arrow = card.deltaArrow, delta = card.delta)
-                    Spacer(Modifier.width(8.dp))
-                    Text("${card.score}", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = gc)
-                }
-            }
+            DomainCardHeader(card, displayName, gradeText, confidenceText, gc)
             if (card.insight.isNotBlank()) {
                 Text(
                     card.insight,

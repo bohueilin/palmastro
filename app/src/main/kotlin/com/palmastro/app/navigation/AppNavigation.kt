@@ -25,7 +25,7 @@ import com.palmastro.app.ui.settings.SettingsScreen
 
 sealed class Route(val path: String) {
     data object Onboarding : Route("onboarding")
-    data object Results : Route("results?monthKey={monthKey}")
+    data object Results : Route("results?monthKey={monthKey}&fresh={fresh}")
     data object Scan : Route("scan")
     data object Settings : Route("settings")
     data object DomainDetail : Route("domain_detail/{domain}/{monthKey}")
@@ -63,12 +63,14 @@ fun AppNavigation(
             })
         }
         composable(
-            route = "results?monthKey={monthKey}",
-            arguments = listOf(navArgument("monthKey") {
-                type = NavType.StringType; nullable = true; defaultValue = null
-            }),
-        ) {
+            route = "results?monthKey={monthKey}&fresh={fresh}",
+            arguments = listOf(
+                navArgument("monthKey") { type = NavType.StringType; nullable = true; defaultValue = null },
+                navArgument("fresh") { type = NavType.BoolType; defaultValue = false },
+            ),
+        ) { entry ->
             ResultsScreen(
+                freshArrival = entry.arguments?.getBoolean("fresh") ?: false,
                 onScanClick = { navController.navigate(Route.Scan.path) },
                 onSettingsClick = { navController.navigate(Route.Settings.path) },
                 onDomainClick = { domain, monthKey ->
@@ -87,7 +89,7 @@ fun AppNavigation(
                 val staleResults =
                     runCatching { navController.getBackStackEntry(Route.Results.path) }.isSuccess
                 val popTarget = if (staleResults) Route.Results.path else Route.Scan.path
-                navController.navigate("results") {
+                navController.navigate("results?fresh=true") {
                     popUpTo(popTarget) { inclusive = true }
                 }
             })

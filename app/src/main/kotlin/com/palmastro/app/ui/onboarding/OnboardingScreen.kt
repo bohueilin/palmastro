@@ -30,6 +30,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.snap
+import com.palmastro.app.ui.components.rememberReduceMotion
 import com.palmastro.app.R
 import com.palmastro.app.viewmodel.OnboardingState
 import com.palmastro.app.viewmodel.OnboardingSteps
@@ -77,6 +84,7 @@ private fun zodiacFor(month: Int, day: Int): Pair<Int, String> = when {
 @Composable
 fun OnboardingScreen(onComplete: () -> Unit, viewModel: OnboardingViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
+    val reduceMotion = rememberReduceMotion()
     LaunchedEffect(state.isComplete) { if (state.isComplete) onComplete() }
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
@@ -115,7 +123,7 @@ fun OnboardingScreen(onComplete: () -> Unit, viewModel: OnboardingViewModel = hi
 
             AnimatedContent(
                 targetState = state.step,
-                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                transitionSpec = { stepTransition(reduceMotion) },
                 label = "step",
             ) { step ->
                 Column(
@@ -584,3 +592,16 @@ private fun CameraEducationStep(enabled: Boolean, onStart: () -> Unit) {
     Spacer(Modifier.height(28.dp))
     MainButton(stringResource(R.string.ob_camera_start), enabled = enabled) { onStart() }
 }
+
+/**
+ * Fade between onboarding steps. Fade is the sanctioned reduced-motion idiom, but
+ * AnimatedContent's default SizeTransform still moves layout - so under reduce
+ * motion everything snaps instead.
+ */
+private fun AnimatedContentTransitionScope<Int>.stepTransition(reduceMotion: Boolean): ContentTransform =
+    if (reduceMotion) {
+        EnterTransition.None togetherWith ExitTransition.None using
+            SizeTransform(clip = false) { _, _ -> snap() }
+    } else {
+        fadeIn() togetherWith fadeOut()
+    }

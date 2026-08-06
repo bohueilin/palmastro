@@ -47,6 +47,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.palmastro.app.R
 import com.palmastro.app.haptics.rememberHapticPlayer
+import com.palmastro.app.ui.components.rememberReduceMotion
 import com.palmastro.app.share.ScanError
 import com.palmastro.app.viewmodel.ScanState
 import com.palmastro.app.viewmodel.ScanViewModel
@@ -115,9 +116,7 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
     val context = LocalContext.current
 
     // Respect the system "remove animations" preference for animated overlays.
-    val reduceMotion = remember {
-        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
-    }
+    val reduceMotion = rememberReduceMotion()
 
     var phase by rememberSaveable { mutableStateOf(PreScanPhase.EXPLAINER) }
     var hasPermission by remember { mutableStateOf(false) }
@@ -313,7 +312,7 @@ private fun CaptureScreen(
         HandOverlay(modifier = Modifier.fillMaxSize())
         // The animated scanning line is suppressed when the user removed animations.
         if (!reduceMotion) {
-            ScanningOverlay(isScanning = !isCapturing, modifier = Modifier.fillMaxSize())
+            ScanningOverlay(isScanning = !isCapturing, reduceMotion = reduceMotion, modifier = Modifier.fillMaxSize())
         }
         if (reduceMotion) {
             if (showFlash) Box(modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.6f)))
