@@ -42,6 +42,7 @@ import com.palmastro.app.ui.results.confidenceDisplayName
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
 import com.palmastro.app.ui.results.gradeDisplayName
+import com.palmastro.app.ui.results.onGradeColor
 import com.palmastro.app.viewmodel.DomainDetailViewModel
 import com.palmastro.contracts.Observation
 
@@ -164,17 +165,20 @@ fun DomainDetailScreen(
                             }
                         }
 
-                        // 5. Blind spot
+                        // 5. Blind spot — calm tertiary idiom shared with Guidance "mindful"
+                        // cards; error red stays reserved for true errors (PRD 12.3).
                         Spacer(Modifier.height(28.dp))
                         SectionWithIcon(Icons.Outlined.Visibility, stringResource(R.string.detail_blindspot))
                         Spacer(Modifier.height(8.dp))
                         Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f),
+                            ),
                             shape = RoundedCornerShape(12.dp),
                         ) {
                             Text(
                                 payload.blindspot, fontSize = 15.sp, lineHeight = 24.sp,
-                                modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurface,
                             )
                         }
 
@@ -182,9 +186,19 @@ fun DomainDetailScreen(
                         Spacer(Modifier.height(28.dp))
                         SectionWithIcon(Icons.Outlined.Checklist, stringResource(R.string.detail_actions))
                         Spacer(Modifier.height(8.dp))
-                        ActionChip(label = stringResource(R.string.detail_today), text = payload.actionToday, containerColor = MaterialTheme.colorScheme.primaryContainer)
+                        // 45%-alpha containers (the Guidance card idiom): opaque dark-theme
+                        // containers dropped the 11sp chip label below 4.5:1 (measured 4.0:1).
+                        ActionChip(
+                            label = stringResource(R.string.detail_today),
+                            text = payload.actionToday,
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                        )
                         Spacer(Modifier.height(8.dp))
-                        ActionChip(label = stringResource(R.string.detail_week), text = payload.actionWeek, containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                        ActionChip(
+                            label = stringResource(R.string.detail_week),
+                            text = payload.actionWeek,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
+                        )
 
                         // 8. Reflection prompt
                         Spacer(Modifier.height(28.dp))
@@ -195,7 +209,10 @@ fun DomainDetailScreen(
                             shape = RoundedCornerShape(16.dp),
                         ) {
                             Column(modifier = Modifier.padding(20.dp)) {
-                                Text("💭", fontSize = 24.sp)
+                                Icon(
+                                    Icons.Outlined.FormatQuote, contentDescription = null,
+                                    modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary,
+                                )
                                 Spacer(Modifier.height(8.dp))
                                 Text(payload.prompt, fontSize = 16.sp, lineHeight = 26.sp, fontWeight = FontWeight.Medium)
                             }
@@ -217,7 +234,18 @@ fun DomainDetailScreen(
                         if (payload.safetyNotes.isNotEmpty()) {
                             Spacer(Modifier.height(24.dp))
                             payload.safetyNotes.forEach { note ->
-                                Text("ℹ️ $note", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+                                Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(vertical = 2.dp)) {
+                                    Icon(
+                                        Icons.Outlined.Info, contentDescription = null,
+                                        modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        note, fontSize = 12.sp, lineHeight = 18.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
                             }
                         }
 
@@ -316,7 +344,14 @@ private fun ActionChip(label: String, text: String, containerColor: Color) {
     Card(colors = CardDefaults.cardColors(containerColor = containerColor), shape = RoundedCornerShape(12.dp)) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
             Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), shape = RoundedCornerShape(6.dp)) {
-                Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), color = MaterialTheme.colorScheme.primary)
+                // onPrimaryContainer, not primary: 11sp label on the tinted chip needs
+                // >= 4.5:1 (primary measured ~3.6:1 there — design review F5).
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                )
             }
             Spacer(Modifier.width(10.dp))
             Text(text, fontSize = 15.sp, lineHeight = 22.sp, modifier = Modifier.weight(1f))
@@ -329,7 +364,7 @@ private fun ObservationItem(obs: Observation) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)), shape = RoundedCornerShape(10.dp)) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(obs.displayName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
-            Text(obs.evidenceSummary, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+            Text(obs.evidenceSummary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -355,14 +390,21 @@ private fun ScoreEducationCard(score: Int, confidence: String) {
             Spacer(Modifier.height(14.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(color = tierColor.copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
-                    Text(stringResource(tierRes), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = tierColor, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
+                // Solid chip with the paired on-color: the raw grade color on a 15% tint
+                // measured ~3.6:1 for two grades — below the 4.5:1 small-text floor.
+                Surface(color = tierColor, shape = RoundedCornerShape(8.dp)) {
+                    Text(
+                        stringResource(tierRes),
+                        fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                        color = onGradeColor(tierGrade),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
                 }
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.detail_score_points, score), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(10.dp))
-            Text(stringResource(tierDescRes), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, lineHeight = 22.sp)
+            Text(stringResource(tierDescRes), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
 
             Spacer(Modifier.height(16.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

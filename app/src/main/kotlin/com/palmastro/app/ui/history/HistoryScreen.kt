@@ -31,6 +31,8 @@ import com.palmastro.app.ui.results.confidenceDisplayName
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
 import com.palmastro.app.ui.results.gradeDisplayName
+import com.palmastro.app.ui.results.onGradeColor
+import com.palmastro.app.ui.theme.LocalPalmAstroExtendedColors
 import com.palmastro.app.viewmodel.HistoryViewModel
 import com.palmastro.app.viewmodel.MonthSummary
 
@@ -60,7 +62,7 @@ fun HistoryScreen(onBack: () -> Unit, onMonthClick: (String) -> Unit, viewModel:
                     item {
                         Text(
                             stringResource(R.string.history_single_record),
-                            fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp,
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -92,8 +94,8 @@ private fun EmptyHistory(padding: PaddingValues) {
         Spacer(Modifier.height(8.dp))
         Text(
             stringResource(R.string.history_empty_desc),
-            fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center, lineHeight = 22.sp,
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
         )
     }
 }
@@ -111,11 +113,14 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(month.monthKey, fontSize = 18.sp, lineHeight = 26.sp, fontWeight = FontWeight.Medium)
-                Surface(color = gc.copy(alpha = 0.15f), shape = MaterialTheme.shapes.small) {
+                // Solid chip with the paired on-color: the raw grade color on a 15% tint
+                // measured ~3.6:1 for two grades — below the 4.5:1 small-text floor.
+                Surface(color = gc, shape = MaterialTheme.shapes.small) {
                     Text(
                         gradeText,
                         fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium,
-                        color = gc, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        color = onGradeColor(month.grade),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                     )
                 }
             }
@@ -132,7 +137,7 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
                         },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(domainText, fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.widthIn(min = 64.dp))
+                    Text(domainText, style = MaterialTheme.typography.bodySmall, modifier = Modifier.widthIn(min = 64.dp))
                     LinearProgressIndicator(
                         progress = { score / 100f },
                         modifier = Modifier.weight(1f).height(6.dp).clearAndSetSemantics {},
@@ -158,11 +163,12 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
 /** Signed month-over-month change; glyph + number so direction is not color-only. */
 @Composable
 private fun DeltaText(delta: Int?) {
+    val extended = LocalPalmAstroExtendedColors.current
     val (text, color) = when {
         delta == null -> "" to MaterialTheme.colorScheme.onSurfaceVariant
-        delta > 0 -> "▲+$delta" to gradeColor("Growing")
-        delta < 0 -> "▼$delta" to gradeColor("Watchout")
-        else -> "—" to MaterialTheme.colorScheme.onSurfaceVariant
+        delta > 0 -> "▲+$delta" to extended.deltaPositive
+        delta < 0 -> "▼$delta" to extended.deltaNegative
+        else -> "—" to extended.deltaNeutral
     }
     Text(
         text,

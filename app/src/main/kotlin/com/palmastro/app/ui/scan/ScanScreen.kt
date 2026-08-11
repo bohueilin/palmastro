@@ -310,10 +310,9 @@ private fun CaptureScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         CameraPreview(imageCapture = imageCapture, modifier = Modifier.fillMaxSize())
         HandOverlay(modifier = Modifier.fillMaxSize())
-        // The animated scanning line is suppressed when the user removed animations.
-        if (!reduceMotion) {
-            ScanningOverlay(isScanning = !isCapturing, reduceMotion = reduceMotion, modifier = Modifier.fillMaxSize())
-        }
+        // Passive framing brackets only — no simulated "detection" feedback during
+        // preview, because no analysis runs until capture (design review F2).
+        CaptureFramingOverlay(visible = !isCapturing, reduceMotion = reduceMotion, modifier = Modifier.fillMaxSize())
         if (reduceMotion) {
             if (showFlash) Box(modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.6f)))
         } else {
@@ -350,15 +349,17 @@ private fun CaptureScreen(
             }
         }
         if (coachingHintKey != null) {
+            // Same scrim idiom as the angle card above: white on black-60% stays >= 4.5:1
+            // over any camera scene, unlike a brand tint (design review F1 / WCAG 1.4.3).
             Surface(
                 modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
-                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.92f),
+                color = Color.Black.copy(alpha = 0.6f),
                 shape = MaterialTheme.shapes.medium,
             ) {
                 Text(
                     stringResource(coachingHintRes(coachingHintKey)),
                     modifier = Modifier.padding(16.dp).semantics { liveRegion = LiveRegionMode.Polite },
-                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onTertiary, textAlign = TextAlign.Center,
+                    fontSize = 16.sp, color = Color.White, textAlign = TextAlign.Center,
                 )
             }
         }

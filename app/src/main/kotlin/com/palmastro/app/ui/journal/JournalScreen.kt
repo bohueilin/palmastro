@@ -118,9 +118,8 @@ fun JournalScreen(
                 Spacer(Modifier.height(24.dp))
                 Text(
                     stringResource(R.string.journal_empty),
-                    fontSize = 13.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 20.sp,
                 )
             } else {
                 Spacer(Modifier.height(24.dp))
@@ -146,7 +145,7 @@ fun JournalScreen(
                                     color = MaterialTheme.colorScheme.primary,
                                 )
                                 Spacer(Modifier.height(2.dp))
-                                Text(entry.text, fontSize = 14.sp, lineHeight = 20.sp)
+                                Text(entry.text, style = MaterialTheme.typography.bodyMedium)
                             }
                             IconButton(
                                 onClick = { entryIdPendingDelete = entry.id },

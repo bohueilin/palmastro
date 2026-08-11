@@ -18,11 +18,14 @@ object ShareCardRenderer {
     private val headerColorStart = Color.parseColor("#5E35B1")
     private val headerColorEnd = Color.parseColor("#7E57C2")
 
+    // Light-theme PalmAstroExtendedColors grade values (cards render on white):
+    // one brand palette everywhere, calm by design — no alarm red on an outward-
+    // facing surface (PRD 12.3 / Theme.kt PalmAstroExtendedColors).
     private val gradeColors = mapOf(
-        "Growing" to Color.parseColor("#388E3C"),
-        "Stable" to Color.parseColor("#1976D2"),
-        "Building" to Color.parseColor("#E65100"),
-        "Watchout" to Color.parseColor("#D32F2F"),
+        "Growing" to Color.parseColor("#2E7D32"),
+        "Stable" to Color.parseColor("#00695C"),
+        "Building" to Color.parseColor("#5E35B1"),
+        "Watchout" to Color.parseColor("#B35A00"),
     )
 
     /** Localized labels resolved via string resources by the calling composable. */

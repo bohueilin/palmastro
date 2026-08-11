@@ -170,14 +170,19 @@ private fun Title(title: String, subtitle: String) {
         textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() },
     )
     Spacer(Modifier.height(6.dp))
-    Text(subtitle, fontSize = 14.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+    Text(
+        subtitle,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+    )
     Spacer(Modifier.height(24.dp))
 }
 
 @Composable
 private fun MainButton(text: String, enabled: Boolean = true, onClick: () -> Unit) {
     Button(onClick = onClick, modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp), shape = RoundedCornerShape(14.dp), enabled = enabled) {
-        Text(text, fontSize = 16.sp, lineHeight = 23.sp, fontWeight = FontWeight.SemiBold)
+        Text(text, style = MaterialTheme.typography.titleMedium)
     }
     Spacer(Modifier.height(16.dp))
 }
@@ -230,9 +235,9 @@ private fun OptionRow(
             RadioButton(selected = selected, onClick = null)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(label, fontSize = 16.sp, lineHeight = 23.sp, fontWeight = FontWeight.SemiBold)
+                Text(label, style = MaterialTheme.typography.titleMedium)
                 if (description != null) {
-                    Text(description, fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -370,7 +375,7 @@ private fun BirthdayStep(existing: LocalDate?, onConfirm: (LocalDate) -> Unit) {
     }
     errorRes?.let {
         Spacer(Modifier.height(8.dp))
-        Text(stringResource(it), color = MaterialTheme.colorScheme.error, fontSize = 14.sp, lineHeight = 20.sp)
+        Text(stringResource(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
     }
     Spacer(Modifier.height(24.dp))
     MainButton(stringResource(R.string.ob_next)) {

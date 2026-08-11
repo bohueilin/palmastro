@@ -19,7 +19,6 @@
     <ID>LongMethod:DomainDetailScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DomainDetailScreen( onBack: () -&gt; Unit, onJournalClick: () -&gt; Unit = {}, onExplainabilityClick: () -&gt; Unit = {}, viewModel: DomainDetailViewModel = hiltViewModel(), )</ID>
     <ID>LongMethod:ExplainabilityScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ExplainabilityScreen( onBack: () -&gt; Unit, viewModel: DomainDetailViewModel = hiltViewModel(), )</ID>
     <ID>LongMethod:JournalScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun JournalScreen( onBack: () -&gt; Unit, viewModel: JournalViewModel = hiltViewModel(), )</ID>
-    <ID>LongMethod:LandmarkOverlay.kt$@Composable fun ScanningOverlay(isScanning: Boolean, modifier: Modifier = Modifier)</ID>
     <ID>LongMethod:OnboardingScreen.kt$@Composable fun OnboardingScreen(onComplete: () -&gt; Unit, viewModel: OnboardingViewModel = hiltViewModel())</ID>
     <ID>LongMethod:OnboardingScreen.kt$@Composable private fun BirthdayStep(existing: LocalDate?, onConfirm: (LocalDate) -&gt; Unit)</ID>
     <ID>LongMethod:OnboardingScreen.kt$@Composable private fun SummaryStep(state: OnboardingState, onNext: () -&gt; Unit)</ID>
@@ -88,32 +87,6 @@
     <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$5</ID>
     <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$500.0</ID>
     <ID>MagicNumber:ImageQualityAnalyzer.kt$ImageQualityAnalyzer$9</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.02f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.04f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.08f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.12f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.15f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.1f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.24f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.2f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.3f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.4f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.75f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.85f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0.9f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0xFF4CAF50</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$0xFF7E57C2</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$1.2f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$1000</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$2000</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$3.14f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$3f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$4f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$5</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$5f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$6</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$6f</ID>
-    <ID>MagicNumber:LandmarkOverlay.kt$800</ID>
     <ID>MagicNumber:ModelManager.kt$ModelManager$1000L</ID>
     <ID>MagicNumber:ModelManager.kt$ModelManager$120_000</ID>
     <ID>MagicNumber:ModelManager.kt$ModelManager$15_000</ID>
@@ -258,7 +231,6 @@
     <ID>UnusedImports:AppUpdateHelper.kt$import com.google.android.play.core.appupdate.AppUpdateInfo</ID>
     <ID>UnusedImports:CrashReportingTest.kt$import kotlin.test.assertFalse</ID>
     <ID>UnusedImports:DeepLinkHandlerTest.kt$import kotlin.test.assertTrue</ID>
-    <ID>UnusedImports:LandmarkOverlay.kt$import androidx.compose.ui.graphics.drawscope.DrawScope</ID>
     <ID>UnusedImports:ResultsScreen.kt$import android.content.Context</ID>
     <ID>UnusedImports:ShareAuditLogger.kt$import java.time.ZoneOffset</ID>
     <ID>WildcardImport:AppNavigation.kt$import androidx.compose.runtime.*</ID>
@@ -292,7 +264,6 @@
     <ID>WildcardImport:JournalViewModelTest.kt$import io.mockk.*</ID>
     <ID>WildcardImport:JournalViewModelTest.kt$import kotlinx.coroutines.test.*</ID>
     <ID>WildcardImport:JournalViewModelTest.kt$import org.junit.jupiter.api.*</ID>
-    <ID>WildcardImport:LandmarkOverlay.kt$import androidx.compose.animation.core.*</ID>
     <ID>WildcardImport:LegalViewerScreen.kt$import androidx.compose.material3.*</ID>
     <ID>WildcardImport:MainActivity.kt$import androidx.compose.runtime.*</ID>
     <ID>WildcardImport:OnboardingScreen.kt$import androidx.compose.animation.*</ID>

@@ -9,6 +9,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 private val Purple40 = Color(0xFF7E57C2)
 private val PurpleLight = Color(0xFFB39DDB)
@@ -30,6 +32,8 @@ private val LightColorScheme = lightColorScheme(
     onSecondaryContainer = Color(0xFF00332E),
     tertiary = Color(0xFFFF7043),
     onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFFFDBCF),
+    onTertiaryContainer = Color(0xFF3A0B00),
     background = Color(0xFFFFFBFF),
     onBackground = OnSurface,
     surface = Surface,
@@ -51,6 +55,8 @@ private val DarkColorScheme = darkColorScheme(
     onSecondaryContainer = Color(0xFFB2DFDB),
     tertiary = Color(0xFFFF8A65),
     onTertiary = Color(0xFF3E1500),
+    tertiaryContainer = Color(0xFF7A3B22),
+    onTertiaryContainer = Color(0xFFFFDBCF),
     background = Color(0xFF1C1B1F),
     onBackground = Color(0xFFE6E1E5),
     surface = Color(0xFF1C1B1F),
@@ -115,6 +121,31 @@ private val DarkExtendedColors = PalmAstroExtendedColors(
 val LocalPalmAstroExtendedColors = staticCompositionLocalOf { LightExtendedColors }
 
 /**
+ * App type scale: the values the screens had converged on by hand, defined once so
+ * hierarchy is a token rather than a per-file discipline. Only styles the app
+ * actually uses are overridden; everything else keeps the Material 3 defaults
+ * (buttons/labelLarge, app bars/titleLarge, text fields/bodyLarge stay stock).
+ */
+private val PalmAstroTypography = Typography().let { base ->
+    base.copy(
+        titleMedium = base.titleMedium.copy(
+            fontSize = 16.sp, lineHeight = 23.sp,
+            fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp,
+        ),
+        bodyMedium = base.bodyMedium.copy(fontSize = 14.sp, lineHeight = 21.sp),
+        bodySmall = base.bodySmall.copy(fontSize = 13.sp, lineHeight = 19.sp),
+        labelMedium = base.labelMedium.copy(
+            fontSize = 12.sp, lineHeight = 17.sp,
+            fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp,
+        ),
+        labelSmall = base.labelSmall.copy(
+            fontSize = 11.sp, lineHeight = 16.sp,
+            fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp,
+        ),
+    )
+}
+
+/**
  * PalmAstro brand theme. The purple/teal brand palette is the DEFAULT (PRD 37);
  * Material You dynamic color is opt-in only via [dynamicColor] and stays off
  * for launch so the brand identity is stable across devices.
@@ -138,7 +169,7 @@ fun PalmAstroTheme(
     CompositionLocalProvider(LocalPalmAstroExtendedColors provides extendedColors) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = Typography(),
+            typography = PalmAstroTypography,
             content = content,
         )
     }

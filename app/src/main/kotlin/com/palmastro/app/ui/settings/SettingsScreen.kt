@@ -138,7 +138,7 @@ fun SettingsScreen(
                         Text(stringResource(R.string.settings_retention_title), fontSize = 16.sp, lineHeight = 23.sp)
                         Text(
                             stringResource(R.string.settings_retention_desc),
-                            fontSize = 13.sp, lineHeight = 19.sp,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -179,12 +179,12 @@ fun SettingsScreen(
                 Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
                     Text(
                         stringResource(R.string.settings_about_desc),
-                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp,
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(R.string.settings_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
-                        fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -207,7 +207,11 @@ fun SettingsScreen(
                         )
                     }
                     Spacer(Modifier.height(12.dp))
-                    Text(stringResource(R.string.settings_wipe_warning), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
+                    Text(
+                        stringResource(R.string.settings_wipe_warning),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     Spacer(Modifier.height(16.dp))
                     Button(
                         onClick = { showWipeDialog = true },

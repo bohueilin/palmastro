@@ -98,7 +98,7 @@ fun ExplainabilityScreen(
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(R.string.explain_intro),
-                        fontSize = 14.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
                     // Baseline
@@ -147,7 +147,7 @@ fun ExplainabilityScreen(
                     Spacer(Modifier.height(24.dp))
                     SectionHeader(Icons.Outlined.Verified, stringResource(R.string.explain_confidence_label))
                     Spacer(Modifier.height(8.dp))
-                    Text(confidenceDisplayName(payload.confidence), fontSize = 16.sp, lineHeight = 23.sp, fontWeight = FontWeight.SemiBold)
+                    Text(confidenceDisplayName(payload.confidence), style = MaterialTheme.typography.titleMedium)
                     if (payload.confidenceReasons.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
                         Text(
@@ -158,9 +158,9 @@ fun ExplainabilityScreen(
                         Spacer(Modifier.height(4.dp))
                         payload.confidenceReasons.forEach { reason ->
                             Row(modifier = Modifier.padding(vertical = 2.dp), verticalAlignment = Alignment.Top) {
-                                Text("•", fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("•", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.width(8.dp))
-                                Text(reason, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
+                                Text(reason, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -169,9 +169,12 @@ fun ExplainabilityScreen(
                     Spacer(Modifier.height(24.dp))
                     SectionHeader(Icons.Outlined.PhotoCamera, stringResource(R.string.explain_quality_factors))
                     Spacer(Modifier.height(8.dp))
-                    Text(stringResource(R.string.explain_scan_quality, state.scanQualityScore), fontSize = 14.sp, lineHeight = 22.sp)
-                    Text(stringResource(R.string.explain_feature_coverage, (state.featureCoverage * 100).roundToInt()), fontSize = 14.sp, lineHeight = 22.sp)
-                    Text(stringResource(R.string.explain_calc_level, payload.calcLevel.name), fontSize = 14.sp, lineHeight = 22.sp)
+                    Text(stringResource(R.string.explain_scan_quality, state.scanQualityScore), style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.explain_feature_coverage, (state.featureCoverage * 100).roundToInt()),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(stringResource(R.string.explain_calc_level, payload.calcLevel.name), style = MaterialTheme.typography.bodyMedium)
 
                     // Safety note (PRD 13.5 honesty statement)
                     Spacer(Modifier.height(24.dp))
@@ -181,7 +184,7 @@ fun ExplainabilityScreen(
                             Spacer(Modifier.width(12.dp))
                             Text(
                                 stringResource(R.string.explain_safety_note),
-                                fontSize = 13.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -222,7 +225,7 @@ private fun SignalSection(
     if (entries.isEmpty()) {
         Text(
             stringResource(R.string.explain_no_signals),
-            fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp,
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     } else {
         entries.forEach { entry ->
@@ -252,7 +255,7 @@ private fun ContributionRow(entry: ExplainEntry, maxAbs: Double, displayName: St
 
     Column(modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) { contentDescription = rowDesc }) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(displayName, fontSize = 14.sp, lineHeight = 20.sp, modifier = Modifier.weight(1f))
+            Text(displayName, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             // Signed number is the non-color indicator of direction.
             Text(
                 valueText,

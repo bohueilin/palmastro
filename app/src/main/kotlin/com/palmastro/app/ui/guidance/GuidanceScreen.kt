@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.TrendingUp
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -146,8 +147,11 @@ private fun GuidanceContent(
             icon = Icons.Outlined.TrendingUp,
             title = stringResource(R.string.guidance_lean_into_title),
             description = stringResource(R.string.guidance_lean_into_desc),
-            accentColor = MaterialTheme.colorScheme.primary,
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
+            colors = GuidanceSectionColors(
+                accent = MaterialTheme.colorScheme.primary,
+                label = MaterialTheme.colorScheme.onPrimaryContainer,
+                container = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
+            ),
             topSpacing = 28.dp,
         )
 
@@ -158,8 +162,11 @@ private fun GuidanceContent(
             icon = Icons.Outlined.Visibility,
             title = stringResource(R.string.guidance_mindful_title),
             description = stringResource(R.string.guidance_mindful_desc),
-            accentColor = MaterialTheme.colorScheme.tertiary,
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f),
+            colors = GuidanceSectionColors(
+                accent = MaterialTheme.colorScheme.tertiary,
+                label = MaterialTheme.colorScheme.onTertiaryContainer,
+                container = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f),
+            ),
             topSpacing = 18.dp,
         )
 
@@ -182,14 +189,26 @@ private fun GuidanceContent(
     }
 }
 
+/**
+ * Section palette: [accent] tints the chip surfaces, [label] is the matching
+ * on-container tone for the 11sp chip text (the raw accent measured ~2.6–3.6:1 on
+ * the tinted chips, below the 4.5:1 small-text floor — design review F5), and
+ * [container] is the card wash.
+ */
+@Immutable
+private data class GuidanceSectionColors(
+    val accent: Color,
+    val label: Color,
+    val container: Color,
+)
+
 @Composable
 private fun GuidanceItemsSection(
     items: List<GuidanceItem>,
     icon: ImageVector,
     title: String,
     description: String,
-    accentColor: Color,
-    containerColor: Color,
+    colors: GuidanceSectionColors,
     topSpacing: Dp,
     modifier: Modifier = Modifier,
 ) {
@@ -199,7 +218,7 @@ private fun GuidanceItemsSection(
         GuidanceSectionHeader(icon = icon, title = title, description = description)
         Spacer(Modifier.height(12.dp))
         items.forEach { item ->
-            GuidanceItemCard(item = item, accentColor = accentColor, containerColor = containerColor)
+            GuidanceItemCard(item = item, colors = colors)
             Spacer(Modifier.height(10.dp))
         }
     }
@@ -226,12 +245,12 @@ private fun MonthThemeHero(monthKey: String, grade: String, monthTheme: String) 
             .padding(24.dp),
     ) {
         Column {
-            Text(monthTitle, fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(monthTitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(6.dp))
             Text(
                 stringResource(R.string.guidance_theme_label),
-                fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
             )
             Spacer(Modifier.height(4.dp))
             Text(monthTheme, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, lineHeight = 28.sp)
@@ -252,42 +271,42 @@ private fun GuidanceSectionHeader(icon: ImageVector, title: String, description:
             )
         }
         Spacer(Modifier.height(4.dp))
-        Text(description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
+        Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
-private fun GuidanceItemCard(item: GuidanceItem, accentColor: Color, containerColor: Color) {
+private fun GuidanceItemCard(item: GuidanceItem, colors: GuidanceSectionColors) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = containerColor),
+        colors = CardDefaults.cardColors(containerColor = colors.container),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Surface(color = accentColor.copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
+            Surface(color = colors.accent.copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
                 Text(
                     domainDisplayName(item.domain),
-                    fontSize = 11.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold, color = accentColor,
+                    style = MaterialTheme.typography.labelSmall, color = colors.label,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 )
             }
             Spacer(Modifier.height(8.dp))
-            Text(item.title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, lineHeight = 22.sp)
+            Text(item.title, style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(4.dp))
-            Text(item.body, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 21.sp)
+            Text(item.body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (item.action.isNotBlank()) {
                 Spacer(Modifier.height(10.dp))
                 Row(verticalAlignment = Alignment.Top) {
-                    Surface(color = accentColor.copy(alpha = 0.15f), shape = RoundedCornerShape(6.dp)) {
+                    Surface(color = colors.accent.copy(alpha = 0.15f), shape = RoundedCornerShape(6.dp)) {
                         Text(
                             stringResource(R.string.guidance_action_label),
-                            fontSize = 11.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold, color = accentColor,
+                            style = MaterialTheme.typography.labelSmall, color = colors.label,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         )
                     }
                     Spacer(Modifier.width(10.dp))
-                    Text(item.action, fontSize = 14.sp, lineHeight = 20.sp, modifier = Modifier.weight(1f))
+                    Text(item.action, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                 }
             }
         }

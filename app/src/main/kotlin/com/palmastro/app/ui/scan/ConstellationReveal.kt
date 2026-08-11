@@ -2,15 +2,16 @@ package com.palmastro.app.ui.scan
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
@@ -45,6 +46,15 @@ import com.palmastro.app.R
 private val LineTeal = Color(0xFF4FD1C5)
 private val EdgeLavender = Color(0xFF9F7AEA)
 private val StarLight = Color(0xFFEDEAFB)
+
+// Night-sky panel in BOTH themes (design review F4): starlight on the light theme's
+// near-white background was ~1.1:1 — invisible. The constellation metaphor needs a
+// sky; values mirror iOS BrandPalette.nightSkyHigh / nightSky for parity.
+private val NightSkyTop = Color(0xFF231A4A)
+private val NightSkyBottom = Color(0xFF140F2E)
+private val NightSkyInk = Color(0xFFEDE7F6) // 13.9:1 on NightSkyTop
+private val NightSkyInkDim = Color(0xFFCBC4E6) // 10.6:1 on NightSkyTop
+private val NightSkySpinner = Color(0xFFB39DDB)
 
 // Reveal timeline: one eased 0..1 progress over 2s; sub-phases are windows of it.
 private const val REVEAL_DURATION_MS = 2000
@@ -121,13 +131,15 @@ fun ConstellationProcessingScreen(reduceMotion: Boolean, modifier: Modifier = Mo
     val twinkle = rememberTwinkleAlpha(reduceMotion)
     val labelAlpha = { window(progress.value, LABEL_START, 1f) }
     Column(
-        modifier = modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(24.dp),
+        modifier = modifier.fillMaxSize()
+            .background(Brush.verticalGradient(listOf(NightSkyTop, NightSkyBottom)))
+            .statusBarsPadding().navigationBarsPadding().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(16.dp))
         Text(
             stringResource(R.string.sc_complete_title),
-            fontSize = 22.sp, fontWeight = FontWeight.Bold,
+            fontSize = 22.sp, fontWeight = FontWeight.Bold, color = NightSkyInk,
             modifier = Modifier.semantics { heading() },
         )
         ConstellationCanvas(
@@ -136,18 +148,18 @@ fun ConstellationProcessingScreen(reduceMotion: Boolean, modifier: Modifier = Mo
         )
         Text(
             stringResource(R.string.sc_reveal_analyzing),
-            fontSize = 16.sp, textAlign = TextAlign.Center,
+            fontSize = 16.sp, color = NightSkyInk, textAlign = TextAlign.Center,
             modifier = Modifier.graphicsLayer { alpha = labelAlpha() },
         )
         Spacer(Modifier.height(12.dp))
         if (reduceMotion) {
             // Reduced motion: the constellation is static, so a standard indicator carries progress.
-            CircularProgressIndicator(modifier = Modifier.size(40.dp))
+            CircularProgressIndicator(modifier = Modifier.size(40.dp), color = NightSkySpinner)
             Spacer(Modifier.height(12.dp))
         }
         Text(
             stringResource(R.string.sc_complete_hint),
-            fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center,
+            fontSize = 13.sp, color = NightSkyInkDim, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(16.dp))
     }

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.palmastro.app.ui.components.entranceReveal
 import com.palmastro.app.ui.components.rememberReduceMotion
+import com.palmastro.app.ui.theme.LocalPalmAstroExtendedColors
 import com.palmastro.app.R
 import com.palmastro.app.share.ShareCardRenderer
 import com.palmastro.app.share.ShareHelper
@@ -286,7 +288,7 @@ private fun HeroCard(
                     Spacer(Modifier.height(4.dp))
                     Text(
                         stringResource(themeRes, domainDisplayName(topDomain)),
-                        fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, lineHeight = 20.sp,
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
                 Spacer(Modifier.height(8.dp))
@@ -396,7 +398,7 @@ private fun GuidanceEntryCard(
                 Spacer(Modifier.height(4.dp))
                 Text(
                     summary.monthTheme,
-                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold, lineHeight = 21.sp,
+                    style = MaterialTheme.typography.titleMedium,
                     maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 if (summary.firstStrengthTitle.isNotBlank()) {
@@ -511,7 +513,7 @@ private fun DomainCardItem(card: DomainCard, onClick: () -> Unit, modifier: Modi
             if (card.insight.isNotBlank()) {
                 Text(
                     card.insight,
-                    fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp,
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2, overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 12.dp),
                 )
@@ -531,10 +533,11 @@ private fun DomainCardItem(card: DomainCard, onClick: () -> Unit, modifier: Modi
 @Composable
 private fun DeltaIndicator(arrow: String?, delta: Int?) {
     if (arrow == null || delta == null) return
+    val extended = LocalPalmAstroExtendedColors.current
     val (glyph, color) = when (arrow) {
-        "up" -> "▲" to gradeColor("Growing")
-        "down" -> "▼" to gradeColor("Watchout")
-        else -> "—" to MaterialTheme.colorScheme.onSurfaceVariant
+        "up" -> "▲" to extended.deltaPositive
+        "down" -> "▼" to extended.deltaNegative
+        else -> "—" to extended.deltaNeutral
     }
     val text = if (arrow == "flat") glyph else "$glyph${if (delta > 0) "+" else ""}$delta"
     Text(
@@ -552,7 +555,10 @@ private fun SafetyCard() {
         modifier = Modifier.padding(top = 8.dp),
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-            Text("🛡️", fontSize = 18.sp)
+            Icon(
+                Icons.Outlined.Shield, contentDescription = null,
+                modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(stringResource(R.string.results_safety_title), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
