@@ -196,6 +196,25 @@ class OnboardingViewModelTest {
         vm.skipBirthDetails()
         assertFalse(vm.state.value.hasBirthTime)
         assertFalse(vm.state.value.hasBirthPlace)
+        assertEquals("", vm.state.value.birthPlaceName)
+        assertNull(vm.state.value.birthPlaceLat)
+        assertNull(vm.state.value.birthPlaceLon)
+    }
+
+    @Test
+    fun `skipping after picking a place persists no place at all`() = runTest {
+        val vm = createViewModel()
+        vm.setBirthday(LocalDate.of(1990, 3, 21))
+        vm.setHand("right")
+        vm.setBirthPlace("Taipei, Taiwan", 25.033, 121.565)
+        vm.skipBirthDetails()
+        vm.completeOnboarding()
+        coVerify(exactly = 1) {
+            userRepository.save(match {
+                !it.hasBirthPlace && it.birthPlaceName == null &&
+                    it.birthPlaceLat == null && it.birthPlaceLon == null && it.calcLevel == "L1"
+            })
+        }
     }
 
     @Test

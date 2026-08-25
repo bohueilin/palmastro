@@ -135,12 +135,16 @@ final class AppModel: ObservableObject {
     /// Runs the full on-device pipeline for a completed scan session and
     /// persists the monthly result.
     func processScanSession(_ session: ScanSessionSummary) {
-        guard let scoringEngine, let composer, let safetyFilter else { return }
-
         analytics.emit(eventName: "inference_start", props: [:])
 
-        // Same failure taxonomy as ScanViewModel.runPipeline() on Android, so a
-        // missing profile is visible rather than a silent no-op.
+        // Same failure taxonomy as ScanViewModel.runPipeline() on Android, so an
+        // engine that failed to load and a missing profile are both visible rather
+        // than a silent no-op. Engines that never initialized are the iOS analogue
+        // of the Android pipeline exception: nothing downstream can run.
+        guard let scoringEngine, let composer, let safetyFilter else {
+            analytics.emit(eventName: "inference_fail", props: ["reason": "pipeline_error"])
+            return
+        }
         guard let birthday = profile.birthday else {
             analytics.emit(eventName: "inference_fail", props: ["reason": "no_profile"])
             return

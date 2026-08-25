@@ -73,12 +73,17 @@ fun DomainDetailScreen(
     val payloadForShare = state.payload
     // Health and wealth carry a "not medical / not financial guidance" note on screen;
     // the card leaves the app, so it must carry the same note (PRD 12.1 / 13.7).
+    // Career and family carry no domain note at all, so the card falls back to the
+    // global reflection-not-advice line the Results summary card always ships with —
+    // no shared card may leave the device without one.
+    val generalDisclaimer = stringResource(R.string.results_safety_body)
     val cardLabels = ShareCardRenderer.CardLabels(
         analysis = stringResource(R.string.share_card_analysis),
         actions = stringResource(R.string.share_card_actions),
         reflection = stringResource(R.string.share_card_reflection),
         watermark = stringResource(R.string.share_watermark),
-        disclaimer = payloadForShare?.safetyNotes?.firstOrNull().orEmpty(),
+        disclaimer = payloadForShare?.safetyNotes?.firstOrNull()?.takeIf { it.isNotBlank() }
+            ?: generalDisclaimer,
     )
     val gradeDisplayForShare = gradeDisplayName(payloadForShare?.scoreCard?.grade ?: "")
     val scoreLine = stringResource(R.string.share_score_format, payloadForShare?.scoreCard?.totalScore ?: 0, gradeDisplayForShare)

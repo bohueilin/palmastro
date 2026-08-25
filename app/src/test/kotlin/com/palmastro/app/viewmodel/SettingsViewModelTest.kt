@@ -130,6 +130,17 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun `diagnostic report separates the language preference from the resolved locale`() = runTest {
+        val vm = createViewModel()
+        vm.setLanguage("system")
+        val report = vm.buildDiagnosticReport()
+        // "language: system" told support nothing; the line the reader needs is the
+        // locale actually in force, reported alongside the preference.
+        assertTrue(report.contains("language pref: system"))
+        assertTrue(report.lines().any { it.startsWith("locale: ") })
+    }
+
+    @Test
     fun `handles missing profile gracefully`() = runTest {
         coEvery { userRepository.get() } returns null
         val vm = SettingsViewModel(context, userRepository, wipeManager, featureFlags)

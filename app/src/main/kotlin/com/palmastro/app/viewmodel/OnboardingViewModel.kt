@@ -88,7 +88,20 @@ class OnboardingViewModel @Inject constructor(
             birthPlaceLon = lon,
         )
     }
-    fun skipBirthDetails() = _state.update { it.copy(hasBirthTime = false, hasBirthPlace = false) }
+    /**
+     * Skipping must erase the payload too, not just the flags: completeOnboarding
+     * persists birthPlaceName/Lat/Lon unconditionally, so a place picked before the
+     * user changed their mind and skipped would still be written to the profile.
+     */
+    fun skipBirthDetails() = _state.update {
+        it.copy(
+            hasBirthTime = false,
+            hasBirthPlace = false,
+            birthPlaceName = "",
+            birthPlaceLat = null,
+            birthPlaceLon = null,
+        )
+    }
     fun setRelationshipStatus(status: String) = _state.update { it.copy(relationshipStatus = status) }
     fun nextStep() = _state.update { it.copy(step = minOf(OnboardingSteps.TOTAL - 1, it.step + 1)) }
     fun prevStep() = _state.update { it.copy(step = maxOf(0, it.step - 1)) }

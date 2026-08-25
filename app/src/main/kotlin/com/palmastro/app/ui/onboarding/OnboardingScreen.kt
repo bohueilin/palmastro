@@ -39,6 +39,7 @@ import androidx.compose.animation.core.snap
 import com.palmastro.app.ui.components.BrandIllustration
 import com.palmastro.app.ui.components.BrandScene
 import com.palmastro.app.ui.components.rememberReduceMotion
+import com.palmastro.app.ui.theme.LocalPalmAstroExtendedColors
 import com.palmastro.app.R
 import com.palmastro.app.viewmodel.OnboardingState
 import com.palmastro.app.viewmodel.OnboardingSteps
@@ -121,7 +122,9 @@ fun OnboardingScreen(onComplete: () -> Unit, viewModel: OnboardingViewModel = hi
                         modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp))
                             .semantics { contentDescription = progressDesc },
                         color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.outlineVariant,
+                        // meterTrack, not outlineVariant: the unfilled range carries
+                        // information and must hold >= 3:1 (WCAG 1.4.11).
+                        trackColor = LocalPalmAstroExtendedColors.current.meterTrack,
                     )
                 }
                 Spacer(Modifier.size(48.dp))

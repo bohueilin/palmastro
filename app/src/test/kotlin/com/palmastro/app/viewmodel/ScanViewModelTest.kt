@@ -216,6 +216,23 @@ class ScanViewModelTest {
         return entitySlot.captured
     }
 
+    private fun makePalmMetrics() = PalmMetrics(
+        landmarks = listOf(LandmarkPoint(0.11f, 0.22f, 0.33f)),
+        lineRegions = listOf(LineRegionMetrics("headline", 0.5f, 0.6f, 0.7f)),
+    )
+
+    /** Writes frames plus the sidecar exactly as a session killed mid-scan would leave them. */
+    private fun seedKilledSession(scanDir: File, captured: List<Angle>) {
+        scanDir.mkdirs()
+        val entries = captured.joinToString(",") { angle ->
+            val frame = File(scanDir, "${angle.name}.jpg").apply { writeText("jpeg") }
+            "{\"angle\":\"${angle.name}\",\"path\":\"${frame.absolutePath}\"," +
+                "\"blur\":0.8,\"glare\":0.9,\"exposure\":0.9," +
+                "\"coverage\":0.85,\"stability\":0.9,\"composite\":85}"
+        }
+        File(scanDir, "progress.json").writeText("[$entries]")
+    }
+
     /** Drives ViewModel.onCleared through the real androidx path. */
     private fun clearViewModel(vm: ScanViewModel) {
         ViewModelStore().apply {
@@ -540,5 +557,65 @@ class ScanViewModelTest {
         assertNull(vm.analyzeGuarded(bitmap))
         verify(exactly = 1) { analyzer.close() }
         verify(exactly = 1) { analyzer.analyze(any()) }
+    }
+
+    // ------------------------------------------------------------------ capture progress
+
+    @Test
+    fun `the capture sidecar keeps palm landmark data out of plaintext`() = runTest {
+        val angle = Angle.entries.first()
+        val scanDir = File(filesDir, "scans/$monthKey")
+        val frame = File(scanDir.apply { mkdirs() }, "${angle.name}.jpg").apply { writeText("jpeg") }
+        val vm = buildViewModel()
+        vm.seedCapturedFrame(angle, makeScores(), makePalmMetrics(), frame.absolutePath)
+
+        vm.persistCaptureProgress()
+        advanceUntilIdle()
+
+        val sidecar = File(scanDir, "progress.json").readText()
+        assertTrue(sidecar.contains("\"angle\":\"${angle.name}\""))
+        // Landmarks and line-region statistics are palm-derived biometric data: they belong
+        // in the encrypted store only, and are re-derived from the frame on restore.
+        assertFalse(sidecar.contains("landmarks"))
+        assertFalse(sidecar.contains("lineRegions"))
+        assertFalse(sidecar.contains("palmMetrics"))
+    }
+
+    @Test
+    fun `restore leaves an angle to capture and never starts the pipeline by itself`() = runTest {
+        seedKilledSession(File(filesDir, "scans/$monthKey"), Angle.entries)
+
+        val vm = buildViewModel()
+        advanceUntilIdle()
+
+        // One angle short by construction: a restore into "nothing left to capture" would
+        // strand the user with no way to reach — or escape — the pipeline.
+        assertEquals(Angle.entries.size - 1, vm.state.value.completedAngles.size)
+        assertEquals(Angle.entries.size - 1, vm.state.value.currentAngleIndex)
+        assertFalse(vm.state.value.isProcessing)
+        assertFalse(vm.state.value.isComplete)
+        verify(exactly = 0) { analytics.emit("inference_start", any()) }
+        coVerify(exactly = 0) { resultRepository.saveResult(any()) }
+    }
+
+    @Test
+    fun `retake deletes the rejected frame so a stale snapshot cannot resurrect it`() = runTest {
+        val kept = Angle.entries[0]
+        val retaken = Angle.entries[1]
+        val scanDir = File(filesDir, "scans/$monthKey")
+        seedKilledSession(scanDir, listOf(kept, retaken))
+        val retakenFrame = File(scanDir, "${retaken.name}.jpg")
+
+        val vm = buildViewModel()
+        advanceUntilIdle()
+        vm.retakePreviousAngle()
+        advanceUntilIdle()
+
+        assertFalse(retakenFrame.exists())
+        assertTrue(File(scanDir, "${kept.name}.jpg").exists())
+        val sidecar = File(scanDir, "progress.json").readText()
+        assertFalse(sidecar.contains("\"angle\":\"${retaken.name}\""))
+        assertTrue(sidecar.contains("\"angle\":\"${kept.name}\""))
+        assertEquals(1, vm.state.value.currentAngleIndex)
     }
 }

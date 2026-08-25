@@ -44,7 +44,9 @@
 "onboarding_birthtime_known" = "I know my birth time";
 "onboarding_birthtime_label" = "Birth time";
 "onboarding_birthplace_lat" = "Birthplace latitude (e.g. 25.03)";
+"onboarding_birthplace_lat_invalid" = "This latitude can't be used — enter a number between -90 and 90, like 25.03.";
 "onboarding_birthplace_lon" = "Birthplace longitude (e.g. 121.56)";
+"onboarding_birthplace_lon_invalid" = "This longitude can't be used — enter a number between -180 and 180, like 121.56.";
 "onboarding_birthtime_l1_note" = "No problem — your reading will use birthday-only mode and say so clearly.";
 "onboarding_tone_title" = "How should readings sound?";
 "tone_analytical" = "Analytical";

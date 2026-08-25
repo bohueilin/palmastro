@@ -9,7 +9,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.palmastro.app.security.SecurityChecker
-import com.palmastro.app.security.ThreatLevel
 import com.palmastro.app.worker.ScanImageCleanupWorker
 import com.palmastro.data.repository.InstallIdRepository
 import dagger.hilt.android.HiltAndroidApp
@@ -28,11 +27,6 @@ class PalmAstroApp : Application() {
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    // @Volatile: written from appScope, potentially read from any thread.
-    @Volatile
-    var securityThreatLevel: ThreatLevel = ThreatLevel.NONE
-        private set
-
     override fun onCreate() {
         super.onCreate()
         CrashReporting.init(this)
@@ -49,7 +43,6 @@ class PalmAstroApp : Application() {
 
     private fun runSecurityCheck() {
         val report = SecurityChecker.check(this)
-        securityThreatLevel = report.threatLevel
         if (!report.isSecure) {
             CrashReporting.log("security_check: threats=${report.threats.joinToString(",")}")
             report.threats.forEach { threat ->

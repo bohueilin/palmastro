@@ -99,13 +99,13 @@ enum class BrandScene {
  */
 private fun ring(cx: Float, cy: Float, r: Float, count: Int, radius: Float = DEFAULT_STAR_DP, lit: Boolean = true) =
     (0 until count).map { i ->
-    val angle = (FULL_TURN_RADIANS * i / count) - PI / 2
-    Star(cx + (r * cos(angle)).toFloat() * ASPECT_X_SCALE, cy + (r * sin(angle)).toFloat(), radius, lit)
+        val angle = (FULL_TURN_RADIANS * i / count) - PI / 2
+        Star(cx + (r * cos(angle)).toFloat() * ASPECT_X_SCALE, cy + (r * sin(angle)).toFloat(), radius, lit)
     }
 
 // Scene geometry, in normalized coordinates on a roughly 2.2:1 canvas.
-    // A palm's four lines in the lower left, rising into a constellation upper right.
 
+// A palm's four lines in the lower left, rising into a constellation upper right.
 private val SceneWelcome = Scene(
     curves = listOf(
         listOf(Offset(0.08f, 0.62f), Offset(0.20f, 0.55f), Offset(0.32f, 0.56f), Offset(0.42f, 0.62f)),
@@ -118,9 +118,9 @@ private val SceneWelcome = Scene(
         Star(0.82f, 0.34f), Star(0.90f, 0.18f, 2.2f), Star(0.60f, 0.62f, 1.8f),
         Star(0.30f, 0.22f, 1.6f), Star(0.48f, 0.14f, 1.4f),
     ),
-    )
-    // A shield drawn as constellation edges, with a bright keystone at its heart.
+)
 
+// A shield drawn as constellation edges, with a bright keystone at its heart.
 private val ScenePrivacy = Scene(
     edges = listOf(0 to 1, 1 to 2, 2 to 3, 3 to 4, 4 to 5, 5 to 0),
     stars = listOf(
@@ -129,9 +129,9 @@ private val ScenePrivacy = Scene(
         Star(0.50f, 0.48f, 3.4f),
         Star(0.14f, 0.30f, 1.4f), Star(0.86f, 0.72f, 1.4f),
     ),
-    )
-    // One bright star, claimed: a single identity with a quiet orbit.
+)
 
+// One bright star, claimed: a single identity with a quiet orbit.
 private val SceneIdentity = Scene(
     rings = listOf(Triple(0.50f, 0.50f, 0.30f)),
     edges = listOf(0 to 1, 0 to 2, 0 to 3),
@@ -139,15 +139,15 @@ private val SceneIdentity = Scene(
         Star(0.50f, 0.50f, 4.0f), Star(0.74f, 0.30f), Star(0.28f, 0.66f), Star(0.66f, 0.80f),
         Star(0.16f, 0.22f, 1.4f), Star(0.88f, 0.58f, 1.4f),
     ),
-    )
-    // A zodiac wheel: twelve stations, one of them yours.
+)
 
+// A zodiac wheel: twelve stations, one of them yours.
 private val SceneBirthday = Scene(
     rings = listOf(Triple(0.50f, 0.50f, 0.34f), Triple(0.50f, 0.50f, 0.20f)),
     stars = ring(0.50f, 0.50f, 0.68f, 12, 1.9f) + listOf(Star(0.50f, 0.16f, 3.6f)),
-    )
-    // Two palms, mirrored — the dominant-hand choice.
+)
 
+// Two palms, mirrored — the dominant-hand choice.
 private val SceneHands = Scene(
     curves = listOf(
         listOf(Offset(0.10f, 0.42f), Offset(0.20f, 0.36f), Offset(0.30f, 0.38f), Offset(0.38f, 0.46f)),
@@ -157,9 +157,9 @@ private val SceneHands = Scene(
     ),
     edges = listOf(0 to 1, 1 to 2),
     stars = listOf(Star(0.38f, 0.46f, 2.4f), Star(0.50f, 0.24f, 3.2f), Star(0.62f, 0.46f, 2.4f)),
-    )
-    // A sky clock: the exact hour and place, if you know them.
+)
 
+// A sky clock: the exact hour and place, if you know them.
 private val SceneBirthDetails = Scene(
     rings = listOf(Triple(0.50f, 0.50f, 0.32f)),
     curves = listOf(
@@ -167,9 +167,9 @@ private val SceneBirthDetails = Scene(
         listOf(Offset(0.50f, 0.50f), Offset(0.58f, 0.54f), Offset(0.64f, 0.58f), Offset(0.68f, 0.60f)),
     ),
     stars = ring(0.50f, 0.50f, 0.64f, 4, 2.0f) + listOf(Star(0.50f, 0.50f, 3.0f)),
-    )
-    // Three voices: sharp, soft, direct — the tone choice, as three rhythms.
+)
 
+// Three voices: sharp, soft, direct — the tone choice, as three rhythms.
 private val SceneTone = Scene(
     curves = listOf(
         listOf(Offset(0.16f, 0.26f), Offset(0.36f, 0.20f), Offset(0.56f, 0.30f), Offset(0.76f, 0.24f)),
@@ -177,9 +177,9 @@ private val SceneTone = Scene(
         listOf(Offset(0.16f, 0.74f), Offset(0.36f, 0.70f), Offset(0.56f, 0.80f), Offset(0.76f, 0.74f)),
     ),
     stars = listOf(Star(0.84f, 0.24f, 2.6f), Star(0.84f, 0.50f, 2.6f), Star(0.84f, 0.74f, 2.6f)),
-    )
-    // The full figure, complete and lit: everything the reading needs.
+)
 
+// The full figure, complete and lit: everything the reading needs.
 private val SceneReady = Scene(
     edges = listOf(0 to 1, 1 to 2, 2 to 3, 3 to 4, 4 to 5, 5 to 1, 2 to 6),
     stars = listOf(
@@ -187,9 +187,9 @@ private val SceneReady = Scene(
         Star(0.68f, 0.40f, 2.8f), Star(0.84f, 0.66f, 2.2f), Star(0.56f, 0.72f, 2.4f),
         Star(0.42f, 0.86f, 1.8f), Star(0.90f, 0.24f, 1.4f), Star(0.10f, 0.30f, 1.4f),
     ),
-    )
-    // Waiting: the shape is there, unlit, with one bright invitation.
+)
 
+// Waiting: the shape is there, unlit, with one bright invitation.
 private val SceneNoResults = Scene(
     edges = listOf(0 to 1, 1 to 2, 2 to 3, 3 to 4),
     stars = listOf(
@@ -197,9 +197,9 @@ private val SceneNoResults = Scene(
         Star(0.50f, 0.30f, 4.0f), Star(0.68f, 0.46f, 2.0f, lit = false),
         Star(0.84f, 0.66f, 2.0f, lit = false), Star(0.50f, 0.78f, 1.6f, lit = false),
     ),
-    )
-    // A row of months; only the first has happened.
+)
 
+// A row of months; only the first has happened.
 private val SceneNoHistory = Scene(
     edges = listOf(0 to 1, 1 to 2, 2 to 3, 3 to 4),
     stars = listOf(
@@ -208,7 +208,7 @@ private val SceneNoHistory = Scene(
         Star(0.86f, 0.50f, 2.0f, lit = false),
         Star(0.28f, 0.24f, 1.4f), Star(0.74f, 0.76f, 1.4f),
     ),
-    )
+)
 
 private fun sceneFor(scene: BrandScene): Scene = when (scene) {
     BrandScene.Welcome -> SceneWelcome
@@ -241,22 +241,22 @@ fun BrandIllustration(
     val twinkle = rememberTwinkle(reduceMotion)
     val geometry = remember(scene) { sceneFor(scene) }
     Box(
-    modifier = modifier
-        .fillMaxWidth()
-        .height(height)
-        .clip(RoundedCornerShape(PANEL_RADIUS_DP.dp))
-        .background(Brush.verticalGradient(listOf(NightSkyTop, NightSkyBottom)))
-        .then(
-            if (description != null) {
-                Modifier.semantics { contentDescription = description }
-            } else {
-                Modifier
-            },
-        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+            .clip(RoundedCornerShape(PANEL_RADIUS_DP.dp))
+            .background(Brush.verticalGradient(listOf(NightSkyTop, NightSkyBottom)))
+            .then(
+                if (description != null) {
+                    Modifier.semantics { contentDescription = description }
+                } else {
+                    Modifier
+                },
+            ),
     ) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        drawScene(geometry, twinkle())
-    }
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawScene(geometry, twinkle())
+        }
     }
 }
 
@@ -265,33 +265,33 @@ private fun rememberTwinkle(reduceMotion: Boolean): () -> Float {
     if (reduceMotion) return { TWINKLE_FULL }
     val transition = rememberInfiniteTransition(label = "brand_twinkle")
     val value by transition.animateFloat(
-    initialValue = TWINKLE_MIN,
-    targetValue = TWINKLE_FULL,
-    animationSpec = infiniteRepeatable(tween(TWINKLE_MS, easing = EaseInOutSine), RepeatMode.Reverse),
-    label = "twinkle",
+        initialValue = TWINKLE_MIN,
+        targetValue = TWINKLE_FULL,
+        animationSpec = infiniteRepeatable(tween(TWINKLE_MS, easing = EaseInOutSine), RepeatMode.Reverse),
+        label = "twinkle",
     )
     return { value }
 }
 
 private fun DrawScope.drawScene(scene: Scene, twinkle: Float) {
     scene.rings.forEach { (cx, cy, r) ->
-    drawCircle(
-        color = EdgeLavender.copy(alpha = 0.22f),
-        radius = r * size.height,
-        center = Offset(cx * size.width, cy * size.height),
-        style = Stroke(width = EDGE_WIDTH_DP.dp.toPx()),
-    )
+        drawCircle(
+            color = EdgeLavender.copy(alpha = 0.22f),
+            radius = r * size.height,
+            center = Offset(cx * size.width, cy * size.height),
+            style = Stroke(width = EDGE_WIDTH_DP.dp.toPx()),
+        )
     }
     scene.edges.forEach { (a, b) ->
-    val from = scene.stars.getOrNull(a) ?: return@forEach
-    val to = scene.stars.getOrNull(b) ?: return@forEach
-    drawLine(
-        color = EdgeLavender.copy(alpha = EDGE_ALPHA),
-        start = Offset(from.x * size.width, from.y * size.height),
-        end = Offset(to.x * size.width, to.y * size.height),
-        strokeWidth = EDGE_WIDTH_DP.dp.toPx(),
-        cap = StrokeCap.Round,
-    )
+        val from = scene.stars.getOrNull(a) ?: return@forEach
+        val to = scene.stars.getOrNull(b) ?: return@forEach
+        drawLine(
+            color = EdgeLavender.copy(alpha = EDGE_ALPHA),
+            start = Offset(from.x * size.width, from.y * size.height),
+            end = Offset(to.x * size.width, to.y * size.height),
+            strokeWidth = EDGE_WIDTH_DP.dp.toPx(),
+            cap = StrokeCap.Round,
+        )
     }
     scene.curves.forEach { points -> drawGlowCurve(points) }
     scene.stars.forEach { star -> drawStar(star, twinkle) }
@@ -312,8 +312,8 @@ private fun DrawScope.smoothPath(normalized: List<Offset>): Path {
     if (pts.isEmpty()) return path
     path.moveTo(pts.first().x, pts.first().y)
     for (i in 1 until pts.size - 1) {
-    val mid = Offset((pts[i].x + pts[i + 1].x) / 2f, (pts[i].y + pts[i + 1].y) / 2f)
-    path.quadraticBezierTo(pts[i].x, pts[i].y, mid.x, mid.y)
+        val mid = Offset((pts[i].x + pts[i + 1].x) / 2f, (pts[i].y + pts[i + 1].y) / 2f)
+        path.quadraticBezierTo(pts[i].x, pts[i].y, mid.x, mid.y)
     }
     path.lineTo(pts.last().x, pts.last().y)
     return path
@@ -329,27 +329,27 @@ private fun DrawScope.smoothPath(normalized: List<Offset>): Path {
 fun DomainGlyph(domain: String, tint: Color, modifier: Modifier = Modifier, size: Dp = 40.dp) {
     val points = remember(domain) { domainGlyph(domain) }
     Box(
-    modifier = modifier
-        .size(size)
-        .clip(RoundedCornerShape(GLYPH_RADIUS_DP.dp))
-        .background(tint.copy(alpha = GLYPH_WASH_ALPHA)),
+        modifier = modifier
+            .size(size)
+            .clip(RoundedCornerShape(GLYPH_RADIUS_DP.dp))
+            .background(tint.copy(alpha = GLYPH_WASH_ALPHA)),
     ) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val inset = this.size.minDimension * GLYPH_INSET
-        val span = this.size.minDimension - inset * 2
-        fun at(p: Offset) = Offset(inset + p.x * span, inset + p.y * span)
-        for (i in 0 until points.size - 1) {
-            drawLine(
-                color = tint.copy(alpha = GLYPH_EDGE_ALPHA),
-                start = at(points[i]), end = at(points[i + 1]),
-                strokeWidth = GLYPH_EDGE_DP.dp.toPx(), cap = StrokeCap.Round,
-            )
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val inset = this.size.minDimension * GLYPH_INSET
+            val span = this.size.minDimension - inset * 2
+            fun at(p: Offset) = Offset(inset + p.x * span, inset + p.y * span)
+            for (i in 0 until points.size - 1) {
+                drawLine(
+                    color = tint.copy(alpha = GLYPH_EDGE_ALPHA),
+                    start = at(points[i]), end = at(points[i + 1]),
+                    strokeWidth = GLYPH_EDGE_DP.dp.toPx(), cap = StrokeCap.Round,
+                )
+            }
+            points.forEachIndexed { index, p ->
+                val r = if (index == 0) GLYPH_LEAD_DOT_DP else GLYPH_DOT_DP
+                drawCircle(color = tint, radius = r.dp.toPx(), center = at(p))
+            }
         }
-        points.forEachIndexed { index, p ->
-            val r = if (index == 0) GLYPH_LEAD_DOT_DP else GLYPH_DOT_DP
-            drawCircle(color = tint, radius = r.dp.toPx(), center = at(p))
-        }
-    }
     }
 }
 
@@ -385,9 +385,9 @@ private fun DrawScope.drawStar(star: Star, twinkle: Float) {
     val radius = star.r.dp.toPx()
     val alpha = if (star.lit) twinkle else DIM_STAR_ALPHA
     drawCircle(
-    color = StarLight.copy(alpha = STAR_HALO_ALPHA * alpha),
-    radius = radius * STAR_HALO_FACTOR,
-    center = center,
+        color = StarLight.copy(alpha = STAR_HALO_ALPHA * alpha),
+        radius = radius * STAR_HALO_FACTOR,
+        center = center,
     )
     drawCircle(color = StarLight.copy(alpha = alpha), radius = radius, center = center)
 }

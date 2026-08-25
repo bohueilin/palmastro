@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -123,16 +122,18 @@ private const val BYTES_PER_MB = 1024f * 1024f
 
 private enum class PreScanPhase { EXPLAINER, TIPS, CAPTURE }
 
+/**
+ * [onExit] is the flow's own way out, deliberately not the system back button: back lands on
+ * whatever the caller left under the scanner — on the first run, historically nothing, which
+ * closed the app. Every blocking screen here routes to it.
+ */
 @Composable
-fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel()) {
+fun ScanScreen(
+    onComplete: () -> Unit,
+    onExit: () -> Unit,
+    viewModel: ScanViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
-
-    // Leaving the model gate goes through the back dispatcher rather than a new callback:
-    // it pops to Results for a returning user and, on the onboarding -> scan first run
-    // where nothing is beneath, closes the app — which reopens on Results, not here.
-    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-    val onExitScan = { backDispatcher?.onBackPressed() ?: Unit }
 
     // Respect the system "remove animations" preference for animated overlays.
     val reduceMotion = rememberReduceMotion()
@@ -142,27 +143,56 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
     LaunchedEffect(state.isComplete) { if (state.isComplete) onComplete() }
 
     ScanFeedbackEffects(state)
-    val haptics = rememberHapticPlayer()
 
     when {
         phase == PreScanPhase.EXPLAINER -> ExplainerScreen(onNext = { phase = PreScanPhase.TIPS })
         phase == PreScanPhase.TIPS -> TipsScreen(onStart = { phase = PreScanPhase.CAPTURE })
-        camera.denied -> PermissionDeniedScreen(onOpenSettings = {
-            context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", context.packageName, null)
-            })
-        })
+        else -> ScanCaptureFlow(
+            state = state,
+            camera = camera,
+            reduceMotion = reduceMotion,
+            viewModel = viewModel,
+            onExit = onExit,
+        )
+    }
+}
+
+/**
+ * Everything the user meets after the two explainers: the permission gate, the one-time
+ * model acquisition, and capture itself. Split from [ScanScreen] so that entry point stays
+ * a three-way phase switch rather than growing a tenth branch.
+ */
+@Composable
+private fun ScanCaptureFlow(
+    state: ScanState,
+    camera: CameraPermission,
+    reduceMotion: Boolean,
+    viewModel: ScanViewModel,
+    onExit: () -> Unit,
+) {
+    val context = LocalContext.current
+    val haptics = rememberHapticPlayer()
+
+    when {
+        camera.denied -> PermissionDeniedScreen(
+            onOpenSettings = {
+                context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                })
+            },
+            onExit = onExit,
+        )
         !camera.granted -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         state.modelDownloading -> ModelDownloadingScreen(
             downloadedBytes = state.modelDownloadedBytes,
             totalBytes = state.modelTotalBytes,
-            onExit = onExitScan,
+            onExit = onExit,
         )
         state.modelError != null -> ErrorScreen(
             kind = if (state.modelError == ScanError.MODEL_CORRUPT) ScanErrorKind.MODEL_CORRUPT else ScanErrorKind.MODEL_DOWNLOAD_FAILED,
             onAction = { viewModel.retryModelDownload() },
             // Offline, Retry cannot succeed; leaving must not require killing the app.
-            onExit = onExitScan,
+            onExit = onExit,
         )
         !state.modelReady -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         state.isProcessing -> ConstellationProcessingScreen(reduceMotion = reduceMotion)
@@ -494,8 +524,13 @@ private fun ErrorScreen(kind: ScanErrorKind, onAction: () -> Unit, onExit: (() -
     }
 }
 
+/**
+ * A denied camera grant used to be a dead end: Settings was the only button, so a first-run
+ * user who says no has nowhere to go. [onExit] leaves the scan the same way the download and
+ * error screens do — the shared "Not now" wording, because the offer is the same one.
+ */
 @Composable
-private fun PermissionDeniedScreen(onOpenSettings: () -> Unit) {
+private fun PermissionDeniedScreen(onOpenSettings: () -> Unit, onExit: () -> Unit) {
     Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text(
             stringResource(R.string.scan_permission_title),
@@ -507,6 +542,10 @@ private fun PermissionDeniedScreen(onOpenSettings: () -> Unit) {
         Spacer(Modifier.height(24.dp))
         Button(onClick = onOpenSettings, modifier = Modifier.heightIn(min = 48.dp)) {
             Text(stringResource(R.string.scan_go_settings))
+        }
+        Spacer(Modifier.height(8.dp))
+        TextButton(onClick = onExit, modifier = Modifier.heightIn(min = 48.dp)) {
+            Text(stringResource(R.string.scan_download_not_now))
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.palmastro.app.ui.results
 
-import android.content.Context
 import android.graphics.Bitmap
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -103,8 +102,9 @@ fun ResultsScreen(
                 padding = padding,
                 freshArrival = freshArrival,
                 // A scan always writes into the CURRENT month, replacing the reading on
-                // screen; older months have nothing to replace, so they go straight on.
-                onScanClick = { if (state.isStale || state.isPastMonth) onScanClick() else confirmRescan = true },
+                // screen; the stale-month invitation has nothing to replace, so it goes
+                // straight on. A past month never reaches here — it offers no rescan.
+                onScanClick = { if (state.isStale) onScanClick() else confirmRescan = true },
                 onDomainClick = onDomainClick,
                 onHistoryClick = onHistoryClick,
                 onGuidanceClick = onGuidanceClick,
@@ -201,7 +201,10 @@ private data class ShareContent(
 
 @Composable
 private fun rememberShareContent(state: ResultsState): ShareContent {
-    val summaryHeader = stringResource(R.string.share_summary_header, state.monthKey)
+    // The card is the one surface that leaves the device, so it carries the month the
+    // reader sees on screen — never the raw storage key ("2026-08").
+    val monthTitle = monthTitleLocalized(state.monthKey)
+    val summaryHeader = stringResource(R.string.share_summary_header, monthTitle)
     val gradeDisplay = gradeDisplayName(state.grade)
     val gradeLine = stringResource(R.string.share_grade_label, gradeDisplay)
     val confidenceLine = stringResource(R.string.share_confidence_label, confidenceDisplayName(state.confidence))
@@ -222,7 +225,8 @@ private fun rememberShareContent(state: ResultsState): ShareContent {
         ),
         summaryData = ShareCardRenderer.SummaryData(
             headerTitle = summaryHeader,
-            monthKey = state.monthKey,
+            // Drawn as the card's month caption, so it takes the localized title too.
+            monthKey = monthTitle,
             grade = state.grade,
             gradeDisplay = gradeDisplay,
             confidenceLine = confidenceLine,

@@ -3,14 +3,18 @@ package com.palmastro.app.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.palmastro.app.di.IoDispatcher
 import com.palmastro.content.Guidance
 import com.palmastro.content.GuidanceBuilder
 import com.palmastro.contracts.SemanticPayload
 import com.palmastro.data.repository.ResultRepository
 import com.palmastro.data.repository.UserRepository
+import dagger.Lazy
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.util.Locale
@@ -39,7 +43,10 @@ class GuidanceViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val resultRepository: ResultRepository,
     private val userRepository: UserRepository,
-    private val guidanceBuilder: GuidanceBuilder,
+    // Lazy, not the builder itself: constructing it parses the 139 KB content templates,
+    // and Hilt builds this view model inside the first composition of the screen.
+    private val guidanceBuilder: Lazy<GuidanceBuilder>,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val _state = MutableStateFlow(GuidanceState())
     val state = _state.asStateFlow()
@@ -59,11 +66,7 @@ class GuidanceViewModel @Inject constructor(
                     return@launch
                 }
 
-                val payloads: Map<String, SemanticPayload> =
-                    json.decodeFromString(entity.semanticPayloadsJson)
-                val language = storedPayloadLanguage(payloads)
-                    ?: resolveContentLanguage(userRepository.get()?.language)
-                val guidance = guidanceBuilder.build(payloads, entity.grade, language)
+                val guidance = buildGuidance(entity.semanticPayloadsJson, entity.grade)
 
                 _state.update {
                     it.copy(
@@ -81,6 +84,20 @@ class GuidanceViewModel @Inject constructor(
             }
         }
     }
+
+    /**
+     * Off the main thread: the first [guidanceBuilder] access reads and parses the bundled
+     * content templates, and decoding the stored payloads is the same kind of work — neither
+     * may land on the frame that composes this screen. Failures propagate to the caller's
+     * catch, which turns them into the calm empty state.
+     */
+    private suspend fun buildGuidance(payloadsJson: String, grade: String): Guidance =
+        withContext(ioDispatcher) {
+            val payloads: Map<String, SemanticPayload> = json.decodeFromString(payloadsJson)
+            val language = storedPayloadLanguage(payloads)
+                ?: resolveContentLanguage(userRepository.get()?.language)
+            guidanceBuilder.get().build(payloads, grade, language)
+        }
 }
 
 /**

@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
@@ -45,13 +44,12 @@ import com.palmastro.app.ui.components.entranceReveal
 import com.palmastro.app.ui.components.SafetyNoteCard
 import com.palmastro.app.ui.components.SectionHeader
 import com.palmastro.app.ui.components.rememberReduceMotion
+import com.palmastro.app.ui.monthTitleLocalized
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
 import com.palmastro.app.viewmodel.GuidanceViewModel
 import com.palmastro.content.Guidance
 import com.palmastro.content.GuidanceItem
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 
 /**
  * Navigation contract for the "Understand your reading" guidance screen (PRD §§11–13).
@@ -232,16 +230,9 @@ private fun GuidanceItemsSection(
 @Composable
 private fun MonthThemeHero(monthKey: String, grade: String, monthTheme: String) {
     val gc = gradeColor(grade)
-    val datePattern = stringResource(R.string.results_date_pattern)
-    val configuration = LocalConfiguration.current
     // Derived from the result's monthKey, never from "now", so historical months
     // render their own date (same rule as the Results hero).
-    val monthTitle = remember(monthKey, datePattern, configuration) {
-        runCatching {
-            val locale = configuration.locales.get(0)
-            YearMonth.parse(monthKey).atDay(1).format(DateTimeFormatter.ofPattern(datePattern, locale))
-        }.getOrDefault(monthKey)
-    }
+    val monthTitle = monthTitleLocalized(monthKey)
 
     Box(
         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))

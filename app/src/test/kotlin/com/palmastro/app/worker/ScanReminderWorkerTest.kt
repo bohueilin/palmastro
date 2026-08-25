@@ -37,4 +37,26 @@ class ScanReminderWorkerTest {
         val lateInTheMonth = LocalDateTime.of(2026, 3, 31, 23, 59)
         assertTrue(minutesUntil(lateInTheMonth) > 0)
     }
+
+    @Test
+    fun `keeps this month's occurrence while it is still ahead`() {
+        // A re-schedule at 09:00 on the 1st must still fire at 10:00 that same day —
+        // jumping straight to next month silently drops a month's reminder.
+        val beforeTodaysReminder = LocalDateTime.of(2026, 3, 1, 9, 0)
+        assertEquals(60L, minutesUntil(beforeTodaysReminder))
+    }
+
+    @Test
+    fun `moves to the following month once this month's occurrence has passed`() {
+        val afterTodaysReminder = LocalDateTime.of(2026, 3, 1, 10, 1)
+        assertEquals(31 * 24 * 60L - 1, minutesUntil(afterTodaysReminder))
+    }
+
+    @Test
+    fun `the reminder hour itself counts as passed, not as still ahead`() {
+        // Exactly on the hour is when the worker itself re-arms; treating it as "ahead"
+        // would queue a second run for the same minute.
+        val onTheHour = LocalDateTime.of(2026, 3, 1, 10, 0)
+        assertEquals(31 * 24 * 60L, minutesUntil(onTheHour))
+    }
 }

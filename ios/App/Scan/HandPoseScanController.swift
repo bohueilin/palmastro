@@ -43,6 +43,9 @@ final class HandPoseScanController: NSObject, ObservableObject {
     private var candidateFrames: [(scores: QualityScores, metrics: PalmMetrics?)] = []
     private var bestFrames: [Angle: BestFrameResult] = [:]
     private var previousCentroid: (x: Float, y: Float)?
+    /// Mean luma (0..1) of the most recently measured frame. Neutral until the
+    /// first measurement, so coaching never guesses a direction it cannot know.
+    private var lastMeanLuma: Float = 0.5
 
     var currentAngle: Angle {
         Self.angleSequence[min(currentAngleIndex, Self.angleSequence.count - 1)]
@@ -162,9 +165,10 @@ final class HandPoseScanController: NSObject, ObservableObject {
             advanceOrFinish()
         } else {
             candidateFrames = []
+            let reason = coachingReason(for: gateResult.failReason)
             DispatchQueue.main.async {
                 self.qualityFailCount += 1
-                self.lastHintKey = CoachingHints.keyFor(failReason: gateResult.failReason ?? "")
+                self.lastHintKey = CoachingHints.keyFor(failReason: reason)
             }
         }
     }
@@ -246,8 +250,10 @@ final class HandPoseScanController: NSObject, ObservableObject {
         let blur = min(localVariance * 12.0, 1)
         // glare: penalize saturated highlight patches.
         let glare = max(0, 1 - saturatedFraction * 12.0)
-        // exposure: best around mid luma.
+        // exposure: best around mid luma. The score is symmetric, so the mean
+        // itself is kept: it is the only thing that can tell the two failures apart.
         let exposure = max(0, 1 - abs(meanLuma - 0.55) * 2.5)
+        lastMeanLuma = meanLuma
 
         // coverage: normalized hand bounding-box area, scaled so a
         // well-framed palm (~35% of frame) scores 1.
@@ -269,6 +275,23 @@ final class HandPoseScanController: NSObject, ObservableObject {
         previousCentroid = (cx, cy)
 
         return gate.scoreFrame(blur: blur, glare: glare, exposure: exposure, coverage: coverage, stability: stability)
+    }
+
+    /// Mean luma above which a weak exposure score means "too bright", not "too
+    /// dark". The Android threshold (ScanViewModel.OVEREXPOSED_MEAN = 140 on a
+    /// 0..255 mean-brightness scale) expressed on this pipeline's 0..1 luma
+    /// scale, so both platforms flip direction at the same real brightness.
+    private static let overExposedMeanLuma: Float = 140.0 / 255.0
+
+    /// The exposure channel is symmetric around mid-grey, so the gate reports
+    /// "low_light" for a blown-out frame just as it does for a dark one. The last
+    /// measured mean luma resolves the direction before the coaching copy is
+    /// chosen: telling someone in direct sun to find more light makes their next
+    /// frame worse. Mirrors ScanViewModel.coachingReasonFor on Android.
+    func coachingReason(for failReason: String?) -> String {
+        let reason = failReason ?? "hand_not_detected"
+        let overExposed = reason == "low_light" && lastMeanLuma > Self.overExposedMeanLuma
+        return overExposed ? "over_exposure" : reason
     }
 
     // MARK: - Vision → MediaPipe landmark mapping

@@ -9,6 +9,7 @@ import com.palmastro.data.entities.MonthlyResultEntity
 import com.palmastro.data.entities.UserProfileEntity
 import com.palmastro.data.repository.ResultRepository
 import com.palmastro.data.repository.UserRepository
+import dagger.Lazy
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,6 +30,10 @@ class GuidanceViewModelTest {
     private val resultRepository = mockk<ResultRepository>()
     private val userRepository = mockk<UserRepository>()
     private val guidanceBuilder = mockk<GuidanceBuilder>()
+
+    // Lazy in production so the 139 KB template parse never happens on the composing
+    // frame; this one hands back the single mock every time it is resolved.
+    private val lazyGuidanceBuilder = Lazy<GuidanceBuilder> { guidanceBuilder }
     private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var savedLocale: Locale
@@ -78,11 +83,14 @@ class GuidanceViewModelTest {
         Dispatchers.resetMain()
     }
 
+    // The guidance build runs on the injected dispatcher; pinning it to the test
+    // dispatcher keeps state assertions immediate after construction.
     private fun createViewModel(monthKey: String = "2026-03") = GuidanceViewModel(
         SavedStateHandle(mapOf("monthKey" to monthKey)),
         resultRepository,
         userRepository,
-        guidanceBuilder,
+        lazyGuidanceBuilder,
+        testDispatcher,
     )
 
     // --- Happy path ---
@@ -117,6 +125,26 @@ class GuidanceViewModelTest {
         verify(exactly = 1) { guidanceBuilder.build(any(), "Stable", "en") }
         assertEquals(setOf("career", "health"), payloadsSlot.captured.keys)
         assertEquals("career", payloadsSlot.captured.getValue("career").domain)
+    }
+
+    @Test
+    fun `guidance is built off the calling dispatcher`() = runTest {
+        val ioDispatcher = StandardTestDispatcher(testScheduler)
+        coEvery { resultRepository.getByMonth("2026-03") } returns
+            makeEntity(mapOf("career" to makePayload("career")))
+        coEvery { userRepository.get() } returns makeProfile(language = "en")
+        every { guidanceBuilder.build(any(), any(), any()) } returns makeGuidance()
+
+        val vm = GuidanceViewModel(
+            SavedStateHandle(mapOf("monthKey" to "2026-03")),
+            resultRepository, userRepository, lazyGuidanceBuilder, ioDispatcher,
+        )
+
+        // Resolving the builder parses the 139 KB content templates, so the build must not
+        // run on the caller's dispatcher: nothing has been built until the io one runs.
+        verify(exactly = 0) { guidanceBuilder.build(any(), any(), any()) }
+        advanceUntilIdle()
+        assertNotNull(vm.state.value.guidance)
     }
 
     // --- Missing month ---

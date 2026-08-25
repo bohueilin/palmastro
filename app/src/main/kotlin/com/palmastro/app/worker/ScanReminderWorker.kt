@@ -14,6 +14,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.palmastro.app.MainActivity
@@ -24,6 +25,8 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
@@ -99,10 +102,30 @@ class ScanReminderWorker(
                 .userProfileDao().get()?.reminders
         }.getOrNull()
         if (cadence != CADENCE_MONTHLY) return
+        val workManager = WorkManager.getInstance(applicationContext)
+        // APPEND_OR_REPLACE appends unconditionally, so a rerun of this same execution
+        // would stack a second node onto the chain and the duplicate would survive.
+        // Re-arming only when nothing is queued yet makes the append idempotent.
+        if (hasPendingCalendarRun(workManager)) return
         // APPEND_OR_REPLACE, not REPLACE: REPLACE on the unique name this run owns
         // would cancel this very worker before it posts.
-        enqueueCalendarCadence(WorkManager.getInstance(applicationContext), ExistingWorkPolicy.APPEND_OR_REPLACE)
+        enqueueCalendarCadence(workManager, ExistingWorkPolicy.APPEND_OR_REPLACE)
     }
+
+    /**
+     * True when a not-yet-started run already sits under the calendar work name. The
+     * currently executing node is RUNNING, so only ENQUEUED/BLOCKED nodes count.
+     * On failure it reports "nothing queued": a stray duplicate reminder is a far
+     * smaller harm than a cadence that silently stops re-arming.
+     */
+    private suspend fun hasPendingCalendarRun(workManager: WorkManager): Boolean =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                workManager.getWorkInfosForUniqueWork(CALENDAR_WORK_NAME).get().any {
+                    it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.BLOCKED
+                }
+            }.getOrDefault(false)
+        }
 
     private fun canPostNotifications(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -168,9 +191,18 @@ class ScanReminderWorker(
             workManager.enqueueUniqueWork(CALENDAR_WORK_NAME, policy, request)
         }
 
-        /** Minutes from [now] to [REMINDER_HOUR] on the 1st of the following month. */
+        /**
+         * Minutes from [now] to the next [REMINDER_HOUR] on the 1st. This month's
+         * occurrence counts while it is still ahead — unconditionally targeting the
+         * following month meant a re-schedule early on the 1st skipped that month.
+         */
         internal fun minutesUntilNextMonthStart(now: LocalDateTime): Long {
-            val next = YearMonth.from(now).plusMonths(1).atDay(1).atTime(REMINDER_HOUR, 0)
+            val thisMonth = YearMonth.from(now).atDay(1).atTime(REMINDER_HOUR, 0)
+            val next = if (thisMonth.isAfter(now)) {
+                thisMonth
+            } else {
+                YearMonth.from(now).plusMonths(1).atDay(1).atTime(REMINDER_HOUR, 0)
+            }
             return ChronoUnit.MINUTES.between(now, next)
         }
     }

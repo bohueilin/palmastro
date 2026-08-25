@@ -28,10 +28,25 @@ class ResultRepository @Inject constructor(
      * PK is a fresh UUID per scan, so without the delete a same-month rescan would leave
      * two rows behind (duplicate History entries, bogus intra-month delta). Mirrors the
      * delete-then-insert pattern of [saveDelta].
+     *
+     * Leaves the month's delta row alone: a caller that computed a delta for this reading
+     * may already have written it. Use the [saveResult] overload that takes the delta to
+     * replace a reading and its delta together — that is the form a scan should call.
      */
     suspend fun saveResult(result: MonthlyResultEntity) {
         monthlyResultDao.deleteByMonth(result.monthKey)
         monthlyResultDao.insert(result)
+    }
+
+    /**
+     * Replaces the month's reading AND its delta in one step. The stored delta describes
+     * the reading it was computed against, so a replaced reading can never keep the
+     * previous scan's arrows: a null [delta] (no comparable previous month) clears the row
+     * instead of leaving it behind.
+     */
+    suspend fun saveResult(result: MonthlyResultEntity, delta: DeltaResult?) {
+        saveResult(result)
+        if (delta == null) clearDeltaFor(result.monthKey) else saveDelta(result.monthKey, delta)
     }
 
     suspend fun getByMonth(monthKey: String): MonthlyResultEntity? = monthlyResultDao.getByMonth(monthKey)
@@ -46,6 +61,12 @@ class ResultRepository @Inject constructor(
 
     suspend fun getDeltaFor(monthKey: String): DeltaResult? =
         deltaDao.getByMonth(monthKey)?.toDeltaResult()
+
+    /**
+     * Drops the stored delta for [monthKey]. The scan path calls this when the new reading
+     * has no comparable previous month, so no stale arrows survive the rescan.
+     */
+    suspend fun clearDeltaFor(monthKey: String) = deltaDao.deleteByMonth(monthKey)
 
     private fun DeltaResult.toEntity(monthKey: String) = DeltaEntity(
         currentMonthKey = monthKey,

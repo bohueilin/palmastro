@@ -43,7 +43,9 @@
 "onboarding_birthtime_known" = "我知道出生時間";
 "onboarding_birthtime_label" = "出生時間";
 "onboarding_birthplace_lat" = "出生地緯度（例：25.03）";
+"onboarding_birthplace_lat_invalid" = "這個緯度無法使用——請輸入 -90 到 90 之間的數字，例如 25.03。";
 "onboarding_birthplace_lon" = "出生地經度（例：121.56）";
+"onboarding_birthplace_lon_invalid" = "這個經度無法使用——請輸入 -180 到 180 之間的數字，例如 121.56。";
 "onboarding_birthtime_l1_note" = "沒關係——解讀將使用僅生日模式，並清楚標示。";
 "onboarding_tone_title" = "你偏好的解讀語氣";
 "tone_analytical" = "理性分析";

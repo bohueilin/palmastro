@@ -147,13 +147,23 @@ class SettingsViewModel @Inject constructor(
         return buildString {
             appendLine("PalmAstro diagnostics")
             appendLine("app: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-            appendLine("language: ${s.language}")
+            appendLine("language pref: ${s.language}")
+            appendLine("locale: ${resolvedLocaleTag()}")
             appendLine("device: ${Build.MANUFACTURER} ${Build.MODEL}")
             appendLine("android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})")
             appendLine("flags:")
             append(flags)
         }
     }
+
+    /**
+     * The locale actually in force, which is what a support ticket needs: the profile
+     * preference reads "system" for most users and says nothing about what they saw.
+     * runCatching so a host without real resources still produces a usable report.
+     */
+    private fun resolvedLocaleTag(): String = runCatching {
+        appContext.resources.configuration.locales[0].toLanguageTag()
+    }.getOrDefault("unknown")
 
     private fun scheduleReminder(reminders: String) {
         // runCatching: WorkManager is not initialized in JVM unit tests.

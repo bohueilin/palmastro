@@ -57,9 +57,13 @@ fun AppNavigation(
     NavHost(navController = navController, startDestination = startRoute) {
         composable(Route.Onboarding.path) {
             OnboardingScreen(onComplete = {
-                navController.navigate(Route.Scan.path) {
+                // Two hops, deliberately: Results is seated BENEATH the scanner so the first
+                // run never has [scan] alone on the stack. With nothing underneath, both
+                // system back and the scanner's own exit would have to close the app.
+                navController.navigate("results") {
                     popUpTo(Route.Onboarding.path) { inclusive = true }
                 }
+                navController.navigate(Route.Scan.path)
             })
         }
         composable(
@@ -85,18 +89,28 @@ fun AppNavigation(
             )
         }
         composable(Route.Scan.path) {
-            ScanScreen(onComplete = {
-                // Results loads once (one-shot): after an in-app rescan the Results beneath
-                // the scanner is STALE, so pop it (plus the scanner) and load a fresh one.
-                // On the first-run onboarding -> scan path no Results exists yet; popping the
-                // scan screen itself keeps start-destination/back behavior unchanged there.
-                val staleResults =
-                    runCatching { navController.getBackStackEntry(Route.Results.path) }.isSuccess
-                val popTarget = if (staleResults) Route.Results.path else Route.Scan.path
-                navController.navigate("results?fresh=true") {
-                    popUpTo(popTarget) { inclusive = true }
-                }
-            })
+            ScanScreen(
+                onComplete = {
+                    // Results loads once (one-shot): after a scan the Results beneath the
+                    // scanner is STALE, so pop it (plus the scanner) and load a fresh one.
+                    // The lookup still guards the case of a Scan entry reached some other
+                    // way, where popping the scanner itself is the correct target.
+                    val staleResults =
+                        runCatching { navController.getBackStackEntry(Route.Results.path) }.isSuccess
+                    val popTarget = if (staleResults) Route.Results.path else Route.Scan.path
+                    navController.navigate("results?fresh=true") {
+                        popUpTo(popTarget) { inclusive = true }
+                    }
+                },
+                // Leaving the scan is a navigation, never a back press: back lands on
+                // whatever happens to sit under the scanner, and "leave the scan" has to
+                // mean Results even when that is nothing at all.
+                onExit = {
+                    navController.navigate("results") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+            )
         }
         composable(Route.Settings.path) {
             SettingsScreen(

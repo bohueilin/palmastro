@@ -78,8 +78,9 @@ class ResultsViewModel @Inject constructor(
     private val featureFlags: FeatureFlags,
     // Lazy, not the builder itself: constructing it parses the 139 KB content templates,
     // and Hilt builds this view model inside the first composition of the start screen.
-    // Default keeps existing direct constructions compiling; Hilt injects the singleton.
-    private val guidanceBuilder: Lazy<GuidanceBuilder> = Lazy<GuidanceBuilder> { GuidanceBuilder() },
+    // No default — a SAM-converted default would rebuild the parser on every get(),
+    // which is exactly what the Lazy exists to avoid. Hilt injects the singleton.
+    private val guidanceBuilder: Lazy<GuidanceBuilder>,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ResultsState())

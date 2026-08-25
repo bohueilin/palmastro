@@ -30,6 +30,11 @@ class ResultsViewModelTest {
     private val featureFlags = mockk<FeatureFlags>()
     private val testDispatcher = UnconfinedTestDispatcher()
 
+    // The production Lazy resolves to one singleton; this one resolves to one mock, so a
+    // test can still assert how many times the (single) builder was asked to build.
+    private val guidanceBuilder = mockk<GuidanceBuilder>()
+    private val lazyGuidanceBuilder = Lazy<GuidanceBuilder> { guidanceBuilder }
+
     private fun makePayload(domain: String, pattern: String, language: String = "en") = SemanticPayload(
         domain = domain, monthKey = "2026-03", calcLevel = CalcLevel.L2, confidence = "med",
         language = language,
@@ -79,6 +84,8 @@ class ResultsViewModelTest {
         clearAllMocks()
         every { featureFlags.shareCardsEnabled } returns true
         coEvery { resultRepository.getDeltaFor(any()) } returns null
+        every { guidanceBuilder.build(any(), any(), any()) } returns
+            Guidance(monthTheme = "主題", strengths = emptyList(), mindful = emptyList(), weekPlan = emptyList())
     }
 
     @AfterEach
@@ -87,7 +94,9 @@ class ResultsViewModelTest {
     // The guidance build runs on the injected dispatcher; pinning it to the test
     // dispatcher keeps state assertions immediate after construction.
     private fun createViewModel(handle: SavedStateHandle = SavedStateHandle()) =
-        ResultsViewModel(handle, resultRepository, userRepository, featureFlags, ioDispatcher = testDispatcher)
+        ResultsViewModel(
+            handle, resultRepository, userRepository, featureFlags, lazyGuidanceBuilder, testDispatcher,
+        )
 
     @Test
     fun `load sets hasResults false when no results`() = runTest {

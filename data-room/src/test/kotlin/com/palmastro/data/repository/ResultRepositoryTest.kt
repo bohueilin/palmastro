@@ -131,6 +131,38 @@ class ResultRepositoryTest {
     }
 
     @Test
+    fun `saveResult with a delta replaces the reading and its delta together`() = runTest {
+        val rescan = makeResult(id = "r-2", monthKey = "2026-07")
+
+        repo.saveResult(rescan, makeDelta())
+
+        coVerifyOrder {
+            monthlyResultDao.deleteByMonth("2026-07")
+            monthlyResultDao.insert(rescan)
+            deltaDao.deleteByMonth("2026-07")
+            deltaDao.insert(any())
+        }
+    }
+
+    @Test
+    fun `saveResult with no delta clears the previous scan's delta row`() = runTest {
+        // A rescan with no comparable previous month must not keep the earlier scan's
+        // arrows beside brand-new scores.
+        repo.saveResult(makeResult(monthKey = "2026-07"), delta = null)
+
+        coVerify(exactly = 1) { deltaDao.deleteByMonth("2026-07") }
+        coVerify(exactly = 0) { deltaDao.insert(any()) }
+    }
+
+    @Test
+    fun `clearDeltaFor drops the delta row for that month only`() = runTest {
+        repo.clearDeltaFor("2026-07")
+
+        coVerify(exactly = 1) { deltaDao.deleteByMonth("2026-07") }
+        coVerify(exactly = 0) { deltaDao.deleteByMonth("2026-06") }
+    }
+
+    @Test
     fun `getByMonth returns the row the dao resolved for the month`() = runTest {
         val newest = makeResult(id = "r-2", createdAt = 2_000L)
         coEvery { monthlyResultDao.getByMonth("2026-07") } returns newest

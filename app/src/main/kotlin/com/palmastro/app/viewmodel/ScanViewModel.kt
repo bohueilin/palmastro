@@ -48,8 +48,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -84,9 +87,11 @@ data class ScanState(
 
 /**
  * One captured angle, persisted next to its frame so a process kill mid-scan does not
- * throw away work whose photos are still on disk. Carries gate scores and derived
- * metrics only — never image bytes — and lives inside the scan directory, so every
- * existing cleanup path (pipeline, wipe, retention worker) already removes it.
+ * throw away work whose photos are still on disk. Gate scores only: this file is plaintext
+ * JSON, and palm landmarks plus line-region statistics are biometric data, which never
+ * leaves the encrypted store — they are recomputed from the frame on restore instead. Lives
+ * inside the scan directory, so every existing cleanup path (pipeline, wipe, retention
+ * worker) already removes it.
  */
 @Serializable
 internal data class ScanAngleSnapshot(
@@ -98,7 +103,6 @@ internal data class ScanAngleSnapshot(
     val coverage: Float,
     val stability: Float,
     val composite: Int,
-    val palmMetrics: PalmMetrics? = null,
 )
 
 @HiltViewModel
@@ -135,6 +139,12 @@ class ScanViewModel @Inject constructor(
 
     /** In-flight model acquisition; guards Retry against starting a second one. */
     private var modelJob: Job? = null
+
+    /** Serializes sidecar rewrites: a retake and the next capture must not interleave. */
+    private val progressMutex = Mutex()
+
+    /** Restore's palm-metric rebuild; [runPipeline] joins it so no frame enters extraction bare. */
+    private var restoreJob: Job? = null
     private var scanStartEmitted = false
     private var scanStartTimeMs = 0L
 
@@ -231,17 +241,19 @@ class ScanViewModel @Inject constructor(
     }
 
     /**
-     * Re-adopts frames captured before a process kill: the sidecar written at capture time
-     * carries the gate scores and palm metrics, so nothing is decoded or re-analyzed here
-     * and the restore does not have to wait for the model.
+     * Re-adopts frames captured before a process kill. The sidecar carries gate scores only,
+     * so the palm metrics are rebuilt from the frames still on disk once the landmarker is up.
      */
     private fun restoreCaptureProgress() {
-        viewModelScope.launch {
+        restoreJob = viewModelScope.launch {
             val monthKey = YearMonth.now().toString()
             val snapshots = withContext(ioDispatcher) { readScanProgress(appContext.filesDir, monthKey) }
             if (snapshots.isEmpty() || _state.value.completedAngles.isNotEmpty()) return@launch
             val restored = LinkedHashSet<Angle>()
-            for (angle in angles) {
+            // dropLast(1): never restore into a state with nothing left to capture. The final
+            // angle is always re-shot, so the user reaches the pipeline by tapping the shutter
+            // rather than being dropped straight back into a run that may have just failed.
+            for (angle in angles.dropLast(1)) {
                 val snapshot = snapshots.firstOrNull { it.angle == angle.name }
                 // Stop at the first gap — a missing sidecar entry or a frame that was
                 // cleaned up underneath us — so the maps and the derived index stay
@@ -249,30 +261,66 @@ class ScanViewModel @Inject constructor(
                 if (snapshot == null || !File(snapshot.path).exists()) break
                 capturedPaths[angle] = snapshot.path
                 qualityResults[angle] = snapshot.toScores()
-                palmMetricsByAngle[angle] = snapshot.palmMetrics
                 restored += angle
             }
             if (restored.isEmpty()) return@launch
             _state.update { it.copy(completedAngles = restored, currentAngleIndex = restored.size) }
-            // Killed after the last capture but before the pipeline finished: run it rather
-            // than stranding the user on a capture screen with no angle left to shoot.
-            if (restored.size == angles.size) runPipeline()
+            // scan_start was already emitted before the kill: re-emitting would double-count
+            // the funnel, and an unseeded start time would report an absurd scan duration.
+            scanStartEmitted = true
+            scanStartTimeMs = System.currentTimeMillis()
+            rederivePalmMetrics(restored)
         }
     }
 
-    private suspend fun persistCaptureProgress() {
-        val monthKey = YearMonth.now().toString()
-        val snapshots = angles.takeWhile { capturedPaths.containsKey(it) }.map { angle ->
-            val scores = qualityResults.getValue(angle)
-            ScanAngleSnapshot(
-                angle = angle.name,
-                path = capturedPaths.getValue(angle),
-                blur = scores.blur, glare = scores.glare, exposure = scores.exposure,
-                coverage = scores.coverage, stability = scores.stability, composite = scores.composite,
-                palmMetrics = palmMetricsByAngle[angle],
-            )
+    /**
+     * Rebuilds what the sidecar deliberately does not store, once the landmarker exists. The
+     * wait is on the state rather than on [modelJob] because restore starts during
+     * construction, before the model check has even been launched — and it must survive a
+     * failed download the user later retries. Nothing can reach the pipeline before the model
+     * is ready, so this can only stall for as long as the scan itself is blocked; a scan the
+     * user abandons takes the wait down with the ViewModel.
+     */
+    private suspend fun rederivePalmMetrics(restored: Collection<Angle>) {
+        state.first { it.modelReady }
+        withContext(ioDispatcher) { restored.forEach { rebuildMetricsFor(it) } }
+    }
+
+    /**
+     * Best-effort by design: a frame that will not decode keeps null metrics, exactly as an
+     * angle captured before the model was ready would, and the restore itself still stands.
+     */
+    private fun rebuildMetricsFor(angle: Angle) {
+        // A retake between the restore and here drops the angle: nothing to rebuild.
+        val path = capturedPaths[angle] ?: return
+        runCatching {
+            val bitmap = decodeSampledBitmap(path) ?: return
+            palmMetricsByAngle[angle] = analyzeGuarded(bitmap)?.palmMetrics
+            bitmap.recycle()
         }
-        withContext(ioDispatcher) { writeScanProgress(appContext.filesDir, monthKey, snapshots) }
+    }
+
+    /**
+     * Serialized under [progressMutex], and the snapshot list is built inside the lock: a
+     * retake and the capture that follows it would otherwise each write a list computed
+     * before the other's edits to the maps, and the loser would publish stale progress.
+     */
+    @VisibleForTesting
+    internal suspend fun persistCaptureProgress() {
+        progressMutex.withLock {
+            val monthKey = YearMonth.now().toString()
+            val snapshots = angles.takeWhile { capturedPaths.containsKey(it) }.map { angle ->
+                val scores = qualityResults.getValue(angle)
+                ScanAngleSnapshot(
+                    angle = angle.name,
+                    path = capturedPaths.getValue(angle),
+                    blur = scores.blur, glare = scores.glare, exposure = scores.exposure,
+                    coverage = scores.coverage, stability = scores.stability,
+                    composite = scores.composite,
+                )
+            }
+            withContext(ioDispatcher) { writeScanProgress(appContext.filesDir, monthKey, snapshots) }
+        }
     }
 
     /**
@@ -403,12 +451,16 @@ class ScanViewModel @Inject constructor(
     fun retakePreviousAngle() {
         val newIndex = (_state.value.currentAngleIndex - 1).coerceAtLeast(0)
         val angle = angles[newIndex]
-        capturedPaths.remove(angle)
+        val rejectedPath = capturedPaths.remove(angle)
         qualityResults.remove(angle)
         palmMetricsByAngle.remove(angle)
-        // The rejected frame stays on disk until cleanup, so the sidecar must forget it
-        // now — otherwise a process kill would resurrect the very angle being retaken.
-        viewModelScope.launch { persistCaptureProgress() }
+        // Delete the frame BEFORE rewriting the sidecar, and await the rewrite: restore
+        // validates every snapshot against its file, so a kill in between can no longer
+        // resurrect the angle being retaken, whichever of the two writes landed.
+        viewModelScope.launch {
+            withContext(ioDispatcher) { rejectedPath?.let { File(it).delete() } }
+            persistCaptureProgress()
+        }
         _state.update {
             it.copy(
                 currentAngleIndex = newIndex,
@@ -519,6 +571,9 @@ class ScanViewModel @Inject constructor(
         val inferenceStartMs = System.currentTimeMillis()
         viewModelScope.launch {
             try {
+                // A restored session rebuilds its palm metrics off the main path; entering
+                // extraction first would hand the extractor frames stripped of their metrics.
+                restoreJob?.join()
                 val profile = userRepository.get()
                 if (profile == null) {
                     analytics.emit("inference_fail", mapOf("reason" to "no_profile"))

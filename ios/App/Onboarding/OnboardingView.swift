@@ -132,9 +132,15 @@ struct OnboardingView: View {
                     TextField("onboarding_birthplace_lat", text: $birthPlaceLatText)
                         .keyboardType(.numbersAndPunctuation)
                         .textFieldStyle(.roundedBorder)
+                    if latitudeIsUnusable {
+                        coordinateWarning("onboarding_birthplace_lat_invalid")
+                    }
                     TextField("onboarding_birthplace_lon", text: $birthPlaceLonText)
                         .keyboardType(.numbersAndPunctuation)
                         .textFieldStyle(.roundedBorder)
+                    if longitudeIsUnusable {
+                        coordinateWarning("onboarding_birthplace_lon_invalid")
+                    }
                 } else {
                     Text("onboarding_birthtime_l1_note").font(.footnote).foregroundStyle(.secondary)
                 }
@@ -254,6 +260,27 @@ struct OnboardingView: View {
         return value
     }
 
+    private var latitude: Double? { Self.coordinate(birthPlaceLatText, limit: 90) }
+    private var longitude: Double? { Self.coordinate(birthPlaceLonText, limit: 180) }
+
+    /// Typed something that will be thrown away. Without this the rejection is
+    /// invisible: "25,03" or "250" silently drops the reading back to L1 with
+    /// nothing on screen to explain why the birth time was not enough.
+    private var latitudeIsUnusable: Bool { isUnusable(birthPlaceLatText, parsed: latitude) }
+    private var longitudeIsUnusable: Bool { isUnusable(birthPlaceLonText, parsed: longitude) }
+
+    private func isUnusable(_ text: String, parsed: Double?) -> Bool {
+        parsed == nil && !text.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    /// A coaching note, not an error: the field stays optional, so the tone
+    /// matches the rest of onboarding rather than the platform's alarm red.
+    private func coordinateWarning(_ key: LocalizedStringKey) -> some View {
+        Label(key, systemImage: "exclamationmark.circle")
+            .font(.footnote)
+            .foregroundStyle(BrandPalette.gradeWatchOut)
+    }
+
     private func completeOnboarding() {
         var profile = model.profile
         profile.displayName = displayName
@@ -263,8 +290,6 @@ struct OnboardingView: View {
         }
         profile.dominantHand = dominantHand ?? .RIGHT
         profile.relationshipStatus = relationshipStatus
-        let latitude = Self.coordinate(birthPlaceLatText, limit: 90)
-        let longitude = Self.coordinate(birthPlaceLonText, limit: 180)
         if birthTimeKnown {
             let time = Calendar.current.dateComponents([.hour, .minute], from: birthTimeDate)
             profile.birthTime = CivilTime(hour: time.hour ?? 0, minute: time.minute ?? 0)
