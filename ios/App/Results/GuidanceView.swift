@@ -60,7 +60,10 @@ struct GuidanceView: View {
             if !guidance.strengths.isEmpty {
                 Section {
                     ForEach(Array(guidance.strengths.enumerated()), id: \.offset) { _, item in
-                        GuidanceCard(item: item, icon: "leaf", accent: .green, kindKey: "guidance_lean_into_header")
+                        GuidanceCard(
+                            item: item, icon: "leaf",
+                            accent: BrandPalette.gradeGrowing, kindKey: "guidance_lean_into_header"
+                        )
                     }
                 } header: {
                     Text("guidance_lean_into_header")
@@ -75,7 +78,10 @@ struct GuidanceView: View {
                 // text, never alarm-red (PRD §12.3).
                 Section {
                     ForEach(Array(guidance.mindful.enumerated()), id: \.offset) { _, item in
-                        GuidanceCard(item: item, icon: "moon.stars", accent: .indigo, kindKey: "guidance_mindful_header")
+                        GuidanceCard(
+                            item: item, icon: "moon.stars",
+                            accent: BrandPalette.gradeBuilding, kindKey: "guidance_mindful_header"
+                        )
                     }
                 } header: {
                     Text("guidance_mindful_header")

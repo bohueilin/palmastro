@@ -43,11 +43,16 @@ import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -69,8 +74,31 @@ data class ScanState(
     val showFlash: Boolean = false,
     val modelReady: Boolean = false,
     val modelDownloading: Boolean = false,
+    /** Bytes fetched so far in the one-time model download. */
+    val modelDownloadedBytes: Long = 0L,
+    /** Total download size; 0 when the server sent no Content-Length. */
+    val modelTotalBytes: Long = 0L,
     /** Blocking model-acquisition error; UI shows retry via [retryModelDownload]. */
     val modelError: ScanError? = null,
+)
+
+/**
+ * One captured angle, persisted next to its frame so a process kill mid-scan does not
+ * throw away work whose photos are still on disk. Carries gate scores and derived
+ * metrics only — never image bytes — and lives inside the scan directory, so every
+ * existing cleanup path (pipeline, wipe, retention worker) already removes it.
+ */
+@Serializable
+internal data class ScanAngleSnapshot(
+    val angle: String,
+    val path: String,
+    val blur: Float,
+    val glare: Float,
+    val exposure: Float,
+    val coverage: Float,
+    val stability: Float,
+    val composite: Int,
+    val palmMetrics: PalmMetrics? = null,
 )
 
 @HiltViewModel
@@ -104,6 +132,9 @@ class ScanViewModel @Inject constructor(
 
     @Volatile
     private var analyzerClosed = false
+
+    /** In-flight model acquisition; guards Retry against starting a second one. */
+    private var modelJob: Job? = null
     private var scanStartEmitted = false
     private var scanStartTimeMs = 0L
 
@@ -130,22 +161,33 @@ class ScanViewModel @Inject constructor(
     }
 
     init {
+        restoreCaptureProgress()
         checkAndDownloadModel()
     }
 
+    /**
+     * Model acquisition never touches the main thread: the readiness probe, the 7.8 MB
+     * file read and the native landmarker graph build all cost hundreds of milliseconds,
+     * and this ViewModel is constructed during composition of the scan screen.
+     */
     private fun checkAndDownloadModel() {
-        if (ModelManager.isModelReady(appContext)) {
-            initAnalyzer()
-            return
-        }
-        _state.update { it.copy(modelDownloading = true, modelError = null) }
-        viewModelScope.launch {
-            val result = withContext(ioDispatcher) {
-                ModelManager.downloadModel(appContext)
-            }
-            result.fold(
-                onSuccess = { initAnalyzer() },
-                onFailure = { t ->
+        // A second tap on Retry must not race a first in-flight attempt into two analyzers.
+        if (modelJob?.isActive == true) return
+        modelJob = viewModelScope.launch {
+            val ready = withContext(ioDispatcher) { ModelManager.isModelReady(appContext) }
+            if (!ready) {
+                _state.update {
+                    it.copy(
+                        modelDownloading = true, modelError = null,
+                        modelDownloadedBytes = 0L, modelTotalBytes = 0L,
+                    )
+                }
+                val result = withContext(ioDispatcher) {
+                    ModelManager.downloadModel(appContext) { downloaded, total ->
+                        _state.update { it.copy(modelDownloadedBytes = downloaded, modelTotalBytes = total) }
+                    }
+                }
+                result.exceptionOrNull()?.let { t ->
                     _state.update {
                         it.copy(
                             modelDownloading = false,
@@ -153,29 +195,94 @@ class ScanViewModel @Inject constructor(
                                 ?: ScanError.MODEL_DOWNLOAD_FAILED,
                         )
                     }
-                },
-            )
+                    return@launch
+                }
+            }
+            initAnalyzer()
         }
     }
 
-    private fun initAnalyzer() {
-        try {
-            val source = ModelManager.getModelSource(appContext)
-            analyzer = analyzerFactory.create(appContext, source)
-            _state.update { it.copy(modelReady = true, modelDownloading = false, modelError = null) }
-        } catch (t: Throwable) {
-            // Landmarker refused the model file (truncated/corrupt): delete the download
-            // so retry fetches fresh bytes, and surface a typed corrupt-model state.
-            ModelManager.deleteDownloadedModel(appContext)
-            analyzer = null
-            _state.update {
-                it.copy(modelReady = false, modelDownloading = false, modelError = ScanError.MODEL_CORRUPT)
-            }
+    private suspend fun initAnalyzer() {
+        val created = withContext(ioDispatcher) {
+            runCatching { analyzerFactory.create(appContext, ModelManager.getModelSource(appContext)) }
         }
+        created.fold(
+            onSuccess = { instance ->
+                // onCleared can run while the factory is still on IO: close, never leak.
+                synchronized(analyzerLock) { if (analyzerClosed) instance.close() else analyzer = instance }
+                if (!analyzerClosed) {
+                    _state.update { it.copy(modelReady = true, modelDownloading = false, modelError = null) }
+                }
+            },
+            onFailure = {
+                // Landmarker refused the model file (truncated/corrupt): delete the download
+                // so retry fetches fresh bytes, and surface a typed corrupt-model state.
+                withContext(ioDispatcher) { ModelManager.deleteDownloadedModel(appContext) }
+                synchronized(analyzerLock) { analyzer = null }
+                _state.update {
+                    it.copy(modelReady = false, modelDownloading = false, modelError = ScanError.MODEL_CORRUPT)
+                }
+            },
+        )
     }
 
     fun retryModelDownload() {
         checkAndDownloadModel()
+    }
+
+    /**
+     * Re-adopts frames captured before a process kill: the sidecar written at capture time
+     * carries the gate scores and palm metrics, so nothing is decoded or re-analyzed here
+     * and the restore does not have to wait for the model.
+     */
+    private fun restoreCaptureProgress() {
+        viewModelScope.launch {
+            val monthKey = YearMonth.now().toString()
+            val snapshots = withContext(ioDispatcher) { readScanProgress(appContext.filesDir, monthKey) }
+            if (snapshots.isEmpty() || _state.value.completedAngles.isNotEmpty()) return@launch
+            val restored = LinkedHashSet<Angle>()
+            for (angle in angles) {
+                val snapshot = snapshots.firstOrNull { it.angle == angle.name }
+                // Stop at the first gap — a missing sidecar entry or a frame that was
+                // cleaned up underneath us — so the maps and the derived index stay
+                // contiguous.
+                if (snapshot == null || !File(snapshot.path).exists()) break
+                capturedPaths[angle] = snapshot.path
+                qualityResults[angle] = snapshot.toScores()
+                palmMetricsByAngle[angle] = snapshot.palmMetrics
+                restored += angle
+            }
+            if (restored.isEmpty()) return@launch
+            _state.update { it.copy(completedAngles = restored, currentAngleIndex = restored.size) }
+            // Killed after the last capture but before the pipeline finished: run it rather
+            // than stranding the user on a capture screen with no angle left to shoot.
+            if (restored.size == angles.size) runPipeline()
+        }
+    }
+
+    private suspend fun persistCaptureProgress() {
+        val monthKey = YearMonth.now().toString()
+        val snapshots = angles.takeWhile { capturedPaths.containsKey(it) }.map { angle ->
+            val scores = qualityResults.getValue(angle)
+            ScanAngleSnapshot(
+                angle = angle.name,
+                path = capturedPaths.getValue(angle),
+                blur = scores.blur, glare = scores.glare, exposure = scores.exposure,
+                coverage = scores.coverage, stability = scores.stability, composite = scores.composite,
+                palmMetrics = palmMetricsByAngle[angle],
+            )
+        }
+        withContext(ioDispatcher) { writeScanProgress(appContext.filesDir, monthKey, snapshots) }
+    }
+
+    /**
+     * Post-analysis cleanup. The progress sidecar has done its job either way; with
+     * retention off the frames go too, because the policy promises photos are not kept
+     * after analysis and the periodic cleanup worker is up to six hours away.
+     */
+    private fun clearScanCaptures(monthKey: String, keepPhotos: Boolean) {
+        val scanDir = File(appContext.filesDir, "scans/$monthKey")
+        if (keepPhotos) File(scanDir, PROGRESS_FILE).delete() else scanDir.deleteRecursively()
     }
 
     fun captureCurrentAngle() {
@@ -239,7 +346,7 @@ class ScanViewModel @Inject constructor(
             val gateResult = qualityGate.evaluateAngle(angle, scores)
 
             if (!gateResult.passed) {
-                val reason = gateResult.failReason ?: "hand_not_detected"
+                val reason = coachingReasonFor(gateResult.failReason, metrics)
                 analytics.emit(
                     "scan_angle_quality_fail",
                     mapOf("angle" to angle.name.lowercase(Locale.ROOT), "reason" to reason),
@@ -254,6 +361,7 @@ class ScanViewModel @Inject constructor(
             capturedPaths[angle] = file.absolutePath
             qualityResults[angle] = scores
             palmMetricsByAngle[angle] = metrics.palmMetrics
+            persistCaptureProgress()
             analytics.emit("scan_angle_pass", mapOf("angle" to angle.name.lowercase(Locale.ROOT)))
 
             _state.update {
@@ -279,12 +387,28 @@ class ScanViewModel @Inject constructor(
         }
     }
 
+    /**
+     * The exposure channel is symmetric around mid-grey, so the gate reports "low_light"
+     * for a blown-out frame just as it does for a dark one. Mean brightness resolves the
+     * direction before the coaching copy AND the analytics dimension are decided: telling
+     * someone in direct sun to find more light makes their next frame worse.
+     */
+    @VisibleForTesting
+    internal fun coachingReasonFor(failReason: String?, metrics: ImageQualityMetrics): String {
+        val reason = failReason ?: "hand_not_detected"
+        val overExposed = reason == "low_light" && metrics.meanBrightness > OVEREXPOSED_MEAN
+        return if (overExposed) "over_exposure" else reason
+    }
+
     fun retakePreviousAngle() {
         val newIndex = (_state.value.currentAngleIndex - 1).coerceAtLeast(0)
         val angle = angles[newIndex]
         capturedPaths.remove(angle)
         qualityResults.remove(angle)
         palmMetricsByAngle.remove(angle)
+        // The rejected frame stays on disk until cleanup, so the sidecar must forget it
+        // now — otherwise a process kill would resurrect the very angle being retaken.
+        viewModelScope.launch { persistCaptureProgress() }
         _state.update {
             it.copy(
                 currentAngleIndex = newIndex,
@@ -313,10 +437,31 @@ class ScanViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        synchronized(analyzerLock) {
-            analyzerClosed = true
-            analyzer?.close()
-            analyzer = null
+        // @Volatile: any analyzeGuarded that has not yet entered the monitor bails out here.
+        analyzerClosed = true
+        // viewModelScope is already cancelled by ViewModel.clear(), and the in-flight
+        // analyze() is uninterruptible CPU/JNI work, so the close has to wait for the
+        // monitor on a background thread rather than parking the UI thread on it.
+        CoroutineScope(SupervisorJob() + ioDispatcher).launch {
+            synchronized(analyzerLock) {
+                analyzer?.close()
+                analyzer = null
+            }
+            discardAbandonedCaptures()
+        }
+    }
+
+    /**
+     * Retention off means no palm photo outlives the scan (privacy policy §6). runPipeline
+     * covers a finished scan; this covers frames left behind when the user walks away
+     * mid-capture, which the periodic cleanup worker would not reach for hours.
+     */
+    private suspend fun discardAbandonedCaptures() {
+        if (capturedPaths.isEmpty()) return
+        runCatching {
+            if (userRepository.get()?.rawMediaRetention == false) {
+                File(appContext.filesDir, "scans/${YearMonth.now()}").deleteRecursively()
+            }
         }
     }
 
@@ -417,9 +562,12 @@ class ScanViewModel @Inject constructor(
                 val avgQuality = qualityResults.values
                     .map { it.composite }.average().toInt()
 
-                val prevEntity = resultRepository.getRecent(1).firstOrNull()
+                // A same-month rescan replaces this month's own row, so the newest entry can
+                // be it: take the newest entry from a DIFFERENT month instead, or the rescan
+                // would keep the previous scan's arrows next to brand-new scores.
+                val prevEntity = resultRepository.getRecent(2).firstOrNull { it.monthKey != monthKey }
                 var deltaResult: DeltaResult? = null
-                if (prevEntity != null && prevEntity.monthKey != monthKey) {
+                if (prevEntity != null) {
                     val currentMonthly = MonthlyResult(
                         resultId = "pending",
                         monthKey = monthKey,
@@ -465,6 +613,7 @@ class ScanViewModel @Inject constructor(
                 }
 
                 val resultId = UUID.randomUUID().toString()
+                val keepPhotos = profile.rawMediaRetention
                 resultRepository.saveResult(
                     MonthlyResultEntity(
                         id = resultId,
@@ -484,9 +633,12 @@ class ScanViewModel @Inject constructor(
                         contentVersion = contentComposer.templatesVersion,
                         scanQualityScore = avgQuality,
                         featureCoverage = palmResult.featureCoverage,
-                        scanImagePath = "scans/$monthKey",
+                        scanImagePath = if (keepPhotos) "scans/$monthKey" else "",
                     )
                 )
+                // Deleted only on the success path: retryProcessing() re-feeds these same
+                // files into the extractor, so a failed pipeline must keep them.
+                withContext(ioDispatcher) { clearScanCaptures(monthKey, keepPhotos) }
 
                 analytics.emit(
                     "inference_success",
@@ -601,5 +753,47 @@ class ScanViewModel @Inject constructor(
         const val CAPTURE_TARGET_HEIGHT = 1200
         /** Hard cap on the decoded analysis bitmap, whatever the camera delivered. */
         const val MAX_ANALYSIS_PIXELS = 2_000_000L
+
+        /**
+         * Mean luminance above which a weak exposure score means "too bright", not "too
+         * dark". Deliberately above mid-grey (127): near-neutral frames never score worst
+         * on exposure anyway, and the deadband keeps the coaching copy from flip-flopping.
+         */
+        const val OVEREXPOSED_MEAN = 140f
+    }
+}
+
+// ─── Capture-progress sidecar ───
+// Kept at file scope so the ViewModel carries only the scan flow itself.
+
+private const val PROGRESS_FILE = "progress.json"
+
+private val progressJson = Json { ignoreUnknownKeys = true }
+private val progressSerializer = ListSerializer(ScanAngleSnapshot.serializer())
+
+private fun ScanAngleSnapshot.toScores() =
+    QualityScores(blur, glare, exposure, coverage, stability, composite)
+
+private fun progressFile(filesDir: File, monthKey: String) =
+    File(File(filesDir, "scans/$monthKey"), PROGRESS_FILE)
+
+/** Returns an empty list for anything unreadable: a lost restore is never a failure. */
+private fun readScanProgress(filesDir: File, monthKey: String): List<ScanAngleSnapshot> {
+    val file = progressFile(filesDir, monthKey)
+    if (!file.exists()) return emptyList()
+    return runCatching {
+        progressJson.decodeFromString(progressSerializer, file.readText())
+    }.getOrDefault(emptyList())
+}
+
+private fun writeScanProgress(filesDir: File, monthKey: String, snapshots: List<ScanAngleSnapshot>) {
+    val file = progressFile(filesDir, monthKey)
+    if (snapshots.isEmpty()) {
+        file.delete()
+        return
+    }
+    runCatching {
+        file.parentFile?.mkdirs()
+        file.writeText(progressJson.encodeToString(progressSerializer, snapshots))
     }
 }

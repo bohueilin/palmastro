@@ -15,6 +15,13 @@ object ShareCardRenderer {
     private const val FOOTER_HEIGHT = 60f
     private const val PADDING = 48f
 
+    // Footer disclaimer: the safety note travels with the card once it leaves the app.
+    private const val DISCLAIMER_TEXT_SIZE = 20f
+    private const val DISCLAIMER_LINE_HEIGHT = 26f
+    private const val DISCLAIMER_MAX_LINES = 3
+    private const val DISCLAIMER_GAP = 24f
+    private const val WATERMARK_BASELINE = 20f
+
     private val headerColorStart = Color.parseColor("#5E35B1")
     private val headerColorEnd = Color.parseColor("#7E57C2")
 
@@ -34,6 +41,8 @@ object ShareCardRenderer {
         val actions: String,
         val reflection: String,
         val watermark: String,
+        /** Safety note printed above the watermark; blank renders no footer text. */
+        val disclaimer: String = "",
     )
 
     data class SummaryData(
@@ -62,8 +71,9 @@ object ShareCardRenderer {
     )
 
     fun renderSummaryCard(data: SummaryData, labels: CardLabels): Bitmap {
+        val discLines = disclaimerLines(labels.disclaimer)
         val bodyHeight = 60f + data.domains.size * 70f + 40f
-        val totalHeight = (HEADER_HEIGHT + bodyHeight + FOOTER_HEIGHT).toInt()
+        val totalHeight = (HEADER_HEIGHT + bodyHeight + footerHeight(discLines)).toInt()
         val bitmap = Bitmap.createBitmap(CARD_WIDTH, totalHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
@@ -129,11 +139,12 @@ object ShareCardRenderer {
         }
         canvas.drawText(data.confidenceLine, PADDING, y + 24f, confPaint)
 
-        drawFooter(canvas, totalHeight, labels.watermark)
+        drawFooter(canvas, totalHeight, labels.watermark, discLines)
         return bitmap
     }
 
     fun renderDomainDetailCard(data: DomainDetailData, labels: CardLabels): Bitmap {
+        val discLines = disclaimerLines(labels.disclaimer)
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 28f }
         val interpLines = wrapText(data.interpretation, textPaint, CARD_WIDTH - PADDING * 2, 3)
         val actionLines = wrapText(data.actionToday, textPaint, CARD_WIDTH - PADDING * 2, 2)
@@ -144,7 +155,7 @@ object ShareCardRenderer {
             40f + actionLines.size * 38f +
             40f + promptLines.size * 38f + 32f +
             PADDING
-        val totalHeight = (HEADER_HEIGHT + bodyHeight + FOOTER_HEIGHT).toInt()
+        val totalHeight = (HEADER_HEIGHT + bodyHeight + footerHeight(discLines)).toInt()
         val bitmap = Bitmap.createBitmap(CARD_WIDTH, totalHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
@@ -196,7 +207,7 @@ object ShareCardRenderer {
             py += 38f
         }
 
-        drawFooter(canvas, totalHeight, labels.watermark)
+        drawFooter(canvas, totalHeight, labels.watermark, discLines)
         return bitmap
     }
 
@@ -226,13 +237,44 @@ object ShareCardRenderer {
         canvas.drawText(title, PADDING, HEADER_HEIGHT / 2 + 14f, titlePaint)
     }
 
-    private fun drawFooter(canvas: Canvas, totalHeight: Int, watermark: String) {
+    /**
+     * The safety note as it will be drawn. Wrapped, because the copy runs well past one
+     * line at a readable size in every locale — a single drawText would centre it to a
+     * negative x and slide it off the card.
+     */
+    private fun disclaimerLines(disclaimer: String): List<String> =
+        if (disclaimer.isBlank()) {
+            emptyList()
+        } else {
+            wrapText(disclaimer, disclaimerPaint(), CARD_WIDTH - PADDING * 2, DISCLAIMER_MAX_LINES)
+        }
+
+    /** Footer grows with the wrapped note so it always stays inside the clipped card. */
+    private fun footerHeight(disclaimerLines: List<String>): Float =
+        FOOTER_HEIGHT + disclaimerLines.size * DISCLAIMER_LINE_HEIGHT
+
+    // #767676 measures 4.5:1 on the card's white ground; the lighter watermark grey
+    // does not, and this line has to be readable wherever the card is reposted.
+    private fun disclaimerPaint() = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#767676")
+        textSize = DISCLAIMER_TEXT_SIZE
+    }
+
+    private fun drawFooter(canvas: Canvas, totalHeight: Int, watermark: String, disclaimerLines: List<String>) {
+        val discPaint = disclaimerPaint()
+        var dy = totalHeight - WATERMARK_BASELINE - DISCLAIMER_GAP -
+            (disclaimerLines.size - 1) * DISCLAIMER_LINE_HEIGHT
+        for (line in disclaimerLines) {
+            canvas.drawText(line, (CARD_WIDTH - discPaint.measureText(line)) / 2, dy, discPaint)
+            dy += DISCLAIMER_LINE_HEIGHT
+        }
+
         val footerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#AAAAAA")
             textSize = 22f
         }
         val x = (CARD_WIDTH - footerPaint.measureText(watermark)) / 2
-        canvas.drawText(watermark, x, totalHeight - 20f, footerPaint)
+        canvas.drawText(watermark, x, totalHeight - WATERMARK_BASELINE, footerPaint)
     }
 
     private fun drawSection(canvas: Canvas, header: String, lines: List<String>, startY: Float): Float {

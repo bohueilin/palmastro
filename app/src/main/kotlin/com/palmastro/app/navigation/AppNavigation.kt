@@ -69,6 +69,9 @@ fun AppNavigation(
                 navArgument("fresh") { type = NavType.BoolType; defaultValue = false },
             ),
         ) { entry ->
+            // Only a pushed Results can be popped: a cold-start deep link replaces the
+            // start entry (launchSingleTop above), so monthKey alone is not the test.
+            val popResults: () -> Unit = { navController.popBackStack() }
             ResultsScreen(
                 freshArrival = entry.arguments?.getBoolean("fresh") ?: false,
                 onScanClick = { navController.navigate(Route.Scan.path) },
@@ -78,6 +81,7 @@ fun AppNavigation(
                 },
                 onHistoryClick = { navController.navigate("history") },
                 onGuidanceClick = { monthKey -> navController.navigate(guidanceRoute(monthKey)) },
+                onBack = popResults.takeIf { navController.previousBackStackEntry != null },
             )
         }
         composable(Route.Scan.path) {

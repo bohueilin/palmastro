@@ -47,6 +47,21 @@ import CoreContracts
             }
         }
     }
+
+    /// Polar latitudes must reach the formula unclamped up to ±89.9, matching
+    /// AstroMath.ascendantDegrees — a tighter clamp silently computes the
+    /// ascendant as if the user were born far to the south.
+    @Test func ascendantClampMatchesAndroidBound() {
+        // Tromso (69.6496 N): a ±66.5 clamp would collapse these two onto the
+        // same value, and the resolved sign would differ from Android's.
+        let tromso = Astronomy.ascendantLongitude(lstDegrees: 200, latitudeDegrees: 69.6496)
+        let clampedEquivalent = Astronomy.ascendantLongitude(lstDegrees: 200, latitudeDegrees: 66.5)
+        #expect(abs(tromso - clampedEquivalent) > 0.5)
+        // Beyond the bound both platforms saturate at the same place.
+        let beyond = Astronomy.ascendantLongitude(lstDegrees: 200, latitudeDegrees: 95)
+        let atBound = Astronomy.ascendantLongitude(lstDegrees: 200, latitudeDegrees: 89.9)
+        #expect(abs(beyond - atBound) < 1e-9)
+    }
 }
 
 @Suite struct ZodiacTests {
@@ -78,13 +93,15 @@ import CoreContracts
 
     private let engine = AstroEngineImpl()
 
-    @Test func l1EmitsOnlySunElementAndModality() {
+    @Test func l1EmitsSunSignElementAndModality() {
         let result = engine.compute(
             birthday: CivilDate(year: 1995, month: 8, day: 2),
             birthTime: nil, birthPlaceLat: nil, birthPlaceLon: nil
         )
         #expect(result.calcLevel == .L1)
-        #expect(result.signals.map(\.signalId) == ["ASTRO_SUN_FIRE", "ASTRO_SUN_FIXED"])
+        // Order is contractual: the sign signal comes first (AstroEngineTest.kt).
+        #expect(result.signals.map(\.signalId) == ["ASTRO_SUN_LEO", "ASTRO_SUN_FIRE", "ASTRO_SUN_FIXED"])
+        #expect(result.signals.map(\.magnitude) == [3, 2, 2])
         #expect(result.engineVersion == "2.0.0")
         // PRD §17: L1 must not include ascendant or house signals.
         #expect(!result.signals.contains { $0.signalId.contains("ASC") })
@@ -101,11 +118,12 @@ import CoreContracts
             birthPlaceLon: 121.56
         )
         #expect(result.calcLevel == .L2)
-        #expect(result.signals.count == 4)
-        #expect(result.signals[0].signalId == "ASTRO_SUN_FIRE")      // Aries
-        #expect(result.signals[1].signalId == "ASTRO_SUN_CARDINAL")
-        #expect(result.signals[2].signalId.hasPrefix("ASTRO_MOON_"))
-        #expect(result.signals[3].signalId.hasPrefix("ASTRO_ASC_"))
+        #expect(result.signals.count == 5)
+        #expect(result.signals[0].signalId == "ASTRO_SUN_ARIES")
+        #expect(result.signals[1].signalId == "ASTRO_SUN_FIRE")
+        #expect(result.signals[2].signalId == "ASTRO_SUN_CARDINAL")
+        #expect(result.signals[3].signalId.hasPrefix("ASTRO_MOON_"))
+        #expect(result.signals[4].signalId.hasPrefix("ASTRO_ASC_"))
         for signal in result.signals {
             #expect(signal.confidence == "high")
         }
@@ -120,7 +138,7 @@ import CoreContracts
             birthPlaceLat: 25.03,
             birthPlaceLon: 121.56
         )
-        #expect(result.signals[2].signalId == "ASTRO_MOON_FIRE")
+        #expect(result.signals[3].signalId == "ASTRO_MOON_FIRE")
     }
 
     @Test func partialBirthDataStaysL1() {
@@ -130,7 +148,29 @@ import CoreContracts
             birthPlaceLat: nil, birthPlaceLon: nil
         )
         #expect(timeOnly.calcLevel == .L1)
-        #expect(timeOnly.signals.count == 2)
+        #expect(timeOnly.signals.count == 3)
+    }
+
+    /// Mirrors AstroEngineTest.kt: one shared rule tags every water element
+    /// health-soft, whichever body carries it.
+    @Test func waterElementsCarryHealthSoftSafetyTag() {
+        // 2000-01-01 00:00 NYC: sun Capricorn (earth), moon Scorpio (water).
+        let result = engine.compute(
+            birthday: CivilDate(year: 2000, month: 1, day: 1),
+            birthTime: CivilTime(hour: 0, minute: 0),
+            birthPlaceLat: 40.7128, birthPlaceLon: -74.0060
+        )
+        let moonWater = result.signals.first { $0.signalId == "ASTRO_MOON_WATER" }
+        #expect(moonWater?.safetyTag == "SAFE_HEALTH_SOFT_ONLY")
+        #expect(result.signals.contains { $0.signalId == "ASTRO_ASC_AIR" })
+
+        // A Pisces sun: the element signal itself must carry the soft tag.
+        let pisces = engine.compute(
+            birthday: CivilDate(year: 1990, month: 3, day: 1),
+            birthTime: nil, birthPlaceLat: nil, birthPlaceLon: nil
+        )
+        let sunWater = pisces.signals.first { $0.signalId == "ASTRO_SUN_WATER" }
+        #expect(sunWater?.safetyTag == "SAFE_HEALTH_SOFT_ONLY")
     }
 
     @Test func deterministicOutput() {

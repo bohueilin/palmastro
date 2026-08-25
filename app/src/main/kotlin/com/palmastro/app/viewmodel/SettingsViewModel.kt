@@ -1,13 +1,13 @@
 package com.palmastro.app.viewmodel
 
 import android.content.Context
+import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import com.palmastro.app.BuildConfig
+import com.palmastro.app.config.FeatureFlags
 import com.palmastro.app.worker.ScanReminderWorker
 import com.palmastro.data.repository.UserRepository
 import com.palmastro.data.repository.WipeManager
@@ -15,7 +15,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 data class SettingsState(
@@ -36,6 +35,7 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val userRepository: UserRepository,
     private val wipeManager: WipeManager,
+    private val featureFlags: FeatureFlags,
 ) : ViewModel() {
     private val _state = MutableStateFlow(SettingsState())
     val state = _state.asStateFlow()
@@ -56,6 +56,11 @@ class SettingsViewModel @Inject constructor(
                     language = profile.language,
                 )
             }
+            // Re-applies the cadence so a schedule left by an older build — which ran
+            // "1st of each month" as a plain 30-day loop — is corrected. Idempotent:
+            // the 30-day path updates in place and the calendar path recomputes the
+            // same target date.
+            scheduleReminder(profile.reminders)
         }
     }
 
@@ -118,7 +123,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 wipeManager.deleteAllData()
-                runCatching { WorkManager.getInstance(appContext).cancelUniqueWork(ScanReminderWorker.WORK_NAME) }
+                runCatching { ScanReminderWorker.cancel(appContext) }
                 _state.update { it.copy(isWiping = false, isWipeComplete = true) }
             } catch (e: Exception) {
                 _state.update { it.copy(isWiping = false, wipeError = true) }
@@ -130,24 +135,28 @@ class SettingsViewModel @Inject constructor(
         _state.update { it.copy(wipeError = false) }
     }
 
+    /**
+     * Support diagnostics (PRD §13.8). Deliberately limited to PRD §26's lower-risk
+     * fields — build, locale, device, flags. Nothing derived from a reading belongs
+     * here: no birthday, birth place, palm features, scores, insights or journal text.
+     * The user sees the whole string before it is sent (PRD §13.7).
+     */
+    fun buildDiagnosticReport(): String {
+        val s = _state.value
+        val flags = featureFlags.allFlags().entries.joinToString("\n") { "  ${it.key}=${it.value}" }
+        return buildString {
+            appendLine("PalmAstro diagnostics")
+            appendLine("app: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
+            appendLine("language: ${s.language}")
+            appendLine("device: ${Build.MANUFACTURER} ${Build.MODEL}")
+            appendLine("android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})")
+            appendLine("flags:")
+            append(flags)
+        }
+    }
+
     private fun scheduleReminder(reminders: String) {
         // runCatching: WorkManager is not initialized in JVM unit tests.
-        runCatching {
-            val workManager = WorkManager.getInstance(appContext)
-
-            if (reminders == "off") {
-                workManager.cancelUniqueWork(ScanReminderWorker.WORK_NAME)
-                return@runCatching
-            }
-
-            val request = PeriodicWorkRequestBuilder<ScanReminderWorker>(30, TimeUnit.DAYS)
-                .build()
-
-            workManager.enqueueUniquePeriodicWork(
-                ScanReminderWorker.WORK_NAME,
-                ExistingPeriodicWorkPolicy.REPLACE,
-                request,
-            )
-        }
+        runCatching { ScanReminderWorker.schedule(appContext, reminders) }
     }
 }

@@ -22,7 +22,7 @@ struct ExplainabilityView: View {
                     HStack {
                         Text("results_confidence_label").foregroundStyle(.secondary)
                         Spacer()
-                        ConfidenceChip(confidence: payload.confidence)
+                        ConfidenceLabel(confidence: payload.confidence)
                     }
                 }
 
@@ -36,7 +36,10 @@ struct ExplainabilityView: View {
                         ForEach(Array(payload.explainability.enumerated()), id: \.offset) { _, entry in
                             HStack {
                                 Image(systemName: entry.contribution >= 0 ? "plus.circle" : "minus.circle")
-                                    .foregroundStyle(entry.contribution >= 0 ? .green : .orange)
+                                    .foregroundStyle(
+                                        entry.contribution >= 0
+                                            ? BrandPalette.gradeGrowing : BrandPalette.gradeWatchOut
+                                    )
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(entry.signalId)
                                         .font(.subheadline.monospaced())
@@ -76,7 +79,9 @@ struct ContributionBar: View {
         GeometryReader { geometry in
             let magnitude = min(abs(contribution) / 4.0, 1.0)
             RoundedRectangle(cornerRadius: 2)
-                .fill(contribution >= 0 ? Color.green.opacity(0.6) : Color.orange.opacity(0.7))
+                // Full opacity: a tinted fill drops the bar below the 3:1
+                // non-text contrast bar on a white list row.
+                .fill(contribution >= 0 ? BrandPalette.gradeGrowing : BrandPalette.gradeWatchOut)
                 .frame(width: max(geometry.size.width * magnitude, 4), height: 4)
         }
         .frame(height: 4)

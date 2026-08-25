@@ -69,6 +69,7 @@
     <string name="ob_birth_time_label">出生時間</string>
     <string name="ob_birth_hour">時</string>
     <string name="ob_birth_minute">分</string>
+    <string name="ob_birth_time_unknown">不確定</string>
     <string name="ob_birth_place_label">出生地點</string>
     <string name="ob_birth_place_search">搜尋城市…</string>
     <string name="ob_birth_place_unknown">其他／不確定</string>
@@ -103,6 +104,8 @@
     <string name="ob_summary_status">感情狀態</string>
     <string name="ob_summary_tone">風格</string>
     <string name="ob_summary_language">語言</string>
+    <string name="ob_summary_birth_time">出生時間</string>
+    <string name="ob_summary_birth_place">出生地點</string>
     <string name="ob_summary_analysis">分析模式</string>
     <string name="ob_summary_l2">L2（詳細）</string>
     <string name="ob_summary_l1">L1（標準）</string>

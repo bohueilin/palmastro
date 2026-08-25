@@ -2,6 +2,8 @@ package com.palmastro.app.share
 
 import android.content.Context
 import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
@@ -53,6 +55,9 @@ object ModelManager {
     private const val MIN_SIZE_BYTES = 1_000_000L
     private const val MAX_RETRIES = 3
 
+    /** 64 KB: ~120 progress callbacks across the pinned model, smooth without churn. */
+    private const val PROGRESS_CHUNK_BYTES = 64 * 1024
+
     private val downloading = AtomicBoolean(false)
 
     fun isModelReady(context: Context): Boolean {
@@ -69,14 +74,19 @@ object ModelManager {
 
     fun getModelPath(context: Context): String = getModelFile(context).absolutePath
 
-    fun downloadModel(context: Context): Result<File> {
+    /**
+     * Fetches the pinned model. [onProgress] reports (bytesRead, totalBytes) as the body
+     * streams in so the UI can show a real bar instead of an open-ended spinner; totalBytes
+     * is 0 when the server sends no Content-Length, and each retry restarts from 0.
+     */
+    fun downloadModel(context: Context, onProgress: (Long, Long) -> Unit): Result<File> {
         if (!downloading.compareAndSet(false, true)) {
             return Result.failure(
                 ScanErrorException(ScanError.MODEL_DOWNLOAD_FAILED, "Download already in progress")
             )
         }
         return try {
-            downloadWithRetry(context)
+            downloadWithRetry(context, onProgress)
         } finally {
             downloading.set(false)
         }
@@ -111,10 +121,10 @@ object ModelManager {
         }
     }
 
-    private fun downloadWithRetry(context: Context): Result<File> {
+    private fun downloadWithRetry(context: Context, onProgress: (Long, Long) -> Unit): Result<File> {
         var lastError: Throwable? = null
         for (attempt in 1..MAX_RETRIES) {
-            val result = attemptDownload(context)
+            val result = attemptDownload(context, onProgress)
             if (result.isSuccess) return result
             lastError = result.exceptionOrNull()
             // A checksum mismatch is not transient network flakiness; retrying the same
@@ -135,7 +145,7 @@ object ModelManager {
         )
     }
 
-    private fun attemptDownload(context: Context): Result<File> = runCatching {
+    private fun attemptDownload(context: Context, onProgress: (Long, Long) -> Unit): Result<File> = runCatching {
         val dir = File(context.filesDir, MODEL_DIR)
         dir.mkdirs()
         val target = File(dir, MODEL_FILE)
@@ -148,53 +158,89 @@ object ModelManager {
         lock.createNewFile()
 
         try {
-            val url = URL(MODEL_URL)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.connectTimeout = 15_000
-            conn.readTimeout = 60_000
-
-            try {
-                val responseCode = conn.responseCode
-                if (responseCode != HttpURLConnection.HTTP_OK) {
-                    throw ScanErrorException(
-                        ScanError.MODEL_DOWNLOAD_FAILED, "HTTP $responseCode from model server"
-                    )
-                }
-                conn.inputStream.use { input ->
-                    tmp.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
-                }
-            } finally {
-                conn.disconnect()
-            }
-
-            if (tmp.length() < MIN_SIZE_BYTES) {
-                val size = tmp.length()
-                tmp.delete()
-                throw ScanErrorException(
-                    ScanError.MODEL_DOWNLOAD_FAILED, "Downloaded file too small: $size bytes"
-                )
-            }
-
-            val actual = sha256(tmp)
-            if (!actual.equals(EXPECTED_SHA256, ignoreCase = true)) {
-                tmp.delete()
-                throw ScanErrorException(
-                    ScanError.MODEL_CORRUPT,
-                    "SHA-256 mismatch: expected=$EXPECTED_SHA256 actual=$actual"
-                )
-            }
-
-            if (target.exists()) target.delete()
-            if (!tmp.renameTo(target)) {
-                throw ScanErrorException(ScanError.MODEL_DOWNLOAD_FAILED, "Failed to move model into place")
-            }
-
-            target
+            streamInto(tmp, onProgress)
+            rejectIfUntrustworthy(tmp)
+            promoteIntoPlace(tmp, target)
         } finally {
             lock.delete()
         }
+    }
+
+    private fun streamInto(tmp: File, onProgress: (Long, Long) -> Unit) {
+        val url = URL(MODEL_URL)
+        val conn = url.openConnection() as HttpURLConnection
+        conn.connectTimeout = 15_000
+        conn.readTimeout = 60_000
+
+        try {
+            val responseCode = conn.responseCode
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw ScanErrorException(
+                    ScanError.MODEL_DOWNLOAD_FAILED, "HTTP $responseCode from model server"
+                )
+            }
+            // Reported from zero at the start of every attempt so a retry restarts the
+            // bar instead of appearing to jump backwards.
+            val totalBytes = conn.contentLengthLong.coerceAtLeast(0L)
+            onProgress(0L, totalBytes)
+            conn.inputStream.use { input ->
+                tmp.outputStream().use { output ->
+                    copyReportingProgress(input, output, totalBytes, onProgress)
+                }
+            }
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    private fun copyReportingProgress(
+        input: InputStream,
+        output: OutputStream,
+        totalBytes: Long,
+        onProgress: (Long, Long) -> Unit,
+    ) {
+        val buffer = ByteArray(PROGRESS_CHUNK_BYTES)
+        var downloaded = 0L
+        while (true) {
+            val read = input.read(buffer)
+            if (read < 0) break
+            output.write(buffer, 0, read)
+            downloaded += read
+            onProgress(downloaded, totalBytes)
+        }
+    }
+
+    /**
+     * A truncated or tampered body must never reach the landmarker, so [tmp] is deleted
+     * on failure — the next attempt then starts from a clean slate rather than resuming
+     * bytes that already failed.
+     */
+    private fun rejectIfUntrustworthy(tmp: File) {
+        if (tmp.length() < MIN_SIZE_BYTES) {
+            val size = tmp.length()
+            tmp.delete()
+            throw ScanErrorException(
+                ScanError.MODEL_DOWNLOAD_FAILED, "Downloaded file too small: $size bytes"
+            )
+        }
+
+        val actual = sha256(tmp)
+        if (!actual.equals(EXPECTED_SHA256, ignoreCase = true)) {
+            tmp.delete()
+            throw ScanErrorException(
+                ScanError.MODEL_CORRUPT,
+                "SHA-256 mismatch: expected=$EXPECTED_SHA256 actual=$actual"
+            )
+        }
+    }
+
+    /** Last step, so a reader of [getModelSource] only ever sees a fully verified file. */
+    private fun promoteIntoPlace(tmp: File, target: File): File {
+        if (target.exists()) target.delete()
+        if (!tmp.renameTo(target)) {
+            throw ScanErrorException(ScanError.MODEL_DOWNLOAD_FAILED, "Failed to move model into place")
+        }
+        return target
     }
 
     private fun sha256(file: File): String {

@@ -1,7 +1,6 @@
 package com.palmastro.app.ui.onboarding
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.rememberScrollState
@@ -12,18 +11,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -66,6 +65,11 @@ private val locations = listOf(
     Location("London, UK", 51.507, -0.128), Location("Paris, France", 48.857, 2.352),
     Location("Sydney, Australia", -33.869, 151.209),
 )
+
+// Neutral starting points for the birthday pickers — never persisted unless confirmed.
+private const val DEFAULT_MONTH = 6
+private const val DEFAULT_DAY = 15
+private const val DEFAULT_YEAR = 1990
 
 /** Localized zodiac: string resource id + symbol. */
 private fun zodiacFor(month: Int, day: Int): Pair<Int, String> = when {
@@ -139,8 +143,16 @@ fun OnboardingScreen(onComplete: () -> Unit, viewModel: OnboardingViewModel = hi
                         OnboardingSteps.BIRTHDAY -> BirthdayStep(state.birthday) { viewModel.setBirthday(it); viewModel.nextStep() }
                         OnboardingSteps.HAND -> HandStatusStep(state.dominantHand, state.relationshipStatus, viewModel::setHand, viewModel::setRelationshipStatus, canProceed = viewModel.canProceedFrom(OnboardingSteps.HAND)) { viewModel.nextStep() }
                         OnboardingSteps.BIRTH_DETAILS -> BirthDetailsStep(
+                            // Seeded from the ViewModel so navigating Back and confirming
+                            // again cannot silently overwrite what the user already gave.
+                            existingHour = state.birthTimeHour.takeIf { state.hasBirthTime },
+                            existingMinute = state.birthTimeMinute.takeIf { state.hasBirthTime },
+                            existingPlaceName = state.birthPlaceName.takeIf { state.hasBirthPlace },
                             onSkip = { viewModel.skipBirthDetails(); viewModel.nextStep() },
-                            onContinue = { h, m, loc -> viewModel.setBirthTime(h, m); if (loc != null) viewModel.setBirthPlace(loc.name, loc.lat, loc.lon); viewModel.nextStep() },
+                            onContinue = { h, m, loc ->
+                                viewModel.setBirthDetails(h, m, loc?.name, loc?.lat, loc?.lon)
+                                viewModel.nextStep()
+                            },
                         )
                         OnboardingSteps.TONE -> ToneStep(state.tone, viewModel::setTone) { viewModel.nextStep() }
                         OnboardingSteps.LANGUAGE -> LanguageStep(state.language, onSelect = { code ->
@@ -326,9 +338,11 @@ private fun NameStep(name: String, gender: String?, onName: (String) -> Unit, on
 // ── Step: Birthday (required, localized pickers) ──
 @Composable
 private fun BirthdayStep(existing: LocalDate?, onConfirm: (LocalDate) -> Unit) {
-    var selMonth by remember { mutableStateOf(existing?.monthValue ?: 6) }
-    var selDay by remember { mutableStateOf(existing?.dayOfMonth ?: 15) }
-    var selYear by remember { mutableStateOf(existing?.year ?: 1990) }
+    // rememberSaveable: a rotation while the user is checking a birth certificate must
+    // not silently reset the one required field back to the defaults below.
+    var selMonth by rememberSaveable { mutableStateOf(existing?.monthValue ?: DEFAULT_MONTH) }
+    var selDay by rememberSaveable { mutableStateOf(existing?.dayOfMonth ?: DEFAULT_DAY) }
+    var selYear by rememberSaveable { mutableStateOf(existing?.year ?: DEFAULT_YEAR) }
     var monthExpanded by remember { mutableStateOf(false) }
     var dayExpanded by remember { mutableStateOf(false) }
     var yearExpanded by remember { mutableStateOf(false) }
@@ -396,7 +410,14 @@ private fun BirthdayStep(existing: LocalDate?, onConfirm: (LocalDate) -> Unit) {
     }
     errorRes?.let {
         Spacer(Modifier.height(8.dp))
-        Text(stringResource(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            stringResource(it),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyMedium,
+            // Assertive, not Polite: this blocks the only required step, and focus stays
+            // on the Next button, so nothing else would tell a screen reader user why.
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+        )
     }
     Spacer(Modifier.height(24.dp))
     MainButton(stringResource(R.string.ob_next)) {
@@ -443,15 +464,23 @@ private fun HandStatusStep(
 
 // ── Step: Birth details (optional) ──
 @Composable
-private fun BirthDetailsStep(onSkip: () -> Unit, onContinue: (Int, Int, Location?) -> Unit) {
-    var selHour by remember { mutableStateOf(12) }
-    var selMinute by remember { mutableStateOf(0) }
+private fun BirthDetailsStep(
+    existingHour: Int?,
+    existingMinute: Int?,
+    existingPlaceName: String?,
+    onSkip: () -> Unit,
+    onContinue: (Int?, Int?, Location?) -> Unit,
+) {
+    // Null until the user actually picks one: a pre-seeded noon would be recorded as a
+    // real birth time and promote the reading to L2 on data the user never entered.
+    var selHour by rememberSaveable { mutableStateOf(existingHour) }
+    var selMinute by rememberSaveable { mutableStateOf(existingMinute) }
     var hourExpanded by remember { mutableStateOf(false) }
     var minuteExpanded by remember { mutableStateOf(false) }
-    var selectedLocation by remember { mutableStateOf<Location?>(null) }
-    var searchQuery by remember { mutableStateOf("") }
-    var locExpanded by remember { mutableStateOf(false) }
-    val filtered = remember(searchQuery) { if (searchQuery.isBlank()) locations else locations.filter { it.name.contains(searchQuery, ignoreCase = true) } }
+    // Location is a plain data class, so only its name is saveable; resolve back from it.
+    var selectedLocationName by rememberSaveable { mutableStateOf(existingPlaceName) }
+    val selectedLocation = remember(selectedLocationName) { locations.firstOrNull { it.name == selectedLocationName } }
+    val unknownTime = stringResource(R.string.ob_birth_time_unknown)
 
     Illustration(BrandScene.BirthDetails)
     Title(stringResource(R.string.ob_birth_details_title), stringResource(R.string.ob_birth_details_subtitle))
@@ -460,15 +489,20 @@ private fun BirthDetailsStep(onSkip: () -> Unit, onContinue: (Int, Int, Location
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
         Box(modifier = Modifier.weight(1f)) {
             OutlinedButton(onClick = { hourExpanded = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = RoundedCornerShape(12.dp)) {
-                Text("${stringResource(R.string.ob_birth_hour)}: ${selHour.toString().padStart(2, '0')}")
+                Text("${stringResource(R.string.ob_birth_hour)}: ${selHour?.toString()?.padStart(2, '0') ?: unknownTime}")
             }
             DropdownMenu(expanded = hourExpanded, onDismissRequest = { hourExpanded = false }) {
+                DropdownMenuItem(
+                    text = { Text(unknownTime) },
+                    onClick = { selHour = null; selMinute = null; hourExpanded = false },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                )
                 (0..23).forEach { h -> DropdownMenuItem(text = { Text("${h.toString().padStart(2, '0')}:00") }, onClick = { selHour = h; hourExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }
             }
         }
         Box(modifier = Modifier.weight(1f)) {
             OutlinedButton(onClick = { minuteExpanded = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = RoundedCornerShape(12.dp)) {
-                Text("${stringResource(R.string.ob_birth_minute)}: ${selMinute.toString().padStart(2, '0')}")
+                Text("${stringResource(R.string.ob_birth_minute)}: ${selMinute?.toString()?.padStart(2, '0') ?: unknownTime}")
             }
             DropdownMenu(expanded = minuteExpanded, onDismissRequest = { minuteExpanded = false }) {
                 (0..59).forEach { m -> DropdownMenuItem(text = { Text(":${m.toString().padStart(2, '0')}") }, onClick = { selMinute = m; minuteExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }
@@ -478,25 +512,45 @@ private fun BirthDetailsStep(onSkip: () -> Unit, onContinue: (Int, Int, Location
 
     Spacer(Modifier.height(16.dp))
     Label(stringResource(R.string.ob_birth_place_label))
-    Box {
-        OutlinedTextField(
-            value = selectedLocation?.name ?: searchQuery,
-            onValueChange = { searchQuery = it; selectedLocation = null; locExpanded = true },
-            label = { Text(stringResource(R.string.ob_birth_place_search)) },
-            modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), singleLine = true,
-        )
-        DropdownMenu(expanded = locExpanded && filtered.isNotEmpty(), onDismissRequest = { locExpanded = false }) {
-            DropdownMenuItem(text = { Text(stringResource(R.string.ob_birth_place_unknown)) }, onClick = { selectedLocation = null; searchQuery = ""; locExpanded = false }, modifier = Modifier.heightIn(min = 48.dp))
-            filtered.take(8).forEach { loc -> DropdownMenuItem(text = { Text(loc.name) }, onClick = { selectedLocation = loc; searchQuery = ""; locExpanded = false }, modifier = Modifier.heightIn(min = 48.dp)) }
-        }
-    }
+    BirthPlacePicker(selectedLocationName) { selectedLocationName = it }
 
     Spacer(Modifier.height(28.dp))
-    MainButton(stringResource(R.string.ob_birth_details_confirm)) { onContinue(selHour, selMinute, selectedLocation) }
+    // A chosen hour with an untouched minute means the top of that hour.
+    MainButton(stringResource(R.string.ob_birth_details_confirm)) { onContinue(selHour, selHour?.let { selMinute ?: 0 }, selectedLocation) }
     TextButton(onClick = onSkip, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
         Text(stringResource(R.string.ob_birth_details_skip))
     }
     Spacer(Modifier.height(16.dp))
+}
+
+/** City search with an explicit "unknown" escape; null means the user gave no place. */
+@Composable
+private fun BirthPlacePicker(selectedName: String?, onSelect: (String?) -> Unit) {
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var locExpanded by remember { mutableStateOf(false) }
+    val filtered = remember(searchQuery) { if (searchQuery.isBlank()) locations else locations.filter { it.name.contains(searchQuery, ignoreCase = true) } }
+    Box {
+        OutlinedTextField(
+            value = selectedName ?: searchQuery,
+            onValueChange = { searchQuery = it; onSelect(null); locExpanded = true },
+            label = { Text(stringResource(R.string.ob_birth_place_search)) },
+            modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), singleLine = true,
+        )
+        DropdownMenu(expanded = locExpanded && filtered.isNotEmpty(), onDismissRequest = { locExpanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.ob_birth_place_unknown)) },
+                onClick = { onSelect(null); searchQuery = ""; locExpanded = false },
+                modifier = Modifier.heightIn(min = 48.dp),
+            )
+            filtered.take(8).forEach { loc ->
+                DropdownMenuItem(
+                    text = { Text(loc.name) },
+                    onClick = { onSelect(loc.name); searchQuery = ""; locExpanded = false },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                )
+            }
+        }
+    }
 }
 
 // ── Step: Tone (PRD 45 display names) ──
@@ -582,6 +636,20 @@ private fun SummaryStep(state: OnboardingState, onNext: () -> Unit) {
                     AppLanguage.TRADITIONAL_CHINESE -> stringResource(R.string.ob_language_traditional_chinese)
                     else -> stringResource(R.string.ob_language_system)
                 },
+            )
+            // The two inputs the analysis level rests on: onboarding is their only
+            // writer, so this summary is the last chance to notice a wrong value.
+            SummaryRow(
+                stringResource(R.string.ob_summary_birth_time),
+                if (state.hasBirthTime) {
+                    "${state.birthTimeHour.toString().padStart(2, '0')}:${state.birthTimeMinute.toString().padStart(2, '0')}"
+                } else {
+                    stringResource(R.string.ob_summary_not_set)
+                },
+            )
+            SummaryRow(
+                stringResource(R.string.ob_summary_birth_place),
+                if (state.hasBirthPlace) state.birthPlaceName else stringResource(R.string.ob_summary_not_set),
             )
             SummaryRow(
                 stringResource(R.string.ob_summary_analysis),

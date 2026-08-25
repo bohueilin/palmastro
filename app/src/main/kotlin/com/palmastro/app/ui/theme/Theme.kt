@@ -41,7 +41,10 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = SurfaceVariant,
     onSurfaceVariant = Color(0xFF49454E),
     error = Color(0xFFD32F2F),
-    outline = Color(0xFFCAC4D0),
+    // outline is the stated border tone, outlineVariant the subtler one; they were
+    // previously the same hex, so the scheme had no outline hierarchy at all.
+    outline = Color(0xFF79747E),
+    outlineVariant = Color(0xFF8F8A99),
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -57,14 +60,22 @@ private val DarkColorScheme = darkColorScheme(
     onTertiary = Color(0xFF3E1500),
     tertiaryContainer = Color(0xFF7A3B22),
     onTertiaryContainer = Color(0xFFFFDBCF),
-    background = Color(0xFF1C1B1F),
+    // The page must sit BELOW the card ground: background and surface used to be the
+    // same hex, and the M3 baseline surfaceContainerLow is that hex a third time, so
+    // every card dissolved into the page in dark mode.
+    background = Color(0xFF121116),
     onBackground = Color(0xFFE6E1E5),
     surface = Color(0xFF1C1B1F),
     onSurface = Color(0xFFE6E1E5),
+    surfaceContainerLow = Color(0xFF221F27),
+    surfaceContainerHigh = Color(0xFF2B2830),
     surfaceVariant = Color(0xFF49454E),
     onSurfaceVariant = Color(0xFFCAC4D0),
-    error = Color(0xFFEF5350),
+    // Light error tone on dark surfaces (M3 convention): the previous #EF5350 left the
+    // journal delete glyph at 2.7:1 on its own card, under the 3:1 non-text floor.
+    error = Color(0xFFF2B8B5),
     outline = Color(0xFF938F99),
+    outlineVariant = Color(0xFF6F6B75),
 )
 
 /**
@@ -74,6 +85,11 @@ private val DarkColorScheme = darkColorScheme(
  * `LocalPalmAstroExtendedColors.current.gradeGrowing`). Colors are calm by design
  * (PRD 12.3/37) — no aggressive red outside true error states, and every grade
  * pairs with an `on*` color that keeps >= 4.5:1 contrast.
+ *
+ * [meterTrack] is separate from `outlineVariant` on purpose: outlineVariant is the
+ * SUBTLE outline token, while a meter's unfilled range carries information and must
+ * hold >= 3:1 (WCAG 1.4.11) against every ground it lands on — including the
+ * grade-tinted hero washes behind the score gauge.
  */
 @Immutable
 data class PalmAstroExtendedColors(
@@ -88,6 +104,7 @@ data class PalmAstroExtendedColors(
     val deltaPositive: Color,
     val deltaNegative: Color,
     val deltaNeutral: Color,
+    val meterTrack: Color,
 )
 
 private val LightExtendedColors = PalmAstroExtendedColors(
@@ -102,6 +119,7 @@ private val LightExtendedColors = PalmAstroExtendedColors(
     deltaPositive = Color(0xFF2E7D32),
     deltaNegative = Color(0xFFB35A00),
     deltaNeutral = Color(0xFF49454E),
+    meterTrack = Color(0xFF75707A),
 )
 
 private val DarkExtendedColors = PalmAstroExtendedColors(
@@ -116,6 +134,7 @@ private val DarkExtendedColors = PalmAstroExtendedColors(
     deltaPositive = Color(0xFF81C784),
     deltaNegative = Color(0xFFFFB77C),
     deltaNeutral = Color(0xFFCAC4D0),
+    meterTrack = Color(0xFF8A8590),
 )
 
 val LocalPalmAstroExtendedColors = staticCompositionLocalOf { LightExtendedColors }

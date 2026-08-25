@@ -3,10 +3,11 @@ import Testing
 import CoreContracts
 @testable import ScoringEngine
 @testable import ContentEngine
+@testable import AstroEngine
 
 /// Cross-platform parity harness (PRD §10, Workstream C6).
 ///
-/// Fixtures live in `ios/shared-fixtures/{scoring,content}/*.json` and are
+/// Fixtures live in `ios/shared-fixtures/{astro,scoring,content,guidance}/*.json` and are
 /// generated from the Android engines (the reference implementation). Each
 /// fixture is `{ "input": ..., "expected": ... }`. While the directories are
 /// empty the tests are skipped — fixture generation happens at integration
@@ -37,6 +38,51 @@ import CoreContracts
     static var hasScoringFixtures: Bool { !fixtureURLs(subdirectory: "scoring").isEmpty }
     static var hasContentFixtures: Bool { !fixtureURLs(subdirectory: "content").isEmpty }
     static var hasGuidanceFixtures: Bool { !fixtureURLs(subdirectory: "guidance").isEmpty }
+    static var hasAstroFixtures: Bool { !fixtureURLs(subdirectory: "astro").isEmpty }
+
+    // MARK: - Astro parity
+
+    private struct AstroFixture: Decodable {
+        struct Input: Decodable {
+            let birthday: CivilDate
+            let birthTime: CivilTime?
+            let birthPlaceLat: Double?
+            let birthPlaceLon: Double?
+        }
+
+        let input: Input
+        let expected: AstroResult
+    }
+
+    /// Guards the whole astro surface — signal ids, their order, magnitudes and
+    /// safety tags — which ScoringInput-level fixtures structurally cannot see,
+    /// because they start from an already-computed AstroResult. Several cases
+    /// sit within 0.08 deg of a 30-deg sign boundary, where any change to the
+    /// lunar series or the ascendant latitude clamp flips the resolved element.
+    @Test(.enabled(
+        if: ParityTests.hasAstroFixtures,
+        "No fixtures in ios/shared-fixtures/astro — generated from the Android engines at integration time."
+    ))
+    func astroParityFixtures() throws {
+        let engine = AstroEngineImpl()
+        for url in Self.fixtureURLs(subdirectory: "astro") {
+            let fixture = try JSONDecoder().decode(AstroFixture.self, from: Data(contentsOf: url))
+            let actual = engine.compute(
+                birthday: fixture.input.birthday,
+                birthTime: fixture.input.birthTime,
+                birthPlaceLat: fixture.input.birthPlaceLat,
+                birthPlaceLon: fixture.input.birthPlaceLon
+            )
+            let name = url.lastPathComponent
+
+            #expect(actual.calcLevel == fixture.expected.calcLevel, "\(name): calcLevel")
+            #expect(
+                actual.signals.map(\.signalId) == fixture.expected.signals.map(\.signalId),
+                "\(name): signal ids and order"
+            )
+            #expect(actual.signals == fixture.expected.signals, "\(name): signal shape")
+        }
+    }
 
     // MARK: - Scoring parity
 

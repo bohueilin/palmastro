@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -52,6 +53,7 @@ import com.palmastro.app.share.ScanError
 import com.palmastro.app.viewmodel.ScanState
 import com.palmastro.app.viewmodel.ScanViewModel
 import com.palmastro.contracts.Angle
+import java.util.Locale
 
 @StringRes
 private fun angleNameRes(angle: Angle): Int = when (angle) {
@@ -108,6 +110,17 @@ private enum class ScanErrorKind(
     ),
 }
 
+/**
+ * The one scrim every white element on the camera preview sits on. Black at 60% composites
+ * a white scene to #666666, so white content on it stays >= 4.5:1 (design review F1 /
+ * WCAG 1.4.3). Do not lower the alpha or fade the text: the earlier 50% scrim with white
+ * at 80% measured 3.2:1 against a bright wall, which is where the app is actually used.
+ */
+private val CameraScrim = Color.Black.copy(alpha = 0.6f)
+
+private const val PERCENT = 100f
+private const val BYTES_PER_MB = 1024f * 1024f
+
 private enum class PreScanPhase { EXPLAINER, TIPS, CAPTURE }
 
 @Composable
@@ -115,24 +128,17 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
 
+    // Leaving the model gate goes through the back dispatcher rather than a new callback:
+    // it pops to Results for a returning user and, on the onboarding -> scan first run
+    // where nothing is beneath, closes the app — which reopens on Results, not here.
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val onExitScan = { backDispatcher?.onBackPressed() ?: Unit }
+
     // Respect the system "remove animations" preference for animated overlays.
     val reduceMotion = rememberReduceMotion()
 
     var phase by rememberSaveable { mutableStateOf(PreScanPhase.EXPLAINER) }
-    var hasPermission by remember { mutableStateOf(false) }
-    var permissionDenied by remember { mutableStateOf(false) }
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        hasPermission = granted
-        permissionDenied = !granted
-    }
-    // The launcher callback stays the only place that sets permissionDenied = true.
-    CameraPermissionResumeEffect(onGranted = { hasPermission = true; permissionDenied = false })
-    // Camera permission is requested only when actually needed (after explainer + tips).
-    LaunchedEffect(phase) {
-        if (phase == PreScanPhase.CAPTURE && !hasPermission) {
-            permissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-    }
+    val camera = rememberCameraPermission(requestNow = phase == PreScanPhase.CAPTURE)
     LaunchedEffect(state.isComplete) { if (state.isComplete) onComplete() }
 
     ScanFeedbackEffects(state)
@@ -141,16 +147,22 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
     when {
         phase == PreScanPhase.EXPLAINER -> ExplainerScreen(onNext = { phase = PreScanPhase.TIPS })
         phase == PreScanPhase.TIPS -> TipsScreen(onStart = { phase = PreScanPhase.CAPTURE })
-        permissionDenied -> PermissionDeniedScreen(onOpenSettings = {
+        camera.denied -> PermissionDeniedScreen(onOpenSettings = {
             context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.fromParts("package", context.packageName, null)
             })
         })
-        !hasPermission -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-        state.modelDownloading -> ModelDownloadingScreen()
+        !camera.granted -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        state.modelDownloading -> ModelDownloadingScreen(
+            downloadedBytes = state.modelDownloadedBytes,
+            totalBytes = state.modelTotalBytes,
+            onExit = onExitScan,
+        )
         state.modelError != null -> ErrorScreen(
             kind = if (state.modelError == ScanError.MODEL_CORRUPT) ScanErrorKind.MODEL_CORRUPT else ScanErrorKind.MODEL_DOWNLOAD_FAILED,
             onAction = { viewModel.retryModelDownload() },
+            // Offline, Retry cannot succeed; leaving must not require killing the app.
+            onExit = onExitScan,
         )
         !state.modelReady -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         state.isProcessing -> ConstellationProcessingScreen(reduceMotion = reduceMotion)
@@ -173,6 +185,32 @@ fun ScanScreen(onComplete: () -> Unit, viewModel: ScanViewModel = hiltViewModel(
             onRetake = { viewModel.retakePreviousAngle() },
         )
     }
+}
+
+@Immutable
+private data class CameraPermission(val granted: Boolean, val denied: Boolean)
+
+/**
+ * Owns the CAMERA grant for the whole scan flow. [requestNow] is raised once the user has
+ * read the explainer and tips, so the system prompt appears at the moment the camera is
+ * actually needed rather than on arrival.
+ */
+@Composable
+private fun rememberCameraPermission(requestNow: Boolean): CameraPermission {
+    var hasPermission by remember { mutableStateOf(false) }
+    var permissionDenied by remember { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        hasPermission = granted
+        permissionDenied = !granted
+    }
+    // The launcher callback stays the only place that sets permissionDenied = true.
+    CameraPermissionResumeEffect(onGranted = { hasPermission = true; permissionDenied = false })
+    LaunchedEffect(requestNow) {
+        if (requestNow && !hasPermission) {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+    return CameraPermission(granted = hasPermission, denied = permissionDenied)
 }
 
 /**
@@ -308,6 +346,8 @@ private fun CaptureScreen(
     LaunchedEffect(currentAngleIndex) { currentInstruction?.let { view.announceForAccessibility(it) } }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // Full-bleed camera under the bars: black system icons would vanish into it.
+        DarkSystemBarsEffect()
         CameraPreview(imageCapture = imageCapture, modifier = Modifier.fillMaxSize())
         HandOverlay(modifier = Modifier.fillMaxSize())
         // Passive framing brackets only — no simulated "detection" feedback during
@@ -323,37 +363,41 @@ private fun CaptureScreen(
         Column(modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 if (currentAngleIndex > 0) {
-                    IconButton(onClick = onRetake, modifier = Modifier.size(48.dp)) {
+                    IconButton(
+                        onClick = onRetake,
+                        modifier = Modifier.size(48.dp).background(CameraScrim, CircleShape),
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.scan_retake), tint = Color.White)
                     }
                 } else {
                     Spacer(Modifier.size(48.dp))
                 }
                 val progressDesc = stringResource(R.string.sc_capture_progress_desc, completedCount, totalAngles)
-                Text(
-                    stringResource(R.string.scan_progress, completedCount, totalAngles),
-                    fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White,
-                    modifier = Modifier.semantics { contentDescription = progressDesc },
-                )
+                Surface(color = CameraScrim, shape = MaterialTheme.shapes.small) {
+                    Text(
+                        stringResource(R.string.scan_progress, completedCount, totalAngles),
+                        fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                            .semantics { contentDescription = progressDesc },
+                    )
+                }
                 Spacer(Modifier.size(48.dp))
             }
             Spacer(Modifier.height(8.dp))
             if (currentAngle != null) {
-                Surface(color = Color.Black.copy(alpha = 0.5f), shape = MaterialTheme.shapes.medium) {
+                Surface(color = CameraScrim, shape = MaterialTheme.shapes.medium) {
                     Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(stringResource(angleNameRes(currentAngle)), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         Spacer(Modifier.height(4.dp))
-                        Text(stringResource(angleInstructionRes(currentAngle)), fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
+                        Text(stringResource(angleInstructionRes(currentAngle)), fontSize = 14.sp, color = Color.White)
                     }
                 }
             }
         }
         if (coachingHintKey != null) {
-            // Same scrim idiom as the angle card above: white on black-60% stays >= 4.5:1
-            // over any camera scene, unlike a brand tint (design review F1 / WCAG 1.4.3).
             Surface(
                 modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
-                color = Color.Black.copy(alpha = 0.6f),
+                color = CameraScrim,
                 shape = MaterialTheme.shapes.medium,
             ) {
                 Text(
@@ -365,33 +409,68 @@ private fun CaptureScreen(
         }
         Box(modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 32.dp), contentAlignment = Alignment.Center) {
             val captureDesc = stringResource(R.string.scan_capture)
+            // Scrim disc is wider than the ring so the ring's OUTER edge reads too: a
+            // background on the 80.dp box would only fill inside Compose's inset border.
             Box(
-                modifier = Modifier.size(80.dp).clip(CircleShape).border(4.dp, Color.White, CircleShape)
-                    .semantics { contentDescription = captureDesc }
-                    .then(if (!isCapturing) Modifier.clickable { onCapture() } else Modifier),
+                modifier = Modifier.size(92.dp).background(CameraScrim, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                if (isCapturing) CircularProgressIndicator(modifier = Modifier.size(36.dp), color = Color.White, strokeWidth = 3.dp)
-                else Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(Color.White))
+                Box(
+                    modifier = Modifier.size(80.dp).clip(CircleShape).border(4.dp, Color.White, CircleShape)
+                        .semantics { contentDescription = captureDesc }
+                        .then(if (!isCapturing) Modifier.clickable { onCapture() } else Modifier),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (isCapturing) CircularProgressIndicator(modifier = Modifier.size(36.dp), color = Color.White, strokeWidth = 3.dp)
+                    else Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(Color.White))
+                }
             }
         }
     }
 }
 
+/**
+ * One-time model fetch. Determinate whenever the server sent a Content-Length, because an
+ * open-ended spinner on a slow or metered connection reads as a hang; the indeterminate
+ * bar remains the honest fallback when the total is unknown. "Not now" exists because this
+ * is the first screen after onboarding — without it an offline first run has no way out.
+ */
 @Composable
-private fun ModelDownloadingScreen() {
+private fun ModelDownloadingScreen(downloadedBytes: Long, totalBytes: Long, onExit: () -> Unit) {
     Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        CircularProgressIndicator(modifier = Modifier.size(64.dp))
+        Text(stringResource(R.string.scan_downloading), fontSize = 18.sp, textAlign = TextAlign.Center)
         Spacer(Modifier.height(16.dp))
-        Text(stringResource(R.string.scan_downloading), fontSize = 18.sp)
+        if (totalBytes > 0L) {
+            val fraction = (downloadedBytes.toFloat() / totalBytes).coerceIn(0f, 1f)
+            LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(
+                    R.string.scan_download_progress,
+                    (fraction * PERCENT).toInt(),
+                    formatMegabytes(totalBytes),
+                ),
+                fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+        Spacer(Modifier.height(24.dp))
+        TextButton(onClick = onExit, modifier = Modifier.heightIn(min = 48.dp)) {
+            Text(stringResource(R.string.scan_download_not_now))
+        }
     }
 }
+
+/** One decimal place is enough precision for a size the user only glances at. */
+private fun formatMegabytes(bytes: Long): String =
+    String.format(Locale.getDefault(), "%.1f", bytes.toFloat() / BYTES_PER_MB)
 
 // PRD 13.2 step 6 (scan completion while analysis runs) now lives in
 // ConstellationReveal.kt as the app's signature moment (UX_ROADMAP 1.2).
 
 @Composable
-private fun ErrorScreen(kind: ScanErrorKind, onAction: () -> Unit) {
+private fun ErrorScreen(kind: ScanErrorKind, onAction: () -> Unit, onExit: (() -> Unit)? = null) {
     Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text(
             stringResource(kind.what),
@@ -405,6 +484,12 @@ private fun ErrorScreen(kind: ScanErrorKind, onAction: () -> Unit) {
         Spacer(Modifier.height(24.dp))
         Button(onClick = onAction, modifier = Modifier.heightIn(min = 48.dp)) {
             Text(stringResource(kind.action))
+        }
+        if (onExit != null) {
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onExit, modifier = Modifier.heightIn(min = 48.dp)) {
+                Text(stringResource(R.string.scan_download_not_now))
+            }
         }
     }
 }

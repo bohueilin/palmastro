@@ -1,0 +1,172 @@
+[
+  {
+    "id": "dark-onerror-destructive-button",
+    "title": "Dark theme: \"Delete all data\" button label is 3.75:1 (error overridden, onError left at the M3 default)",
+    "severity": "high",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/theme/Theme.kt",
+    "line": 66,
+    "evidence": "`DarkColorScheme` sets `error = Color(0xFFEF5350),` (L66) but never sets `onError`, so it stays at the Material3 1.2.1 dark default `Error20 = #601410` (verified by decompiling `androidx.compose.material3.tokens.ColorDarkTokens`/`PaletteTokens`). SettingsScreen.kt:219 `colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),` therefore renders the label with `contentColorFor(error) = onError`: #601410 on #EF5350 = **3.75:1** (needs 4.5:1 — labelLarge is 14sp Medium, small text). The same #601410 is used for the in-progress spinner at SettingsScreen.kt:224. The M3 default pairing (#F2B8B5 / #601410) passes at 7.66:1; overriding only one half of the pair broke it.",
+    "fix": "In `DarkColorScheme` (Theme.kt), change L66 to `error = Color(0xFFF2B8B5),`. Recomputed: label #601410 on #F2B8B5 = 7.66:1; this same change also fixes `journal-delete-icon-dark` (5.48:1) and `settings-danger-header-dark` (8.90:1). If #EF5350 must be kept for brand reasons, instead add `onError = Color(0xFF410E0B),` to `DarkColorScheme` → 4.66:1.",
+    "userImpact": "The single most consequential, irreversible control in the app — permanent deletion of every scan, journal entry and reading — has an unreadable label in dark mode. A user in low light can be looking at a red button whose text they cannot resolve before tapping it."
+  },
+  {
+    "id": "light-outline-token-borders",
+    "title": "Light theme `outline` is set to the outline-VARIANT tone, dropping every text-field and outlined-button border to 1.58:1",
+    "severity": "high",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/theme/Theme.kt",
+    "line": 44,
+    "evidence": "`LightColorScheme` sets `outline = Color(0xFFCAC4D0),`. #CAC4D0 is Material3's `NeutralVariant80`, i.e. the *outlineVariant* tone; the M3 light `outline` default is `NeutralVariant50 = #79747E` (both confirmed from `PaletteTokens`/`ColorLightTokens` bytecode). Decompiling `OutlinedTextFieldTokens.OutlineColor` and `OutlinedButtonTokens.OutlineColor` confirms both resolve to `ColorSchemeKeyTokens.Outline`. Computed: #CAC4D0 on surface #F8F5FF = **1.58:1**, on background #FFFBFF = **1.66:1** (WCAG 1.4.11 requires 3:1 for UI-component boundaries). Affected controls: the name field (OnboardingScreen.kt:283-288), the birth-place field (OnboardingScreen.kt:461-466), the journal text area (JournalScreen.kt:72-80), and the outlined buttons at ResultsScreen.kt:218/221 and DomainDetailScreen.kt:223-227. The dark scheme kept the correct tone (`outline = Color(0xFF938F99)`, 5.41:1), so this is a light-theme-only regression.",
+    "fix": "Change Theme.kt:44 to `outline = Color(0xFF79747E),`. Recomputed: 4.23:1 on surface #F8F5FF and 4.44:1 on background #FFFBFF, both clearing the 3:1 non-text floor with margin. `outlineVariant` is already #CAC4D0 by default, so decorative dividers are unaffected.",
+    "userImpact": "In light mode — the app's default on most devices — users with low vision, or anyone outdoors, cannot see where the journal text area or the onboarding name/birth-place inputs begin and end. The input looks like blank page, so people do not realise there is a field to tap."
+  },
+  {
+    "id": "journal-domain-label-contrast",
+    "title": "Journal entry domain label is 4.31:1 (light) / 3.90:1 (dark) — `primary` on a `surfaceVariant` card",
+    "severity": "medium",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/journal/JournalScreen.kt",
+    "line": 145,
+    "evidence": "L137 sets the card to `surfaceVariant`; L141-146 renders the domain name at `fontSize = 12.sp` with `color = MaterialTheme.colorScheme.primary,`. Resolved: light #7E57C2 on #EDE7F6 = **4.31:1**; dark #B39DDB on #49454E = **3.90:1**. 12sp regular needs 4.5:1. `primary` clears the bar on the app's normal grounds (4.84:1 on `surface`, 5.09:1 on `background`) but not on the much lighter/darker `surfaceVariant`. The codebase already documents this exact trap at DomainDetailScreen.kt:350-352: \"onPrimaryContainer, not primary: 11sp label on the tinted chip needs >= 4.5:1 (primary measured ~3.6:1 there)\".",
+    "fix": "Apply the established in-repo idiom: change JournalScreen.kt:145 from `color = MaterialTheme.colorScheme.primary,` to `color = MaterialTheme.colorScheme.onPrimaryContainer,`. Recomputed: light #21005E on #EDE7F6 = 14.16:1; dark #EDE7F6 on #49454E = 7.74:1.",
+    "userImpact": "The tag that tells the user which domain (career / wealth / family / health) each saved reflection belongs to is the faintest text on the card, in both themes. Scanning back through months of entries, people cannot tell what a note was about without reading the whole body."
+  },
+  {
+    "id": "history-delta-contrast",
+    "title": "History month-over-month delta text is 3.96:1 / 4.24:1 — the card silently defaults to `surfaceVariant`",
+    "severity": "medium",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/history/HistoryScreen.kt",
+    "line": 175,
+    "evidence": "The MonthCard at L108-112 passes only `elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),` and no `colors`, so `CardDefaults.cardColors()` applies `FilledCardTokens.ContainerColor = SurfaceVariant` (confirmed by decompiling material3 1.2.1) → light #EDE7F6 / dark #49454E. `DeltaText` at L173-177 renders `fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.SemiBold, color = color,` with the extended tokens. Resolved light: deltaNegative #B35A00 on #EDE7F6 = **3.96:1**, deltaPositive #2E7D32 on #EDE7F6 = **4.24:1**; both below 4.5:1 for 12sp. Dark passes (5.49:1 / 4.65:1). The same tokens sit at 4.45:1 / 4.76:1 on ResultsScreen's `surface` card, so they have almost no headroom anywhere in light theme.",
+    "fix": "Darken the two light delta tokens in `LightExtendedColors` (Theme.kt): change L102 to `deltaPositive = Color(0xFF26702A),` and L103 to `deltaNegative = Color(0xFFA15100),`. Recomputed on #EDE7F6: 5.06:1 and 4.70:1; on ResultsScreen's #F8F5FF: 5.68:1 and 5.28:1. Leave `gradeGrowing`/`gradeWatchOut` untouched — they only carry solid chips and 28–32sp numerals, which already pass.",
+    "userImpact": "The ▲+4 / ▼-3 change indicators are the whole point of the history screen — they tell a user whether last month's actions moved anything. In light mode they are the lowest-contrast text on the card, so the trend the product exists to show is the hardest part to read."
+  },
+  {
+    "id": "gauge-track-contrast",
+    "title": "ScoreGauge track is 1.58:1 (light) / 1.83:1 (dark) — the code comment claims it is ≥3:1",
+    "severity": "medium",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/components/ScoreGauge.kt",
+    "line": 191,
+    "evidence": "L186-191 comment: \"Track at FULL alpha in both themes... Intent: keep the track >= 3:1 against the surface (WCAG 1.4.11 non-text contrast)\", followed by L191 `val trackColor = MaterialTheme.colorScheme.outlineVariant`. Resolved `outlineVariant`: light #CAC4D0 (M3 default, not overridden) on surface #F8F5FF = **1.58:1** and on background #FFFBFF = **1.66:1**; dark #49454F on surface #1C1B1F = **1.83:1**. The stated 3:1 target is missed in every combination. The same token is the onboarding progress track (OnboardingScreen.kt:117), 1.66:1 against the light background.",
+    "fix": "Change ScoreGauge.kt:191 to `val trackColor = MaterialTheme.colorScheme.outline` and apply the `light-outline-token-borders` fix (`outline = Color(0xFF79747E)` at Theme.kt:44). Recomputed: light #79747E on #F8F5FF = 4.23:1; dark #938F99 on #1C1B1F = 5.41:1. Do the same at OnboardingScreen.kt:117 (`trackColor = MaterialTheme.colorScheme.outline`).",
+    "userImpact": "The unfilled part of the score ring is invisible, so the gauge reads as a floating teal arc with no scale behind it. Users cannot see how far from 100 a score sits — the \"at a glance\" reading the hero is built to deliver — and the onboarding progress bar likewise gives no sense of how many steps remain."
+  },
+  {
+    "id": "settings-danger-header-dark",
+    "title": "Dark theme: \"Delete all data\" section heading is 4.36:1 on its error-container wash",
+    "severity": "medium",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/settings/SettingsScreen.kt",
+    "line": 206,
+    "evidence": "L196 `colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)),` over the Scaffold background, and L203-207 renders the heading at `fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold,` with `color = MaterialTheme.colorScheme.error, letterSpacing = 0.5.sp,`. Dark resolved: `errorContainer` is the M3 default #8C1D18 (not overridden), blended at 0.3 over #1C1B1F = #3E1C1D; #EF5350 on #3E1C1D = **4.36:1**. 13sp Bold is below the 18.66sp bold large-text threshold, so 4.5:1 applies. Lowering the wash alpha does not rescue it — even at alpha 0 the pair is only 4.91:1, so the error tone itself is the constraint. Light theme squeaks through at 4.56:1.",
+    "fix": "Fixed by the same change as `dark-onerror-destructive-button`: `error = Color(0xFFF2B8B5)` in `DarkColorScheme` (Theme.kt:66). Recomputed: #F2B8B5 on #3E1C1D = 8.90:1.",
+    "userImpact": "The heading that warns a dark-mode user they are in the irreversible-deletion zone is the least legible label on the settings screen, right above the button that wipes every scan and journal entry."
+  },
+  {
+    "id": "results-delta-contrast",
+    "title": "Results delta indicator is 4.45:1 for the Watchout tone in light theme",
+    "severity": "low",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/results/ResultsScreen.kt",
+    "line": 545,
+    "evidence": "`DomainCardItem` sets `containerColor = MaterialTheme.colorScheme.surface` (L509) and `DeltaIndicator` at L543-547 renders `fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = color,` where `color` comes from `extended.deltaNegative` (L539). Resolved light: #B35A00 on #F8F5FF = **4.45:1**, just under the 4.5:1 floor for 13sp. deltaPositive passes at 4.76:1; dark passes at 10.05:1 / 8.51:1.",
+    "fix": "Covered by the `history-delta-contrast` token change: `deltaNegative = Color(0xFFA15100),` at Theme.kt:103. Recomputed on #F8F5FF: 5.28:1.",
+    "userImpact": "The ▼-n marker showing a domain slipped since last month sits fractionally under the legibility floor on the app's main screen — the one signal a user most needs to notice sharply."
+  },
+  {
+    "id": "weekplan-step-number-contrast",
+    "title": "Guidance week-plan step number is 4.34:1 in light theme",
+    "severity": "low",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/guidance/GuidanceScreen.kt",
+    "line": 334,
+    "evidence": "L325 `Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), shape = CircleShape) {` wrapping L331-335 `Text(\"$index\", fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary,)`. Light resolved: primary #7E57C2 at 12% over background #FFFBFF gives #F0E7F8; #7E57C2 on #F0E7F8 = **4.34:1**, below 4.5:1 for 13sp. Dark passes at 5.81:1. This is the same tinted-chip trap already documented at DomainDetailScreen.kt:350-352 and GuidanceScreen.kt:192-197.",
+    "fix": "Change GuidanceScreen.kt:334 from `color = MaterialTheme.colorScheme.primary,` to `color = MaterialTheme.colorScheme.onPrimaryContainer,`. Recomputed: light #21005E on #F0E7F8 = 14.28:1; dark #EDE7F6 on #2E2B36 = 11.51:1.",
+    "userImpact": "The numbered steps in the week plan — the ordering that makes the plan actionable — are the faintest element in the row in light theme, so the sequence is hard to follow at a glance."
+  },
+  {
+    "id": "domain-card-missing-role",
+    "title": "Results domain cards and the shutter button expose a click action with no Role",
+    "severity": "low",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/results/ResultsScreen.kt",
+    "line": 505,
+    "evidence": "ResultsScreen.kt:505-506 `modifier = modifier.fillMaxWidth().clickable(onClick = onClick)` then `.semantics(mergeDescendants = true) { contentDescription = cardDesc },` — no `Role`. ScanScreen.kt:368-372 has the same gap on the shutter: `.semantics { contentDescription = captureDesc }.then(if (!isCapturing) Modifier.clickable { onCapture() } else Modifier)`. The codebase sets Role everywhere else for the identical pattern: HistoryScreen.kt:109 `.clickable(onClick = onClick, role = Role.Button)`, ResultsScreen.kt:383 `.semantics(mergeDescendants = true) { role = Role.Button }`, DomainDetailScreen.kt:303, SettingsScreen.kt:313.",
+    "fix": "ResultsScreen.kt:505 — change to `.clickable(onClick = onClick, role = Role.Button)` (`androidx.compose.ui.semantics.Role` is already imported at L31). ScanScreen.kt:370 — change to `.semantics { contentDescription = captureDesc; role = Role.Button }` and add `import androidx.compose.ui.semantics.Role` plus `import androidx.compose.ui.semantics.role`.",
+    "userImpact": "TalkBack announces the four domain cards and the shutter as plain text with a generic activation hint rather than as buttons. Users navigating by control type skip straight past the primary navigation on the results screen and past the shutter during a scan."
+  },
+  {
+    "id": "scan-retake-race",
+    "title": "Retake during an in-flight capture corrupts the angle state machine and silently drops one angle from the reading",
+    "severity": "high",
+    "file": "app/src/main/kotlin/com/palmastro/app/viewmodel/ScanViewModel.kt",
+    "line": 282,
+    "evidence": "`captureCurrentAngle()` guards itself (line 182: `if (_state.value.isCapturing) return`) but `retakePreviousAngle()` has no such guard:\n\n```\n282: fun retakePreviousAngle() {\n283:     val newIndex = (_state.value.currentAngleIndex - 1).coerceAtLeast(0)\n284:     val angle = angles[newIndex]\n285:     capturedPaths.remove(angle)\n```\n\nand the in-flight capture completion increments the index RELATIVE to whatever it is at that moment (line 264: `currentAngleIndex = it.currentAngleIndex + 1,`), not relative to the angle it actually captured. The UI leaves the retake button live during capture — ScanScreen.kt:325-327 `if (currentAngleIndex > 0) { IconButton(onClick = onRetake, modifier = Modifier.size(48.dp)) {` — while the shutter is explicitly disabled (ScanScreen.kt:371 `.then(if (!isCapturing) Modifier.clickable { onCapture() } else Modifier)`). Capture is not instant: takePicture -> decodeSampledBitmap -> MediaPipe `analyze` (hundreds of ms), so the window is wide open.\n\nConcrete trace from index 3 (NEAR) with FRONT/LEFT_TILT/RIGHT_TILT already passed: tap shutter (isCapturing=true) then tap retake -> index=2 and RIGHT_TILT is erased from `capturedPaths`/`qualityResults`/`palmMetricsByAngle` and from `completedAngles`. The NEAR frame then lands and passes -> `completedAngles + NEAR`, `currentAngleIndex = 2 + 1 = 3`. RIGHT_TILT is now permanently skipped: the flow walks 3,4,5,6 and reaches `currentAngleIndex >= angles.size` (line 272) with only 6 of 7 angles captured. `runPipeline` then substitutes a fabricated frame for RIGHT_TILT — line 385-386 `?: qualityGate.scoreFrame(0.0f, 0.0f, 0.0f, 0.0f, 0.0f)` with `fileRef = null, palmMetrics = null` — and PalmFeatureExtractorImpl silently median-aggregates over 6 frames instead of 7.",
+    "fix": "Add the same in-flight guard as the capture path. In `retakePreviousAngle()` make line 283 preceded by `if (_state.value.isCapturing) return`, and disable the control in the UI: change ScanScreen.kt:326 to `IconButton(onClick = onRetake, enabled = !isCapturing, modifier = Modifier.size(48.dp)) {`. Additionally make the completion deterministic by replacing line 264 `currentAngleIndex = it.currentAngleIndex + 1,` with `currentAngleIndex = angles.indexOf(angle) + 1,` so a completing frame can only ever advance past the angle it actually captured.",
+    "userImpact": "The user completes what looks like a normal 7-angle scan, but the progress counter sticks (shows \"6/7\" at the end) and the monthly reading is computed from 6 angles plus one zero-quality placeholder — a silently degraded score, grade and scan-quality number, with no error shown."
+  },
+  {
+    "id": "mixed-language-content",
+    "title": "Device locales ja / hi / zh-CN produce a half-translated reading (guidance layer falls back to English inside otherwise-translated content)",
+    "severity": "high",
+    "file": "app/src/main/kotlin/com/palmastro/app/viewmodel/ScanViewModel.kt",
+    "line": 515,
+    "evidence": "`resolveLanguage` (and its duplicate `resolveContentLanguage` at GuidanceViewModel.kt:101-113) resolves the content language from the DEVICE locale whenever `profile.language` is \"system\" (the default set in OnboardingViewModel):\n\n```\n515: return when {\n516:     locale.language == \"zh\" &&\n517:         (locale.script == \"Hant\" || locale.country in setOf(\"TW\", \"HK\", \"MO\")) -> \"zh-TW\"\n519:     locale.language == \"zh\" -> \"zh-CN\"\n520:     locale.language == \"ja\" -> \"ja\"\n521:     locale.language == \"hi\" -> \"hi\"\n522:     else -> \"en\"\n```\n\nengine-content/src/main/resources/content-templates.json declares `\"languages\": [\"en\",\"zh-TW\",\"zh-CN\",\"ja\",\"hi\"]`, so `ContentTemplates.resolveLanguage` (ContentTemplates.kt:143 `if (requested in languages) requested else defaultLanguage`) accepts \"ja\"/\"hi\"/\"zh-CN\" verbatim instead of falling back. But coverage in that file is not uniform — counted over the JSON: domains 74/74, observations 28/28, labels 8/8, tones 6/6, fallback 8/8 carry ja/zh-CN/hi keys, while `guidance` has 285 localized strings with ZERO ja/zh-CN/hi keys (only en + zh-TW). Those 285 strings therefore hit `text[language] ?: text[defaultLanguage]` (ContentTemplates.kt:147) and render in English. Meanwhile app/build.gradle.kts:43 ships `resConfigs(\"en\", \"zh-rTW\")`, so the UI chrome for a ja/hi/zh-Hans device is English too. The stored payload records `language = \"ja\"`, so `storedPayloadLanguage` (GuidanceViewModel.kt:92-93) feeds \"ja\" back into GuidanceBuilder on every later visit, making the mismatch permanent for that month.",
+    "fix": "Restrict the resolver to the languages the app actually ships. In ScanViewModel.kt delete lines 519-521 (`locale.language == \"zh\" -> \"zh-CN\"`, `locale.language == \"ja\" -> \"ja\"`, `locale.language == \"hi\" -> \"hi\"`) so only the zh-Hant branch survives and everything else falls to `else -> \"en\"`, and make the identical deletion in GuidanceViewModel.kt lines 108-110. (If the five-language content set is meant to ship later, the equivalent fix is to drop \"zh-CN\",\"ja\",\"hi\" from the `languages` array in engine-content/src/main/resources/content-templates.json until the `guidance` section is translated.)",
+    "userImpact": "A user whose phone is set to Japanese, Hindi or Simplified Chinese — the default \"system\" language setting — opens Results and sees domain readings and observations in their language, but the month theme, \"lean into\", \"be mindful of\" and week-plan guidance in English, inside an English UI. The flagship screen reads as broken/untrustworthy."
+  },
+  {
+    "id": "landmarker-main-thread",
+    "title": "MediaPipe landmarker is built on the main thread on every scan-screen entry (7.8 MB file read + TFLite init)",
+    "severity": "medium",
+    "file": "app/src/main/kotlin/com/palmastro/app/viewmodel/ScanViewModel.kt",
+    "line": 161,
+    "evidence": "`init { checkAndDownloadModel() }` (line 132-134) runs in the ViewModel constructor, i.e. on the main thread during composition of ScanScreen. When the model is already on disk it goes straight to the synchronous path:\n\n```\n137: if (ModelManager.isModelReady(appContext)) {\n138:     initAnalyzer()\n139:     return\n141: }\n...\n161: private fun initAnalyzer() {\n163:     val source = ModelManager.getModelSource(appContext)\n164:     analyzer = analyzerFactory.create(appContext, source)\n```\n\nNothing is dispatched off the main thread here, and the post-download path is no better: `result.fold(onSuccess = { initAnalyzer() },` (line 147) resumes on `viewModelScope`'s Dispatchers.Main after the `withContext(ioDispatcher)` block ends. app/src/main/assets/models/ is EMPTY, so `hasAssetModel` is always false and the source is always `ModelSource.FileSystem` — which means the factory body runs ImageQualityAnalyzer.kt:46-47 on the main thread: `val bytes = java.io.File(source.path).readBytes()` (7,819,105 bytes per ModelManager.kt:45) plus `ByteBuffer.allocateDirect(bytes.size)`, followed by `HandLandmarker.createFromOptions(context, options)` (ImageQualityAnalyzer.kt:56) which builds the TFLite interpreter and its delegates.",
+    "fix": "Do the construction on the injected IO dispatcher. Replace the body of `initAnalyzer()` with a `viewModelScope.launch { val created = withContext(ioDispatcher) { runCatching { analyzerFactory.create(appContext, ModelManager.getModelSource(appContext)) } }; created.fold(onSuccess = { analyzer = it; _state.update { s -> s.copy(modelReady = true, modelDownloading = false, modelError = null) } }, onFailure = { ModelManager.deleteDownloadedModel(appContext); analyzer = null; _state.update { s -> s.copy(modelReady = false, modelDownloading = false, modelError = ScanError.MODEL_CORRUPT) } }) }` — the `!state.modelReady` branch in ScanScreen.kt:155 already renders a spinner while this is pending, so no new UI state is needed.",
+    "userImpact": "Every time the user taps \"Start scan\" the app freezes for several hundred milliseconds to over a second before the camera appears (worse on low-end devices and cold file cache) — dropped frames on the app's most important screen, and a frozen-input window long enough to be reported as unresponsive."
+  },
+  {
+    "id": "deeplink-refires-on-recreate",
+    "title": "Deep link is re-consumed on every activity recreation, yanking the user back to the linked screen",
+    "severity": "medium",
+    "file": "app/src/main/kotlin/com/palmastro/app/MainActivity.kt",
+    "line": 38,
+    "evidence": "```\n34: override fun onCreate(savedInstanceState: Bundle?) {\n35:     super.onCreate(savedInstanceState)\n36:     enableEdgeToEdge()\n38:     pendingDeepLink.value = DeepLinkHandler.parse(intent)\n```\n\nThe intent is parsed unconditionally, with no `savedInstanceState == null` check, and the launch intent is sticky (`onNewIntent` at line 68-72 even calls `setIntent(intent)` to keep it). AndroidManifest.xml:27-31 declares MainActivity with `android:launchMode=\"singleTask\"` and NO `android:configChanges`, so every rotation, dark-mode switch, font-size change — and the in-app language switch, which calls `AppCompatDelegate.setApplicationLocales` (SettingsViewModel.kt:92) and recreates the activity by design — re-runs onCreate with the same `palmastro://…` intent. AppNavigation.kt:46-55 then navigates again: `LaunchedEffect(deepLink, hasProfile) { if (deepLink != null) { if (hasProfile) { navController.navigate(DeepLinkHandler.routeFor(deepLink)) …` — on top of the back stack that NavHost has just restored.",
+    "fix": "Parse only on a genuine cold start and clear the consumed link. Change line 38 to `if (savedInstanceState == null) { pendingDeepLink.value = DeepLinkHandler.parse(intent) }`, and make the consumption callback also drop the sticky data — replace `onDeepLinkConsumed = { pendingDeepLink.value = null }` (line 58) with `onDeepLinkConsumed = { pendingDeepLink.value = null; intent.data = null }`.",
+    "userImpact": "A user who opened the app from a palmastro:// link, then browsed elsewhere, gets thrown back to the deep-link destination the moment they rotate the phone or change the app language in Settings — losing whatever screen and scroll position they were on."
+  },
+  {
+    "id": "root-check-main-thread-exec",
+    "title": "Root check forks a `which su` process on the main thread during Application.onCreate and never closes it",
+    "severity": "medium",
+    "file": "app/src/main/kotlin/com/palmastro/app/security/SecurityChecker.kt",
+    "line": 64,
+    "evidence": "```\n64: return try {\n65:     val process = Runtime.getRuntime().exec(arrayOf(\"which\", \"su\"))\n66:     process.inputStream.bufferedReader().readLine() != null\n67: } catch (_: Exception) {\n68:     false\n69: }\n```\n\nThis is reached synchronously from cold start: PalmAstroApp.kt:32-39 `override fun onCreate() { … runSecurityCheck() …}` -> line 42 `val report = SecurityChecker.check(this)` -> `checkRoot()`. So every launch forks and execs a process on the main thread, on top of ~8 `File.exists()` stats (line 59) and a stat per PATH entry (line 62). Neither the process nor the stream is released: `bufferedReader()` is not wrapped in `use {}` and `process.destroy()` / `waitFor()` are never called, so the reader fd and the zombie child leak for the process lifetime. The work buys nothing observable — `securityThreatLevel` (PalmAstroApp.kt:29, assigned at line 43) is never read anywhere in the codebase, and the only other effect is a Crashlytics log line.",
+    "fix": "Move the check off the startup path and release the resources. In PalmAstroApp.kt replace line 35 `runSecurityCheck()` with `appScope.launch { runSecurityCheck() }` (appScope is already declared at line 27 on Dispatchers.IO), and in SecurityChecker.kt replace lines 64-69 with `return try { val process = Runtime.getRuntime().exec(arrayOf(\"which\", \"su\")); val found = process.inputStream.bufferedReader().use { it.readLine() != null }; process.destroy(); found } catch (_: Exception) { false }`.",
+    "userImpact": "Measurable added cold-start latency before the first frame on every launch (process fork on the main thread is tens to hundreds of ms on low-end devices), plus a leaked file descriptor and child process per launch — for a signal the app never actually uses."
+  },
+  {
+    "id": "stale-results-after-rescan",
+    "title": "After a rescan started from a history month, pressing back shows a Results screen still rendering pre-scan data",
+    "severity": "medium",
+    "file": "app/src/main/kotlin/com/palmastro/app/navigation/AppNavigation.kt",
+    "line": 89,
+    "evidence": "```\n89: val staleResults =\n90:     runCatching { navController.getBackStackEntry(Route.Results.path) }.isSuccess\n91: val popTarget = if (staleResults) Route.Results.path else Route.Scan.path\n92: navController.navigate(\"results?fresh=true\") {\n93:     popUpTo(popTarget) { inclusive = true }\n94: }\n```\n\n`popUpTo` pops down to the TOPMOST entry matching the route, not all of them. History pushes a second Results entry (line 150 `onMonthClick = { monthKey -> navController.navigate(\"results?monthKey=$monthKey\") }`), so the stack is [results(start), results?monthKey=X, scan]; the pop removes only `scan` and `results?monthKey=X`, leaving the original start entry alive. `ResultsViewModel` loads exactly once — `init { load() }` (ResultsViewModel.kt:73) with no Flow subscription and no re-entry hook — so that surviving entry keeps the grade, domain scores, delta arrows and scan-quality chip it loaded before the rescan.",
+    "fix": "Clear every Results entry on scan completion instead of only the topmost one: delete lines 89-91 and change the navigate block to `navController.navigate(\"results?fresh=true\") { popUpTo(0) { inclusive = true } }` — the same clear-everything idiom already used for the wipe path at line 102. (Alternative, if the History back stack must survive: make `ResultsViewModel.load()` collect `resultRepository.observeAll()` instead of doing a one-shot `getRecent(1)`.)",
+    "userImpact": "User goes History -> July -> Rescan, finishes the scan, presses back once, and is looking at a Results screen showing the previous month's grade and scores as if they were current — the exact stale-data trap the surrounding comment was written to prevent."
+  },
+  {
+    "id": "double-navigation",
+    "title": "Rapid double-tap pushes duplicate destinations; only the deep-link navigate sets launchSingleTop",
+    "severity": "low",
+    "file": "app/src/main/kotlin/com/palmastro/app/navigation/AppNavigation.kt",
+    "line": 77,
+    "evidence": "Every in-app navigation is an unguarded `navigate(...)` with no `launchSingleTop`, e.g.\n\n```\n76: onDomainClick = { domain, monthKey ->\n77:     navController.navigate(\"domain_detail/$domain/$monthKey\")\n78: },\n79: onHistoryClick = { navController.navigate(\"history\") },\n80: onGuidanceClick = { monthKey -> navController.navigate(guidanceRoute(monthKey)) },\n```\n\nplus lines 74, 75, 119, 120 and 150. Compose's `clickable` does not debounce, and two taps landing in the same frame both invoke the lambda before the destination change is applied, so two identical entries are pushed. The one place the pattern is applied correctly is the deep-link effect, line 49-51: `navController.navigate(DeepLinkHandler.routeFor(deepLink)) { launchSingleTop = true }` — showing the intent was known.",
+    "fix": "Add the same option to the in-app calls, e.g. line 77 becomes `navController.navigate(\"domain_detail/$domain/$monthKey\") { launchSingleTop = true }`, and likewise for lines 74 (`Route.Scan.path`), 75 (`Route.Settings.path`), 79 (`\"history\"`), 80 (`guidanceRoute(monthKey)`), 119 (`\"journal/$monthKey?domain=$domain\"`), 120 (`explainabilityRoute(domain, monthKey)`) and 150 (`\"results?monthKey=$monthKey\"`).",
+    "userImpact": "An impatient double-tap on a domain card, History or the guidance card opens the screen twice; the back gesture then appears broken because the user must press it twice to return to Results."
+  },
+  {
+    "id": "birthtime-default-recorded",
+    "title": "\"Confirm\" on the optional birth-details step records the untouched 12:00 default as a user-supplied birth time",
+    "severity": "low",
+    "file": "app/src/main/kotlin/com/palmastro/app/ui/onboarding/OnboardingScreen.kt",
+    "line": 141,
+    "evidence": "BirthDetailsStep seeds the pickers with defaults — line 425-426 `var selHour by remember { mutableStateOf(12) }` / `var selMinute by remember { mutableStateOf(0) }` — and its confirm button always emits them:\n\n```\n474: MainButton(stringResource(R.string.ob_birth_details_confirm)) { onContinue(selHour, selMinute, selectedLocation) }\n```\n\nThe host handler then unconditionally marks the birth time as known, while treating the place as genuinely optional:\n\n```\n141: onContinue = { h, m, loc -> viewModel.setBirthTime(h, m); if (loc != null) viewModel.setBirthPlace(loc.name, loc.lat, loc.lon); viewModel.nextStep() },\n```\n\n`setBirthTime` sets `hasBirthTime = true` (OnboardingViewModel.kt:73), which persists `birthTimeMinutes = 720` (OnboardingViewModel.kt:103) and feeds both the calc-level promotion `val calcLevel = if (s.hasBirthTime && s.hasBirthPlace) \"L2\" else \"L1\"` (OnboardingViewModel.kt:97) and the astrology call `LocalTime.of(minutes / 60, minutes % 60)` in ScanViewModel.kt:400-406. A user who only wanted to pick a birth place is silently given a fabricated noon birth time and an L2 \"higher accuracy\" label.",
+    "fix": "Track whether the time was actually chosen and pass it as nullable. Add `var timeChosen by remember { mutableStateOf(false) }` in BirthDetailsStep, set `timeChosen = true` in the hour and minute `onClick` handlers (lines 445 and 453), change the confirm call at line 474 to `onContinue(if (timeChosen) selHour else null, if (timeChosen) selMinute else null, selectedLocation)`, widen the callback type at line 428 to `(Int?, Int?, Location?) -> Unit`, and change line 141 to `onContinue = { h, m, loc -> if (h != null && m != null) viewModel.setBirthTime(h, m); if (loc != null) viewModel.setBirthPlace(loc.name, loc.lat, loc.lon); viewModel.nextStep() }`.",
+    "userImpact": "The reading is computed from a birth time the user never gave, and the summary screen tells them they are getting the higher-accuracy L2 analysis — a transparency failure in an app whose promise is that it explains exactly what it used."
+  }
+]

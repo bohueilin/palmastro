@@ -1,0 +1,56 @@
+{
+  "input": {
+    "birthday": {
+      "year": 1973,
+      "month": 2,
+      "day": 9
+    },
+    "birthTime": {
+      "hour": 9,
+      "minute": 0
+    },
+    "birthPlaceLat": 25.0,
+    "birthPlaceLon": 121.5
+  },
+  "expected": {
+    "calcLevel": "L2",
+    "signals": [
+      {
+        "signalId": "ASTRO_SUN_AQUARIUS",
+        "direction": "+",
+        "magnitude": 3,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_SUN_AIR",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_SUN_FIXED",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_MOON_FIRE",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_ASC_FIRE",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_CAREER"
+      }
+    ],
+    "engineVersion": "2.0.0"
+  }
+}

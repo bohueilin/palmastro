@@ -65,6 +65,59 @@ import CoreContracts
             try empty.validate()
         }
     }
+
+    /// The invariants Kotlin's validateOrThrow enforces, with the same stable
+    /// keys — a ruleset that fails on Android must fail here identically.
+    @Test func validationRejectsTheSameInvariantsAsAndroid() throws {
+        let base = try Ruleset.loadDefault()
+
+        func expectRejection(_ ruleset: Ruleset, _ key: String) {
+            #expect(throws: Ruleset.RulesetError.invalidRuleset(key)) {
+                try ruleset.validate()
+            }
+        }
+
+        expectRejection(
+            Ruleset(
+                version: base.version, signals: base.signals + [base.signals[0]],
+                gradeThresholds: base.gradeThresholds, confidenceMultipliers: base.confidenceMultipliers
+            ),
+            "ruleset_duplicate_signal_ids"
+        )
+
+        let missingDomain = SignalDefinition(
+            signalId: "TEST_PARTIAL", source: "palm", direction: 1, magnitude: 1,
+            minConfidence: "low", domainWeights: [Domains.career: 0.5], safetyTag: "SAFE_GENERAL"
+        )
+        expectRejection(
+            Ruleset(
+                version: base.version, signals: base.signals + [missingDomain],
+                gradeThresholds: base.gradeThresholds, confidenceMultipliers: base.confidenceMultipliers
+            ),
+            "ruleset_signal_missing_domain:TEST_PARTIAL"
+        )
+
+        expectRejection(
+            Ruleset(
+                version: base.version, signals: base.signals,
+                gradeThresholds: base.gradeThresholds, confidenceMultipliers: ["high": 1.0]
+            ),
+            "ruleset_missing_confidence_levels"
+        )
+
+        // A one-point gap between the two lowest bands.
+        var gapped = base.gradeThresholds
+        if let watchout = gapped["Watchout"] {
+            gapped["Watchout"] = GradeRange(min: watchout.min, max: watchout.max - 1)
+        }
+        expectRejection(
+            Ruleset(
+                version: base.version, signals: base.signals,
+                gradeThresholds: gapped, confidenceMultipliers: base.confidenceMultipliers
+            ),
+            "ruleset_grade_thresholds_not_contiguous"
+        )
+    }
 }
 
 @Suite struct ScoringEngineTests {

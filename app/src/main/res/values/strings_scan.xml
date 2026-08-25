@@ -19,6 +19,10 @@
     <!-- Capture chrome -->
     <string name="sc_capture_progress_desc">%1$d of %2$d angles captured</string>
 
+    <!-- One-time model download -->
+    <string name="scan_download_progress">%1$d%% of %2$s MB</string>
+    <string name="scan_download_not_now">Not now</string>
+
     <!-- Coaching hints — keys returned by CoachingHints.keyFor -->
     <string name="coach_blur">Hold still until the image stabilizes</string>
     <string name="coach_glare">Avoid direct light sources</string>

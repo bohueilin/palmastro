@@ -160,7 +160,9 @@ struct ScanView: View {
         .padding()
     }
 
-    private func anglePromptKey(for angle: Angle) -> LocalizedStringKey {
+    // Qualified: SwiftUI also exports a top-level `Angle`, so a bare reference
+    // here is ambiguous for type lookup.
+    private func anglePromptKey(for angle: CoreContracts.Angle) -> LocalizedStringKey {
         switch angle {
         case .FRONT: return "scan_angle_front"
         case .LEFT_TILT: return "scan_angle_left_tilt"

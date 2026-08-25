@@ -246,6 +246,14 @@ struct OnboardingView: View {
         .padding()
     }
 
+    /// Free-text coordinates are only trusted inside the real geographic
+    /// range. Anything else stays nil, which keeps the reading at L1 rather
+    /// than letting the ascendant formula silently clamp a typo to ±89.9.
+    private static func coordinate(_ text: String, limit: Double) -> Double? {
+        guard let value = Double(text), value >= -limit, value <= limit else { return nil }
+        return value
+    }
+
     private func completeOnboarding() {
         var profile = model.profile
         profile.displayName = displayName
@@ -255,11 +263,13 @@ struct OnboardingView: View {
         }
         profile.dominantHand = dominantHand ?? .RIGHT
         profile.relationshipStatus = relationshipStatus
+        let latitude = Self.coordinate(birthPlaceLatText, limit: 90)
+        let longitude = Self.coordinate(birthPlaceLonText, limit: 180)
         if birthTimeKnown {
             let time = Calendar.current.dateComponents([.hour, .minute], from: birthTimeDate)
             profile.birthTime = CivilTime(hour: time.hour ?? 0, minute: time.minute ?? 0)
-            profile.birthPlaceLat = Double(birthPlaceLatText)
-            profile.birthPlaceLon = Double(birthPlaceLonText)
+            profile.birthPlaceLat = latitude
+            profile.birthPlaceLon = longitude
         }
         profile.tone = tone
         profile.language = language
@@ -267,7 +277,7 @@ struct OnboardingView: View {
         model.profile = profile
         model.saveProfile()
         model.analytics.emit(eventName: "onboarding_complete", props: [
-            "calc_level": (birthTimeKnown && Double(birthPlaceLatText) != nil && Double(birthPlaceLonText) != nil) ? "l2" : "l1",
+            "calc_level": (birthTimeKnown && latitude != nil && longitude != nil) ? "l2" : "l1",
             "tone": tone.rawValue.lowercased(),
             "language": language.lowercased(),
         ])

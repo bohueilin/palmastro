@@ -14,11 +14,21 @@ data class JournalState(
     val monthKey: String = "",
     val domain: String? = null,
     val text: String = "",
+    /**
+     * What the repository actually holds, so an entry opened only to be re-read is
+     * never mistaken for an unsaved draft.
+     */
+    val savedText: String = "",
     val existingEntries: List<JournalEntryEntity> = emptyList(),
     val isSaved: Boolean = false,
     val charCount: Int = 0,
     val maxChars: Int = JournalRepository.MAX_CHARS,
-)
+    /** Set once a save requested on the way out has actually been written. */
+    val exitRequested: Boolean = false,
+) {
+    /** Edits the repository would actually store — a blank field has nothing to lose. */
+    val hasUnsavedText: Boolean get() = text.isNotBlank() && text != savedText
+}
 
 @HiltViewModel
 class JournalViewModel @Inject constructor(
@@ -48,6 +58,9 @@ class JournalViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     text = existing?.text ?: "",
+                    // Seeded from the stored text, not the draft: saveEntry trims and
+                    // truncates, so anything else would leave the entry always dirty.
+                    savedText = existing?.text ?: "",
                     charCount = existing?.text?.length ?: 0,
                     existingEntries = allEntries,
                 )
@@ -63,8 +76,20 @@ class JournalViewModel @Inject constructor(
     fun save() {
         viewModelScope.launch {
             journalRepository.saveEntry(monthKey, domain, _state.value.text)
-            _state.update { it.copy(isSaved = true) }
+            // Marked clean before the re-read so a slow load() cannot flash a dirty state.
+            _state.update { it.copy(isSaved = true, savedText = it.text) }
             load()
+        }
+    }
+
+    /**
+     * Saves, then tells the screen it may leave. Navigating away first would cancel
+     * viewModelScope mid-write, which is exactly the loss this flow exists to prevent.
+     */
+    fun saveAndExit() {
+        viewModelScope.launch {
+            journalRepository.saveEntry(monthKey, domain, _state.value.text)
+            _state.update { it.copy(isSaved = true, savedText = it.text, exitRequested = true) }
         }
     }
 

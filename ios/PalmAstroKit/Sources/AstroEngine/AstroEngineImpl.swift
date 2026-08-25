@@ -3,8 +3,9 @@ import CoreContracts
 
 /// Astro engine v2 (EXECUTION_SPEC "L2 astrology: real math only").
 ///
-/// - L1 (birthday only): tropical sun sign -> `ASTRO_SUN_<ELEMENT>` and
-///   `ASTRO_SUN_<MODALITY>` signals. No ascendant, no houses (PRD §17).
+/// - L1 (birthday only): tropical sun sign -> `ASTRO_SUN_<SIGN>`,
+///   `ASTRO_SUN_<ELEMENT>` and `ASTRO_SUN_<MODALITY>` signals, in that order.
+///   No ascendant, no houses (PRD §17).
 /// - L2 (birthday + time + place): adds `ASTRO_MOON_<ELEMENT>` (Meeus
 ///   low-precision lunar longitude) and `ASTRO_ASC_<ELEMENT>` (standard
 ///   ascendant formula, obliquity 23.4367 deg).
@@ -36,11 +37,18 @@ public final class AstroEngineImpl: AstroEngineProtocol {
 
         var signals: [AstroSignal] = []
 
-        // L1: sun element + modality (tropical, calendar-boundary table).
+        // L1: sun sign, element, modality (tropical, calendar-boundary table).
+        // Order is contractual — downstream consumers take the first
+        // ASTRO_SUN_-prefixed signal as the sign.
         let sun = Zodiac.sunSign(for: birthday)
         signals.append(AstroSignal(
-            signalId: "ASTRO_SUN_\(sun.element)",
+            signalId: "ASTRO_SUN_\(sun.name)",
             direction: "+", magnitude: 3, confidence: "high", safetyTag: "SAFE_GENERAL"
+        ))
+        signals.append(AstroSignal(
+            signalId: "ASTRO_SUN_\(sun.element)",
+            direction: "+", magnitude: 2, confidence: "high",
+            safetyTag: Self.elementSafetyTag(body: "SUN", element: sun.element)
         ))
         signals.append(AstroSignal(
             signalId: "ASTRO_SUN_\(sun.modality)",
@@ -59,7 +67,7 @@ public final class AstroEngineImpl: AstroEngineProtocol {
             signals.append(AstroSignal(
                 signalId: "ASTRO_MOON_\(moon.element)",
                 direction: "+", magnitude: 2, confidence: "high",
-                safetyTag: moon.element == "WATER" ? "SAFE_HEALTH_SOFT_ONLY" : "SAFE_GENERAL"
+                safetyTag: Self.elementSafetyTag(body: "MOON", element: moon.element)
             ))
 
             let lst = Astronomy.normalizeDegrees(Astronomy.gmstDegrees(julianDay: jd) + lon)
@@ -67,11 +75,22 @@ public final class AstroEngineImpl: AstroEngineProtocol {
             let asc = Zodiac.sign(forEclipticLongitude: ascLongitude)
             signals.append(AstroSignal(
                 signalId: "ASTRO_ASC_\(asc.element)",
-                direction: "+", magnitude: 3, confidence: "high",
-                safetyTag: asc.element == "FIRE" ? "SAFE_CAREER" : "SAFE_GENERAL"
+                direction: "+", magnitude: 2, confidence: "high",
+                safetyTag: Self.elementSafetyTag(body: "ASC", element: asc.element)
             ))
         }
 
         return AstroResult(calcLevel: calcLevel, signals: signals, engineVersion: version)
+    }
+
+    /// Safety tags mirror the ruleset v2 definitions (PRD Appendix A2): water
+    /// elements touch the health domain (soft-only); a fire ascendant maps to
+    /// career; everything else is general. One shared rule for every body, in
+    /// the same precedence order as `AstroEngineImpl.elementSafetyTag` on
+    /// Android — the element table is uppercase here, lowercase there.
+    private static func elementSafetyTag(body: String, element: String) -> String {
+        if element == "WATER" { return "SAFE_HEALTH_SOFT_ONLY" }
+        if body == "ASC" && element == "FIRE" { return "SAFE_CAREER" }
+        return "SAFE_GENERAL"
     }
 }

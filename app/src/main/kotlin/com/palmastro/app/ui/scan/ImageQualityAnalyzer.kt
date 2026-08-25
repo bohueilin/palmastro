@@ -23,6 +23,12 @@ data class ImageQualityMetrics(
     val exposure: Float,
     val coverage: Float,
     val stability: Float = 0.9f,
+    /**
+     * Mean frame luminance 0..255. [exposure] is symmetric around mid-grey, so it alone
+     * cannot say whether a weak score means too dark or too bright; this carries the
+     * direction to the coaching layer. Neutral default keeps existing callers unbiased.
+     */
+    val meanBrightness: Float = 127f,
     val landmarks: List<NormalizedLandmark>? = null,
     val palmMetrics: PalmMetrics? = null,
 )
@@ -82,7 +88,10 @@ class ImageQualityAnalyzer(context: Context, source: ModelSource) : Closeable {
         val (coverage, landmarks) = analyzeCoverageAndLandmarks(bitmap)
         val palmMetrics = landmarks?.let { buildPalmMetrics(it, luma, width, height) }
 
-        return ImageQualityMetrics(blur, glare, exposure, coverage, landmarks = landmarks, palmMetrics = palmMetrics)
+        return ImageQualityMetrics(
+            blur, glare, exposure, coverage,
+            meanBrightness = mean, landmarks = landmarks, palmMetrics = palmMetrics,
+        )
     }
 
     private fun analyzeBlur(luma: FloatArray, width: Int, height: Int): Float {

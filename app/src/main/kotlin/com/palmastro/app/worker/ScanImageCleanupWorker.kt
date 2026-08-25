@@ -13,7 +13,7 @@ import java.io.File
 
 /**
  * Enforces the raw-media retention policy (PRD §15/§27): scan images expire
- * 24h after capture (per-file mtime), or immediately when the user has
+ * [RETENTION_MS] after capture (per-file mtime), or immediately when the user has
  * disabled raw media retention. Cleared months get their scanImagePath reset
  * so the UI never points at deleted files.
  *
@@ -71,6 +71,15 @@ class ScanImageCleanupWorker(
 
     companion object {
         const val WORK_NAME = "scan_image_cleanup"
-        const val RETENTION_MS = 24 * 60 * 60 * 1000L
+
+        /** Hours the app publicly promises as the outer bound (privacy policy, Play). */
+        const val DISCLOSED_WINDOW_HOURS = 24L
+
+        /**
+         * Deliberately shorter than the disclosed window: a file only expires on the
+         * next cleanup run, so a 24h constant would let images outlive the promise by
+         * however long the scheduler defers. The margin absorbs that deferral.
+         */
+        const val RETENTION_MS = 20 * 60 * 60 * 1000L
     }
 }

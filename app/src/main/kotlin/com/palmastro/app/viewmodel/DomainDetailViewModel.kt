@@ -44,6 +44,12 @@ class DomainDetailViewModel @Inject constructor(
 
     init { load() }
 
+    /** Re-runs the load behind the failure state's retry button; no other state is reset. */
+    fun retry() {
+        _state.update { it.copy(isLoading = true, error = null) }
+        load()
+    }
+
     private fun load() {
         viewModelScope.launch {
             try {

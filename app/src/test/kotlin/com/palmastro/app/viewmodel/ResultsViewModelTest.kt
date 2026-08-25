@@ -9,6 +9,7 @@ import com.palmastro.data.entities.MonthlyResultEntity
 import com.palmastro.data.entities.UserProfileEntity
 import com.palmastro.data.repository.ResultRepository
 import com.palmastro.data.repository.UserRepository
+import dagger.Lazy
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,6 +17,7 @@ import kotlinx.coroutines.test.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.*
+import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -82,8 +84,10 @@ class ResultsViewModelTest {
     @AfterEach
     fun tearDown() { Dispatchers.resetMain() }
 
+    // The guidance build runs on the injected dispatcher; pinning it to the test
+    // dispatcher keeps state assertions immediate after construction.
     private fun createViewModel(handle: SavedStateHandle = SavedStateHandle()) =
-        ResultsViewModel(handle, resultRepository, userRepository, featureFlags)
+        ResultsViewModel(handle, resultRepository, userRepository, featureFlags, ioDispatcher = testDispatcher)
 
     @Test
     fun `load sets hasResults false when no results`() = runTest {
@@ -131,6 +135,57 @@ class ResultsViewModelTest {
             assertNull(card.delta, "delta for ${card.domain} must be gated off at LOW comparability")
             assertNull(card.deltaArrow)
         }
+    }
+
+    @Test
+    fun `MED comparability keeps the delta but marks it approximate`() = runTest {
+        coEvery { resultRepository.getRecent(1) } returns listOf(makeEntity())
+        coEvery { userRepository.get() } returns makeProfile()
+        coEvery { resultRepository.getDeltaFor("2026-03") } returns makeDelta(ComparabilityBucket.MED)
+        val vm = createViewModel()
+        val career = vm.state.value.domainCards.first { it.domain == "career" }
+        assertEquals(5, career.delta)
+        assertTrue(vm.state.value.deltaApproximate, "MED comparability must weaken, not hide, the delta")
+        assertEquals(85, vm.state.value.comparabilityScore)
+    }
+
+    @Test
+    fun `comparability score is withheld when the delta is not shown`() = runTest {
+        coEvery { resultRepository.getRecent(1) } returns listOf(makeEntity())
+        coEvery { userRepository.get() } returns makeProfile()
+        coEvery { resultRepository.getDeltaFor("2026-03") } returns makeDelta(ComparabilityBucket.LOW)
+        val vm = createViewModel()
+        assertNull(vm.state.value.comparabilityScore)
+        assertFalse(vm.state.value.deltaApproximate)
+    }
+
+    @Test
+    fun `newest reading from an earlier month is stale, not a past month`() = runTest {
+        coEvery { resultRepository.getRecent(1) } returns listOf(makeEntity(monthKey = "2020-01"))
+        coEvery { userRepository.get() } returns makeProfile()
+        val vm = createViewModel()
+        assertTrue(vm.state.value.isStale)
+        assertFalse(vm.state.value.isPastMonth)
+    }
+
+    @Test
+    fun `reading for the current month is neither stale nor past`() = runTest {
+        val thisMonth = YearMonth.now().toString()
+        coEvery { resultRepository.getRecent(1) } returns listOf(makeEntity(monthKey = thisMonth))
+        coEvery { userRepository.get() } returns makeProfile()
+        val vm = createViewModel()
+        assertFalse(vm.state.value.isStale)
+        assertFalse(vm.state.value.isPastMonth)
+    }
+
+    @Test
+    fun `month opened from history is a past month, never a stale-month prompt`() = runTest {
+        val handle = SavedStateHandle(mapOf("monthKey" to "2020-01"))
+        coEvery { resultRepository.getByMonth("2020-01") } returns makeEntity(monthKey = "2020-01")
+        coEvery { userRepository.get() } returns makeProfile()
+        val vm = createViewModel(handle)
+        assertTrue(vm.state.value.isPastMonth)
+        assertFalse(vm.state.value.isStale)
     }
 
     @Test
@@ -187,7 +242,10 @@ class ResultsViewModelTest {
         every { builder.build(any(), any(), any()) } returns
             Guidance(monthTheme = "主題", strengths = emptyList(), mindful = emptyList(), weekPlan = emptyList())
 
-        val vm = ResultsViewModel(SavedStateHandle(), resultRepository, userRepository, featureFlags, builder)
+        val vm = ResultsViewModel(
+            SavedStateHandle(), resultRepository, userRepository, featureFlags,
+            Lazy<GuidanceBuilder> { builder }, testDispatcher,
+        )
 
         // Preview must match the language the payloads were COMPOSED in, not the current profile.
         verify { builder.build(any(), "Stable", "zh-TW") }
@@ -203,7 +261,10 @@ class ResultsViewModelTest {
         every { builder.build(any(), any(), any()) } returns
             Guidance(monthTheme = "t", strengths = emptyList(), mindful = emptyList(), weekPlan = emptyList())
 
-        ResultsViewModel(SavedStateHandle(), resultRepository, userRepository, featureFlags, builder)
+        ResultsViewModel(
+            SavedStateHandle(), resultRepository, userRepository, featureFlags,
+            Lazy<GuidanceBuilder> { builder }, testDispatcher,
+        )
 
         verify { builder.build(any(), "Stable", "zh-TW") }
     }

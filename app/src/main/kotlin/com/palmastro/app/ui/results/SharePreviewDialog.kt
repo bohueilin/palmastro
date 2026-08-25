@@ -10,13 +10,48 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.palmastro.app.R
+import com.palmastro.app.share.ShareHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/**
+ * Preview → chooser handoff, shared by Results and Domain Detail. The PNG encode and the
+ * cache write are blocking work, so they run off the main thread, and the preview stays
+ * on screen until the file exists rather than blinking out mid-encode.
+ */
+@Composable
+fun ShareFlowDialog(
+    bitmap: Bitmap,
+    shareText: String,
+    chooserTitle: String,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    SharePreviewDialog(
+        bitmap = bitmap,
+        onDismiss = onDismiss,
+        onConfirm = {
+            scope.launch {
+                val uri = withContext(Dispatchers.IO) { ShareHelper.writeShareFile(context, bitmap) }
+                // Chooser first, dismiss second: dismissing removes this dialog — and the
+                // scope this coroutine runs in — from composition.
+                ShareHelper.startChooser(context, uri, shareText, chooserTitle)
+                onDismiss()
+            }
+        },
+    )
+}
 
 /**
  * Preview-first share flow (PRD 13.7): the rendered card is shown to the user before

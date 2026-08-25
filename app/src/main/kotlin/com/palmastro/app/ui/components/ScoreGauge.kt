@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.palmastro.app.ui.theme.LocalPalmAstroExtendedColors
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -184,11 +185,12 @@ private fun GaugeCenterText(score: Int, style: ScoreGaugeStyle, numeralColor: Co
 
 @Composable
 private fun GaugeArc(progress: () -> Float, strokeWidth: Dp, modifier: Modifier = Modifier) {
-    // Track at FULL alpha in both themes: outlineVariant already sits at the subtle end of
-    // the scheme, and any alpha fade made the remaining-range ring nearly invisible on dark
-    // surfaces. Intent: keep the track >= 3:1 against the surface (WCAG 1.4.11 non-text
-    // contrast) so the "how much is left" affordance survives dark mode.
-    val trackColor = MaterialTheme.colorScheme.outlineVariant
+    // Track at FULL alpha in both themes, and on the dedicated meterTrack token rather than
+    // outlineVariant: outlineVariant is the SUBTLE outline tone and measured under 2:1 here.
+    // meterTrack holds >= 3:1 (WCAG 1.4.11 non-text contrast) against every ground the gauge
+    // lands on — plain surface, page background, and the grade-tinted detail hero wash — so
+    // the "how much is left" affordance survives dark mode.
+    val trackColor = LocalPalmAstroExtendedColors.current.meterTrack
     val arcEnd = if (isSystemInDarkTheme()) ArcPurpleOnDark else ArcPurple
     Canvas(modifier = modifier) {
         // The progress lambda is read only here, in the draw phase, so the spring

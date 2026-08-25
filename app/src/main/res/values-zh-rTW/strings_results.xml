@@ -16,6 +16,14 @@
     <string name="results_delta_down">比上月下降 %1$d</string>
     <string name="results_delta_flat">與上月持平</string>
     <string name="results_card_confidence">信心度%1$s</string>
+    <!-- 新月份的重新掃描邀請：語氣平和，不製造壓力或失去感。 -->
+    <string name="results_new_month_title">新的月份開始了</string>
+    <string name="results_new_month_desc">這份解讀來自 %1$s。準備好的時候，重新掃描看看有什麼改變。</string>
+    <string name="results_past_month">正在檢視過往的解讀</string>
+    <string name="results_comparability_chip">與上月可比度 %1$d/100</string>
+    <string name="results_delta_approx">與上月的比較僅供概略參考</string>
+    <string name="results_rescan_confirm_title">要重新掃描這個月嗎？</string>
+    <string name="results_rescan_confirm_message">新的掃描會取代這個月已儲存的解讀，你的日記會保留下來。</string>
     <string name="results_safety_title">僅供個人參考</string>
     <string name="results_safety_body">掌紋星象僅供自我成長與娛樂用途，並非醫療、財務或專業建議。所有分析都在你的裝置上完成。</string>
 

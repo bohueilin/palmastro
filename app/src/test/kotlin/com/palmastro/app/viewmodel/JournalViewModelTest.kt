@@ -83,6 +83,34 @@ class JournalViewModelTest {
     }
 
     @Test
+    fun `an entry opened only to be re-read has no unsaved text`() = runTest {
+        val existing = JournalEntryEntity("j-1", "2026-03", "career", "Previous entry")
+        val vm = createViewModel("2026-03", "career", existing = existing, entries = listOf(existing))
+        assertFalse(vm.state.value.hasUnsavedText)
+        vm.updateText("Previous entry, extended")
+        assertTrue(vm.state.value.hasUnsavedText)
+    }
+
+    @Test
+    fun `save leaves no unsaved changes behind`() = runTest {
+        val vm = createViewModel("2026-03", "career")
+        vm.updateText("My reflection")
+        assertTrue(vm.state.value.hasUnsavedText)
+        vm.save()
+        assertFalse(vm.state.value.hasUnsavedText)
+    }
+
+    @Test
+    fun `saveAndExit writes before signalling the screen to leave`() = runTest {
+        val vm = createViewModel("2026-03", "career")
+        vm.updateText("My reflection")
+        vm.saveAndExit()
+        coVerify { journalRepository.saveEntry("2026-03", "career", "My reflection") }
+        assertTrue(vm.state.value.exitRequested)
+        assertFalse(vm.state.value.hasUnsavedText)
+    }
+
+    @Test
     fun `max chars matches repository constant`() {
         val vm = createViewModel()
         assertEquals(500, vm.state.value.maxChars)

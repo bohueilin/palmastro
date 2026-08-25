@@ -130,6 +130,8 @@ fun ConstellationProcessingScreen(reduceMotion: Boolean, modifier: Modifier = Mo
     val progress = rememberRevealProgress(reduceMotion)
     val twinkle = rememberTwinkleAlpha(reduceMotion)
     val labelAlpha = { window(progress.value, LABEL_START, 1f) }
+    // The gradient runs under the status bar, so the icons over it must go light.
+    DarkSystemBarsEffect()
     Column(
         modifier = modifier.fillMaxSize()
             .background(Brush.verticalGradient(listOf(NightSkyTop, NightSkyBottom)))

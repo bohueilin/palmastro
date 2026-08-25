@@ -19,6 +19,10 @@
     <!-- Capture chrome -->
     <string name="sc_capture_progress_desc">已完成 %1$d 個角度，共 %2$d 個</string>
 
+    <!-- One-time model download -->
+    <string name="scan_download_progress">%1$d%%，共 %2$s MB</string>
+    <string name="scan_download_not_now">稍後再說</string>
+
     <!-- Coaching hints — keys returned by CoachingHints.keyFor -->
     <string name="coach_blur">請保持不動，等待畫面穩定</string>
     <string name="coach_glare">請避開直射光源</string>

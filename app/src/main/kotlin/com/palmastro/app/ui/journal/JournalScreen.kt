@@ -1,13 +1,16 @@
 package com.palmastro.app.ui.journal
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
+import com.palmastro.app.ui.monthTitleLocalized
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.viewmodel.JournalViewModel
 
@@ -29,13 +33,18 @@ fun JournalScreen(
 ) {
     val state by viewModel.state.collectAsState()
     var entryIdPendingDelete by remember { mutableStateOf<String?>(null) }
+    var confirmDiscard by rememberSaveable { mutableStateOf(false) }
+    // Leaving is what destroys the draft, so both exits ask first.
+    val hasUnsaved = state.hasUnsavedText
+    BackHandler(enabled = hasUnsaved) { confirmDiscard = true }
+    LaunchedEffect(state.exitRequested) { if (state.exitRequested) onBack() }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.journal_title)) },
+                title = { Text(stringResource(R.string.journal_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = { if (hasUnsaved) confirmDiscard = true else onBack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
@@ -61,7 +70,7 @@ fun JournalScreen(
             }
 
             Text(
-                state.monthKey,
+                monthTitleLocalized(state.monthKey),
                 fontSize = 12.sp,
                 lineHeight = 17.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -75,7 +84,9 @@ fun JournalScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 200.dp),
-                placeholder = { Text(stringResource(R.string.journal_prompt)) },
+                // label, not placeholder: a placeholder disappears once the field has
+                // text, leaving the control with no accessible name on re-entry.
+                label = { Text(stringResource(R.string.journal_prompt)) },
                 maxLines = 15,
             )
 
@@ -111,7 +122,7 @@ fun JournalScreen(
             Button(
                 onClick = { viewModel.save() },
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                enabled = state.text.isNotBlank() && !state.isSaved,
+                enabled = hasUnsaved,
             ) { Text(stringResource(R.string.journal_save)) }
 
             if (state.existingEntries.isEmpty()) {
@@ -134,6 +145,7 @@ fun JournalScreen(
                 state.existingEntries.forEach { entry ->
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     ) {
                         Row(modifier = Modifier.padding(start = 12.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.Top) {
@@ -183,6 +195,34 @@ fun JournalScreen(
             dismissButton = {
                 TextButton(onClick = { entryIdPendingDelete = null }, modifier = Modifier.heightIn(min = 48.dp)) {
                     Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
+    }
+
+    if (confirmDiscard) {
+        AlertDialog(
+            // Dismissing returns to the draft — leaving must never be the accidental outcome.
+            onDismissRequest = { confirmDiscard = false },
+            title = { Text(stringResource(R.string.journal_discard_title), fontWeight = FontWeight.SemiBold) },
+            text = { Text(stringResource(R.string.journal_discard_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmDiscard = false
+                        viewModel.saveAndExit()
+                    },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                ) {
+                    Text(stringResource(R.string.journal_discard_confirm), fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { confirmDiscard = false; onBack() },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                ) {
+                    Text(stringResource(R.string.journal_discard_dismiss), color = MaterialTheme.colorScheme.error)
                 }
             },
         )

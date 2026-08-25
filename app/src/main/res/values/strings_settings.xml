@@ -19,6 +19,10 @@
     <string name="settings_support">Contact Support</string>
     <string name="settings_support_email" translatable="false">support@palmastro.app</string>
     <string name="settings_support_error">No email app found. Write to us at %1$s</string>
+    <string name="settings_diagnostic_export">Diagnostic report</string>
+    <string name="settings_diagnostic_desc">This is the whole report. It contains no readings, palm data, birth details or journal entries — send it only if support asks for it.</string>
+    <string name="settings_diagnostic_send">Send</string>
+    <string name="settings_diagnostic_error">No app found to send the report.</string>
 
     <string name="settings_section_about">About</string>
     <string name="settings_about_desc">PalmAstro analyzes your palm and birth details entirely on your device. Nothing you scan ever leaves your phone.</string>

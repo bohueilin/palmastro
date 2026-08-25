@@ -38,6 +38,11 @@ public final class QualityGateImpl: QualityGate {
     }
 
     public func evaluateAngle(angle: Angle, bestScore: QualityScores) -> AngleGateResult {
+        // Zero coverage means no hand in frame at all - always a failure and a
+        // distinct coaching reason from a partially visible palm (low_coverage).
+        if bestScore.coverage <= 0 {
+            return AngleGateResult(angle: angle, passed: false, failReason: "hand_not_detected")
+        }
         if bestScore.composite >= passThreshold {
             return AngleGateResult(angle: angle, passed: true, failReason: nil)
         }

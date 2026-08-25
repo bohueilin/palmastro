@@ -58,7 +58,7 @@ final class AppModel: ObservableObject {
     private static let profileKey = "user"
 
     init() {
-        let root = Self.dataRootURL()
+        let root = Self.prepareDataRoot(at: Self.dataRootURL())
         store = JSONFileDataStore(rootURL: root)
         resultRepository = ResultRepositoryImpl(store: store)
         journalRepository = JournalRepositoryImpl(store: store)
@@ -81,18 +81,30 @@ final class AppModel: ObservableObject {
         latestResult = resultRepository.listHistory(limit: 1).first
         history = resultRepository.listHistory(limit: 24)
         _ = KeychainInstallId.currentId()
-
-        // Apply iOS file protection to everything under the data root.
-        try? FileManager.default.setAttributes(
-            [.protectionKey: FileProtectionType.complete],
-            ofItemAtPath: root.path
-        )
     }
 
     private static func dataRootURL() -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
         return base.appendingPathComponent("PalmAstroData", isDirectory: true)
+    }
+
+    /// Creates the data root and applies both on-device guarantees the privacy
+    /// policy makes: complete file protection, and exclusion from iCloud/Finder
+    /// backup (parity with Android's `allowBackup="false"` plus backup_rules).
+    /// Neither can be set on a path that does not exist yet, and the store only
+    /// creates directories lazily on first save — hence the explicit create.
+    static func prepareDataRoot(at url: URL) -> URL {
+        var root = url
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try? FileManager.default.setAttributes(
+            [.protectionKey: FileProtectionType.complete],
+            ofItemAtPath: root.path
+        )
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try? root.setResourceValues(values)
+        return root
     }
 
     /// Directory for 24h-retained raw scan media (PRD §15).
@@ -123,10 +135,16 @@ final class AppModel: ObservableObject {
     /// Runs the full on-device pipeline for a completed scan session and
     /// persists the monthly result.
     func processScanSession(_ session: ScanSessionSummary) {
-        guard let scoringEngine, let composer, let safetyFilter,
-              let birthday = profile.birthday else { return }
+        guard let scoringEngine, let composer, let safetyFilter else { return }
 
         analytics.emit(eventName: "inference_start", props: [:])
+
+        // Same failure taxonomy as ScanViewModel.runPipeline() on Android, so a
+        // missing profile is visible rather than a silent no-op.
+        guard let birthday = profile.birthday else {
+            analytics.emit(eventName: "inference_fail", props: ["reason": "no_profile"])
+            return
+        }
 
         let palmResult = extractor.extract(bestFrames: session.angleResults, hand: session.hand)
         let astroResult = astroEngine.compute(
@@ -171,12 +189,15 @@ final class AppModel: ObservableObject {
         for (domain, payload) in payloads {
             let check = safetyFilter.validate(payload: payload)
             if !check.passed {
-                payloads[domain] = safetyFilter.safeFallbackPayload(
+                // The flag gates only the reporting; the substitution is
+                // unconditional, matching ScanViewModel on Android.
+                if flags.strictSafetyEnabled {
+                    analytics.emit(eventName: "inference_fail", props: ["reason": "safety", "domain": domain])
+                }
+                payloads[domain] = composer.safeFallbackPayload(
                     domain: domain,
-                    monthKey: monthKey,
-                    calcLevel: astroResult.calcLevel,
                     language: language,
-                    scoreCard: payload.scoreCard
+                    base: payload
                 )
             }
         }

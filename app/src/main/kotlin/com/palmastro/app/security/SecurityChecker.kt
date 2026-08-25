@@ -63,7 +63,12 @@ object SecurityChecker {
 
         return try {
             val process = Runtime.getRuntime().exec(arrayOf("which", "su"))
-            process.inputStream.bufferedReader().readLine() != null
+            try {
+                process.inputStream.bufferedReader().readLine() != null
+            } finally {
+                // Without this the child's pipe fds leak until finalization.
+                process.destroy()
+            }
         } catch (_: Exception) {
             false
         }

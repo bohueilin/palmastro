@@ -199,6 +199,28 @@ class OnboardingViewModelTest {
     }
 
     @Test
+    fun `a place without a time stays L1 and records no birth time`() = runTest {
+        val vm = createViewModel()
+        vm.setBirthday(LocalDate.of(1990, 3, 21))
+        vm.setHand("right")
+        vm.setBirthDetails(null, null, "Taipei, Taiwan", 25.033, 121.565)
+        vm.completeOnboarding()
+        coVerify(exactly = 1) {
+            userRepository.save(match { it.calcLevel == "L1" && it.birthTimeMinutes == null })
+        }
+    }
+
+    @Test
+    fun `setBirthDetails clears values the user removed on a return visit`() {
+        val vm = createViewModel()
+        vm.setBirthTime(8, 30)
+        vm.setBirthPlace("台北市", 25.033, 121.565)
+        vm.setBirthDetails(null, null, null, null, null)
+        assertFalse(vm.state.value.hasBirthTime)
+        assertFalse(vm.state.value.hasBirthPlace)
+    }
+
+    @Test
     fun `full birth details produce L2 calc level`() = runTest {
         val vm = createViewModel()
         vm.setBirthday(LocalDate.of(1990, 3, 21))

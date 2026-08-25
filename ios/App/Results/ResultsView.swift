@@ -2,7 +2,7 @@ import SwiftUI
 import CoreContracts
 
 /// Results dashboard (PRD §13.3): four domain cards with score, grade, delta
-/// arrow, confidence chip, and entry points to detail + a new scan.
+/// arrow, confidence label, and entry points to detail + a new scan.
 struct ResultsView: View {
 
     @EnvironmentObject private var model: AppModel
@@ -59,7 +59,7 @@ struct ResultsView: View {
                 HStack {
                     Text("results_confidence_label").foregroundStyle(.secondary)
                     Spacer()
-                    ConfidenceChip(confidence: result.scoringResult.confidence)
+                    ConfidenceLabel(confidence: result.scoringResult.confidence)
                 }
             }
 
@@ -83,6 +83,16 @@ struct ResultsView: View {
             } footer: {
                 Text("results_disclaimer")
                     .font(.footnote)
+            }
+
+            // History lives behind Results rather than a fourth tab, matching
+            // the Android placement below the domain cards.
+            Section {
+                NavigationLink {
+                    HistoryView()
+                } label: {
+                    Label("history_title", systemImage: "clock.arrow.circlepath")
+                }
             }
         }
         .navigationDestination(for: String.self) { domain in
@@ -128,7 +138,8 @@ struct DomainCard: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(domainNameKey(payload.domain)).font(.headline)
-                Text(payload.scoreCard.grade).font(.subheadline).foregroundStyle(.secondary)
+                Text(verbatim: gradeDisplayName(payload.scoreCard.grade))
+                    .font(.subheadline).foregroundStyle(.secondary)
             }
             Spacer()
             if let delta = payload.scoreCard.delta, delta.value != 0 {
@@ -138,7 +149,7 @@ struct DomainCard: View {
                     Image(systemName: delta.arrow == "up" ? "arrow.up" : "arrow.down")
                 }
                 .font(.subheadline)
-                .foregroundStyle(delta.arrow == "up" ? .green : .orange)
+                .foregroundStyle(delta.arrow == "up" ? BrandPalette.deltaPositive : BrandPalette.deltaNegative)
                 .accessibilityLabel(Text(delta.arrow == "up" ? "results_delta_up_a11y" : "results_delta_down_a11y"))
             }
             Text(verbatim: "\(payload.scoreCard.totalScore)")
@@ -159,17 +170,18 @@ struct DomainCard: View {
     }
 }
 
-struct ConfidenceChip: View {
+/// Confidence is stated in words only, never color-coded — the same choice
+/// Android makes (ResultsScreen renders it in `onSurfaceVariant`). A tinted
+/// chip could not carry caption text at 4.5:1, and confidence is not a
+/// good/bad axis worth a traffic-light reading.
+struct ConfidenceLabel: View {
 
     let confidence: String
 
     var body: some View {
         Text(labelKey)
             .font(.caption.bold())
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(color.opacity(0.18), in: Capsule())
-            .foregroundStyle(color)
+            .foregroundStyle(.secondary)
     }
 
     private var labelKey: LocalizedStringKey {
@@ -177,14 +189,6 @@ struct ConfidenceChip: View {
         case "high": return "confidence_high"
         case "med": return "confidence_med"
         default: return "confidence_low"
-        }
-    }
-
-    private var color: Color {
-        switch confidence {
-        case "high": return .green
-        case "med": return .blue
-        default: return .orange
         }
     }
 }

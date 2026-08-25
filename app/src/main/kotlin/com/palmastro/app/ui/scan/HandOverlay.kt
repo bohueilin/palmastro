@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import com.palmastro.app.R
 
 @Composable
@@ -29,7 +30,7 @@ fun HandOverlay(modifier: Modifier = Modifier) {
             topLeft = Offset(centerX - palmWidth / 2, palmTop),
             size = Size(palmWidth, palmHeight),
             cornerRadius = CornerRadius(palmWidth * 0.4f, palmHeight * 0.4f),
-            style = Stroke(width = 3f),
+            style = Stroke(width = PALM_STROKE_DP.dp.toPx()),
         )
         val fingerSpacing = palmWidth / 6
         val fingerStartX = centerX - palmWidth / 2 + fingerSpacing
@@ -42,15 +43,24 @@ fun HandOverlay(modifier: Modifier = Modifier) {
                 color = Color.White.copy(alpha = 0.3f),
                 start = Offset(x, fingerBaseY),
                 end = Offset(x, fingerBaseY - length),
-                strokeWidth = 3f,
+                strokeWidth = FINGER_STROKE_DP.dp.toPx(),
             )
         }
         drawRoundRect(
             color = Color.White.copy(alpha = 0.15f),
             topLeft = Offset(size.width * 0.1f, size.height * 0.15f),
             size = Size(size.width * 0.8f, size.height * 0.7f),
-            cornerRadius = CornerRadius(24f, 24f),
-            style = Stroke(width = 2f),
+            cornerRadius = CornerRadius(FRAME_CORNER_DP.dp.toPx(), FRAME_CORNER_DP.dp.toPx()),
+            style = Stroke(width = FRAME_STROKE_DP.dp.toPx()),
         )
     }
 }
+
+// Stroke widths are dp, not raw pixels: DrawScope takes pixels, so the bare 3f these
+// used to pass rendered a 1dp hairline on a 3x screen and a different weight on every
+// device — on the only positioning help the capture flow offers.
+private const val PALM_STROKE_DP = 3f
+private const val FINGER_STROKE_DP = 3f
+private const val FRAME_STROKE_DP = 2f
+// 8dp ≈ the 24px radius this frame has always drawn at typical densities.
+private const val FRAME_CORNER_DP = 8f

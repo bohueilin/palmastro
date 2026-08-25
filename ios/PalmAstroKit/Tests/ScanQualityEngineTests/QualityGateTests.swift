@@ -60,6 +60,14 @@ import CoreContracts
         #expect(result.failReason == "glare")
     }
 
+    @Test func zeroCoverageFailsEvenWhenOtherComponentsWouldPass() {
+        let noHand = gate.scoreFrame(blur: 1, glare: 1, exposure: 1, coverage: 0, stability: 1)
+        #expect(noHand.composite == 80) // would clear the threshold on its own
+        let result = gate.evaluateAngle(angle: .FRONT, bestScore: noHand)
+        #expect(!result.passed)
+        #expect(result.failReason == "hand_not_detected")
+    }
+
     @Test func worstComponentUsesStableReasonKeys() {
         let lowLight = gate.scoreFrame(blur: 0.5, glare: 0.5, exposure: 0.1, coverage: 0.5, stability: 0.5)
         #expect(gate.evaluateAngle(angle: .FAR, bestScore: lowLight).failReason == "low_light")

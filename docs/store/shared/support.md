@@ -139,5 +139,8 @@ Current entries: *(none yet — populate from closed-testing triage)*
 - "Is this accurate / will X happen to me?" → FAQ 2 + 8 language; never confirm
   predictive readings; if the user raises health worries, gently suggest talking to a
   qualified professional (allowed phrasing per PRD §31).
-- Crash reports → ask for device model, OS version, app version (Settings → About);
-  remind users not to email palm photos; no diagnostic data reaches us automatically.
+- Crash reports → ask the user to send **Settings → Legal & Support → Diagnostic
+  report**, which previews and then emails build, locale, device and feature-flag state
+  (nothing from a reading). Device model, OS version and app version (Settings → About)
+  are the manual fallback; remind users not to email palm photos; no diagnostic data
+  reaches us automatically.

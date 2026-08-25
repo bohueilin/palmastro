@@ -1,0 +1,56 @@
+{
+  "input": {
+    "birthday": {
+      "year": 1990,
+      "month": 6,
+      "day": 15
+    },
+    "birthTime": {
+      "hour": 1,
+      "minute": 0
+    },
+    "birthPlaceLat": 69.6496,
+    "birthPlaceLon": 18.956
+  },
+  "expected": {
+    "calcLevel": "L2",
+    "signals": [
+      {
+        "signalId": "ASTRO_SUN_GEMINI",
+        "direction": "+",
+        "magnitude": 3,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_SUN_AIR",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_SUN_MUTABLE",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_MOON_WATER",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_HEALTH_SOFT_ONLY"
+      },
+      {
+        "signalId": "ASTRO_ASC_FIRE",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_CAREER"
+      }
+    ],
+    "engineVersion": "2.0.0"
+  }
+}

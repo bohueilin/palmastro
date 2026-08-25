@@ -2,18 +2,21 @@ package com.palmastro.app.ui.results
 
 import android.content.Context
 import android.graphics.Bitmap
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.CompareArrows
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -22,15 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -49,15 +50,18 @@ import com.palmastro.app.share.ShareHelper
 import com.palmastro.app.ui.components.BrandIllustration
 import com.palmastro.app.ui.components.BrandScene
 import com.palmastro.app.ui.components.DomainGlyph
+import com.palmastro.app.ui.components.SafetyNoteCard
 import com.palmastro.app.ui.components.ScoreGauge
 import com.palmastro.app.ui.components.ScoreGaugeMath
 import com.palmastro.app.ui.components.ScoreGaugeStyle
+import com.palmastro.app.ui.monthTitleLocalized
 import com.palmastro.app.viewmodel.DomainCard
 import com.palmastro.app.viewmodel.GuidanceSummary
 import com.palmastro.app.viewmodel.ResultsState
 import com.palmastro.app.viewmodel.ResultsViewModel
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,31 +72,25 @@ fun ResultsScreen(
     onDomainClick: (String, String) -> Unit,
     onHistoryClick: () -> Unit,
     onGuidanceClick: (String) -> Unit = {},
+    /** Non-null only when Results was pushed (History, deep link) and can be popped. */
+    onBack: (() -> Unit)? = null,
     viewModel: ResultsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
-    val view = LocalView.current
     var previewBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var shareText by remember { mutableStateOf("") }
-
-    // Resolve every string needed inside non-composable click lambdas up front.
-    val share = rememberShareContent(state)
+    var confirmRescan by rememberSaveable { mutableStateOf(false) }
     val chooserTitle = stringResource(R.string.share_chooser_title)
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
-                actions = {
-                    if (state.hasResults && state.shareCardsEnabled) {
-                        IconButton(onClick = {
-                            view.announceForAccessibility(share.sharingAnnouncement)
-                            shareText = share.text
-                            previewBitmap = ShareCardRenderer.renderSummaryCard(share.summaryData, share.cardLabels)
-                        }) { Icon(Icons.Default.Share, contentDescription = stringResource(R.string.results_share)) }
-                    }
-                    IconButton(onClick = onSettingsClick) { Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.common_settings)) }
+            ResultsTopBar(
+                state = state,
+                onBack = onBack,
+                onSettingsClick = onSettingsClick,
+                onCardRendered = { bitmap, text ->
+                    shareText = text
+                    previewBitmap = bitmap
                 },
             )
         }
@@ -104,7 +102,9 @@ fun ResultsScreen(
                 state = state,
                 padding = padding,
                 freshArrival = freshArrival,
-                onScanClick = onScanClick,
+                // A scan always writes into the CURRENT month, replacing the reading on
+                // screen; older months have nothing to replace, so they go straight on.
+                onScanClick = { if (state.isStale || state.isPastMonth) onScanClick() else confirmRescan = true },
                 onDomainClick = onDomainClick,
                 onHistoryClick = onHistoryClick,
                 onGuidanceClick = onGuidanceClick,
@@ -112,16 +112,83 @@ fun ResultsScreen(
         }
     }
 
-    previewBitmap?.let { bitmap ->
-        SharePreviewDialog(
-            bitmap = bitmap,
-            onDismiss = { previewBitmap = null },
+    if (confirmRescan) {
+        RescanConfirmDialog(
+            onDismiss = { confirmRescan = false },
             onConfirm = {
-                ShareHelper.share(context, bitmap, shareText, chooserTitle)
-                previewBitmap = null
+                confirmRescan = false
+                onScanClick()
             },
         )
     }
+
+    previewBitmap?.let { bitmap ->
+        ShareFlowDialog(
+            bitmap = bitmap,
+            shareText = shareText,
+            chooserTitle = chooserTitle,
+            onDismiss = { previewBitmap = null },
+        )
+    }
+}
+
+/**
+ * Owns the share affordance end to end: it resolves the card's strings during
+ * composition (they cannot be read from a click lambda) and hands the finished bitmap
+ * and text fallback back to the screen.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ResultsTopBar(
+    state: ResultsState,
+    onBack: (() -> Unit)?,
+    onSettingsClick: () -> Unit,
+    onCardRendered: (Bitmap, String) -> Unit,
+) {
+    val view = LocalView.current
+    val scope = rememberCoroutineScope()
+    val share = rememberShareContent(state)
+
+    TopAppBar(
+        title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
+        navigationIcon = {
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
+                }
+            }
+        },
+        actions = {
+            if (state.hasResults && state.shareCardsEnabled) {
+                IconButton(onClick = {
+                    view.announceForAccessibility(share.sharingAnnouncement)
+                    // Rasterizing the card allocates ~2.4 MB and draws it in software;
+                    // off the main thread so the toolbar tap never drops a frame.
+                    scope.launch {
+                        val bitmap = withContext(Dispatchers.Default) {
+                            ShareCardRenderer.renderSummaryCard(share.summaryData, share.cardLabels)
+                        }
+                        onCardRendered(bitmap, share.text)
+                    }
+                }) {
+                    Icon(Icons.Default.Share, contentDescription = stringResource(R.string.results_share))
+                }
+            }
+            IconButton(onClick = onSettingsClick) { Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.common_settings)) }
+        },
+    )
+}
+
+/** Guards the one rescan entry point: a new scan replaces the current month's reading. */
+@Composable
+private fun RescanConfirmDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.results_rescan_confirm_title)) },
+        text = { Text(stringResource(R.string.results_rescan_confirm_message)) },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(stringResource(R.string.results_rescan)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) } },
+    )
 }
 
 /** Pre-resolved share-sheet content usable from non-composable click lambdas. */
@@ -141,6 +208,9 @@ private fun rememberShareContent(state: ResultsState): ShareContent {
     val domainScores = state.domainCards.map {
         ShareCardRenderer.DomainScore(domainDisplayName(it.domain), it.score, it.grade)
     }
+    // The card leaves the app, so it carries the same reflection-not-advice note the
+    // screen shows — on the image and on the text fallback beside it (PRD 13.7).
+    val disclaimer = stringResource(R.string.results_safety_body)
     return ShareContent(
         sharingAnnouncement = stringResource(R.string.results_sharing),
         text = ShareHelper.buildShareText(
@@ -148,6 +218,7 @@ private fun rememberShareContent(state: ResultsState): ShareContent {
             gradeLine,
             domainScores.joinToString("  ") { "${it.displayName} ${it.score}" },
             confidenceLine,
+            disclaimer,
         ),
         summaryData = ShareCardRenderer.SummaryData(
             headerTitle = summaryHeader,
@@ -162,6 +233,7 @@ private fun rememberShareContent(state: ResultsState): ShareContent {
             actions = stringResource(R.string.share_card_actions),
             reflection = stringResource(R.string.share_card_reflection),
             watermark = stringResource(R.string.share_watermark),
+            disclaimer = disclaimer,
         ),
     )
 }
@@ -188,6 +260,7 @@ private fun ResultsList(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(vertical = 16.dp),
     ) {
+        monthBanners(state, onScanClick)
         item {
             HeroCard(
                 monthKey = state.monthKey,
@@ -195,6 +268,7 @@ private fun ResultsList(
                 confidence = state.confidence,
                 topDomain = state.topDomain,
                 scanQualityScore = state.scanQualityScore,
+                comparabilityScore = state.comparabilityScore,
                 averageScore = ScoreGaugeMath.averageScore(state.domainCards.map { it.score }),
                 modifier = Modifier.entranceReveal(play, index = 0),
             )
@@ -211,22 +285,123 @@ private fun ResultsList(
         itemsIndexed(state.domainCards) { i, card ->
             DomainCardItem(
                 card = card,
+                approximate = state.deltaApproximate,
                 onClick = { onDomainClick(card.domain, state.monthKey) },
                 modifier = Modifier.entranceReveal(play, index = i + 2),
             )
         }
         item {
-            Spacer(Modifier.height(4.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                OutlinedButton(onClick = onScanClick, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(12.dp)) {
-                    Text(stringResource(R.string.results_rescan))
-                }
-                OutlinedButton(onClick = onHistoryClick, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(12.dp)) {
-                    Text(stringResource(R.string.results_history))
-                }
+            ResultsActionRow(
+                showRescan = !state.isPastMonth,
+                onScanClick = onScanClick,
+                onHistoryClick = onHistoryClick,
+            )
+        }
+        item {
+            SafetyNoteCard(
+                body = stringResource(R.string.results_safety_body),
+                modifier = Modifier.padding(top = 8.dp),
+                title = stringResource(R.string.results_safety_title),
+            )
+        }
+    }
+}
+
+/**
+ * Month context above the hero. Both banners are mutually exclusive with a fresh
+ * arrival, so neither takes an entrance reveal and the hero's reveal indices are unchanged.
+ */
+private fun LazyListScope.monthBanners(state: ResultsState, onScanClick: () -> Unit) {
+    if (state.isStale) {
+        item { NewMonthCard(monthKey = state.monthKey, onScanClick = onScanClick) }
+    }
+    if (state.isPastMonth) {
+        item { PastMonthBadge() }
+    }
+}
+
+@Composable
+private fun ResultsActionRow(showRescan: Boolean, onScanClick: () -> Unit, onHistoryClick: () -> Unit) {
+    Spacer(Modifier.height(4.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        // heightIn, not height: at large font scales these labels wrap to two
+        // lines, and a pinned height would slice the second one off.
+        // A scan can only ever write into the current month, so a month opened from
+        // History offers History, not a rescan that would land somewhere else.
+        if (showRescan) {
+            OutlinedButton(
+                onClick = onScanClick,
+                modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text(stringResource(R.string.results_rescan))
             }
         }
-        item { SafetyCard() }
+        OutlinedButton(
+            onClick = onHistoryClick,
+            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+            shape = RoundedCornerShape(12.dp),
+        ) {
+            Text(stringResource(R.string.results_history))
+        }
+    }
+}
+
+/**
+ * Rescan invitation shown when the newest reading predates the current month — the
+ * monthly loop the delta is built on. Deliberately an invitation: it names the month
+ * the reading belongs to and offers the scan, with no urgency or streak pressure.
+ */
+@Composable
+private fun NewMonthCard(monthKey: String, onScanClick: () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Text(
+                stringResource(R.string.results_new_month_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() },
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.results_new_month_desc, monthTitleLocalized(monthKey)),
+                fontSize = 13.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = onScanClick,
+                modifier = Modifier.heightIn(min = 48.dp),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text(stringResource(R.string.results_rescan))
+            }
+        }
+    }
+}
+
+/** Marks a reading opened from History or a deep link, which looks identical otherwise. */
+@Composable
+private fun PastMonthBadge() {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+        shape = RoundedCornerShape(8.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+        ) {
+            Icon(
+                Icons.Outlined.History, contentDescription = null,
+                modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                stringResource(R.string.results_past_month),
+                fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
@@ -247,7 +422,7 @@ private fun EmptyResults(padding: PaddingValues, onScanClick: () -> Unit) {
             textAlign = TextAlign.Center, lineHeight = 24.sp,
         )
         Spacer(Modifier.height(32.dp))
-        Button(onClick = onScanClick, modifier = Modifier.fillMaxWidth(0.7f).height(56.dp), shape = RoundedCornerShape(16.dp)) {
+        Button(onClick = onScanClick, modifier = Modifier.fillMaxWidth(0.7f).heightIn(min = 56.dp), shape = RoundedCornerShape(16.dp)) {
             Text(stringResource(R.string.results_start_scan), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
     }
@@ -260,6 +435,7 @@ private fun HeroCard(
     confidence: String,
     topDomain: String?,
     scanQualityScore: Int,
+    comparabilityScore: Int?,
     averageScore: Int,
     modifier: Modifier = Modifier,
 ) {
@@ -279,7 +455,8 @@ private fun HeroCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(rememberHeroMonthTitle(monthKey), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                // The reading's own month, never "now", so history months keep their date.
+                Text(monthTitleLocalized(monthKey), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(4.dp))
                 Text(gradeDisplayName(grade), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = gc)
                 if (topDomain != null) {
@@ -290,7 +467,11 @@ private fun HeroCard(
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-                HeroMetaRow(confidence = confidence, scanQualityScore = scanQualityScore)
+                HeroMetaRow(
+                    confidence = confidence,
+                    scanQualityScore = scanQualityScore,
+                    comparabilityScore = comparabilityScore,
+                )
             }
             Spacer(Modifier.width(16.dp))
             HeroOverallGauge(averageScore = averageScore, grade = grade, numeralColor = gc)
@@ -298,41 +479,46 @@ private fun HeroCard(
     }
 }
 
-/** Hero date derived from the result's monthKey, never "now", so history months keep their own date. */
 @Composable
-private fun rememberHeroMonthTitle(monthKey: String): String {
-    val datePattern = stringResource(R.string.results_date_pattern)
-    val configuration = LocalConfiguration.current
-    return remember(monthKey, datePattern, configuration) {
-        runCatching {
-            val locale = configuration.locales.get(0)
-            YearMonth.parse(monthKey).atDay(1).format(DateTimeFormatter.ofPattern(datePattern, locale))
-        }.getOrDefault(monthKey)
+private fun HeroMetaRow(confidence: String, scanQualityScore: Int, comparabilityScore: Int?) {
+    Column {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                stringResource(R.string.results_confidence, confidenceDisplayName(confidence)),
+                fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            MetaChip(
+                icon = Icons.Outlined.PhotoCamera,
+                text = stringResource(R.string.results_scan_quality_chip, scanQualityScore),
+            )
+        }
+        // The basis for the arrows on the cards below (PRD §3.3): shown only when a
+        // delta is actually rendered, so it never claims a comparison that is hidden.
+        // Its own line — the two chips plus the confidence text overflow the hero column.
+        if (comparabilityScore != null) {
+            Spacer(Modifier.height(4.dp))
+            MetaChip(
+                icon = Icons.AutoMirrored.Outlined.CompareArrows,
+                text = stringResource(R.string.results_comparability_chip, comparabilityScore),
+            )
+        }
     }
 }
 
+/** Tinted meta chip in the hero: icon is decorative, the label carries the meaning. */
 @Composable
-private fun HeroMetaRow(confidence: String, scanQualityScore: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            stringResource(R.string.results_confidence, confidenceDisplayName(confidence)),
-            fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Surface(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), shape = RoundedCornerShape(8.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            ) {
-                Icon(
-                    Icons.Outlined.PhotoCamera, contentDescription = null,
-                    modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    stringResource(R.string.results_scan_quality_chip, scanQualityScore),
-                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+private fun MetaChip(icon: ImageVector, text: String) {
+    Surface(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), shape = RoundedCornerShape(8.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        ) {
+            Icon(
+                icon, contentDescription = null,
+                modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(text, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -377,11 +563,14 @@ private fun GuidanceEntryCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier.fillMaxWidth().clickable(onClick = onClick)
+        // clip BEFORE clickable: Card appends its own clip after the caller's modifiers,
+        // so an unclipped ripple would paint square corners over the rounded card.
+        modifier = modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable(onClick = onClick)
             .semantics(mergeDescendants = true) { role = Role.Button },
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(16.dp),
@@ -433,6 +622,7 @@ private fun DomainCardHeader(
     gradeText: String,
     confidenceText: String,
     gc: Color,
+    approximate: Boolean,
 ) {
     Row(
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp).fillMaxWidth(),
@@ -452,7 +642,7 @@ private fun DomainCardHeader(
             }
         }
         Row(verticalAlignment = Alignment.Bottom) {
-            DeltaIndicator(arrow = card.deltaArrow, delta = card.delta)
+            DeltaIndicator(arrow = card.deltaArrow, delta = card.delta, approximate = approximate)
             Spacer(Modifier.width(8.dp))
             Text("${card.score}", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = gc)
         }
@@ -465,6 +655,7 @@ private fun domainCardDescription(
     displayName: String,
     gradeText: String,
     confidenceText: String,
+    approximate: Boolean,
 ): String {
     val deltaDesc = when (card.deltaArrow) {
         "up" -> stringResource(R.string.results_delta_up, card.delta ?: 0)
@@ -472,30 +663,41 @@ private fun domainCardDescription(
         "flat" -> stringResource(R.string.results_delta_flat)
         else -> null
     }
+    // The weakening the glyph shows visually must reach TalkBack too, or the caveat
+    // exists only for sighted users.
+    val approxDesc = stringResource(R.string.results_delta_approx)
+        .takeIf { approximate && deltaDesc != null }
     return listOfNotNull(
         stringResource(R.string.results_score_desc, displayName, card.score, gradeText),
         confidenceText,
         deltaDesc,
+        approxDesc,
     ).joinToString(", ")
 }
 
 @Composable
-private fun DomainCardItem(card: DomainCard, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun DomainCardItem(
+    card: DomainCard,
+    approximate: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val gc = gradeColor(card.grade)
     val displayName = domainDisplayName(card.domain)
     val gradeText = gradeDisplayName(card.grade)
     val confidenceText = stringResource(R.string.results_card_confidence, confidenceDisplayName(card.confidence))
-    val cardDesc = domainCardDescription(card, displayName, gradeText, confidenceText)
+    val cardDesc = domainCardDescription(card, displayName, gradeText, confidenceText, approximate)
 
     Card(
-        modifier = modifier.fillMaxWidth().clickable(onClick = onClick)
+        modifier = modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable(onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = cardDesc },
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column {
-            DomainCardHeader(card, displayName, gradeText, confidenceText, gc)
+            DomainCardHeader(card, displayName, gradeText, confidenceText, gc, approximate)
             if (card.insight.isNotBlank()) {
                 Text(
                     card.insight,
@@ -517,7 +719,7 @@ private fun DomainCardItem(card: DomainCard, onClick: () -> Unit, modifier: Modi
 
 /** Arrow glyph + signed number; described in text for TalkBack, never color-only. */
 @Composable
-private fun DeltaIndicator(arrow: String?, delta: Int?) {
+private fun DeltaIndicator(arrow: String?, delta: Int?, approximate: Boolean) {
     if (arrow == null || delta == null) return
     val extended = LocalPalmAstroExtendedColors.current
     val (glyph, color) = when (arrow) {
@@ -525,35 +727,14 @@ private fun DeltaIndicator(arrow: String?, delta: Int?) {
         "down" -> "▼" to extended.deltaNegative
         else -> "—" to extended.deltaNeutral
     }
-    val text = if (arrow == "flat") glyph else "$glyph${if (delta > 0) "+" else ""}$delta"
+    val signed = if (arrow == "flat") glyph else "$glyph${if (delta > 0) "+" else ""}$delta"
+    // MED comparability (PRD delta rules): the two scans differ enough that the change
+    // is only indicative, so it is weakened — neutral tint and an "approximately" mark —
+    // rather than stated as flatly as a HIGH-comparability move.
     Text(
-        text,
-        fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = color,
+        if (approximate) "≈$signed" else signed,
+        fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
+        color = if (approximate) extended.deltaNeutral else color,
         modifier = Modifier.padding(bottom = 6.dp).clearAndSetSemantics {},
     )
-}
-
-@Composable
-private fun SafetyCard() {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.padding(top = 8.dp),
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-            Icon(
-                Icons.Outlined.Shield, contentDescription = null,
-                modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text(stringResource(R.string.results_safety_title), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    stringResource(R.string.results_safety_body),
-                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp,
-                )
-            }
-        }
-    }
 }

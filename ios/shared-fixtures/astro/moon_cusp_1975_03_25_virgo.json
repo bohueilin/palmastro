@@ -1,0 +1,56 @@
+{
+  "input": {
+    "birthday": {
+      "year": 1975,
+      "month": 3,
+      "day": 25
+    },
+    "birthTime": {
+      "hour": 9,
+      "minute": 0
+    },
+    "birthPlaceLat": 25.0,
+    "birthPlaceLon": 121.5
+  },
+  "expected": {
+    "calcLevel": "L2",
+    "signals": [
+      {
+        "signalId": "ASTRO_SUN_ARIES",
+        "direction": "+",
+        "magnitude": 3,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_SUN_FIRE",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_SUN_CARDINAL",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_MOON_EARTH",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_ASC_EARTH",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      }
+    ],
+    "engineVersion": "2.0.0"
+  }
+}

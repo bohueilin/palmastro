@@ -1,6 +1,7 @@
 package com.palmastro.app.ui.detail
 
 import android.graphics.Bitmap
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,16 +20,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -37,7 +38,8 @@ import com.palmastro.app.share.ShareCardRenderer
 import com.palmastro.app.share.ShareHelper
 import com.palmastro.app.ui.components.ScoreGauge
 import com.palmastro.app.ui.components.ScoreGaugeMath
-import com.palmastro.app.ui.results.SharePreviewDialog
+import com.palmastro.app.ui.components.SectionHeader
+import com.palmastro.app.ui.results.ShareFlowDialog
 import com.palmastro.app.ui.results.confidenceDisplayName
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
@@ -45,6 +47,9 @@ import com.palmastro.app.ui.results.gradeDisplayName
 import com.palmastro.app.ui.results.onGradeColor
 import com.palmastro.app.viewmodel.DomainDetailViewModel
 import com.palmastro.contracts.Observation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,8 +60,8 @@ fun DomainDetailScreen(
     viewModel: DomainDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
     val view = LocalView.current
+    val scope = rememberCoroutineScope()
     val displayName = domainDisplayName(state.domain)
     var previewBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var shareText by remember { mutableStateOf("") }
@@ -65,13 +70,16 @@ fun DomainDetailScreen(
     val sharingAnnouncement = stringResource(R.string.detail_sharing)
     val chooserTitle = stringResource(R.string.share_chooser_title)
     val domainHeader = stringResource(R.string.share_domain_header, displayName)
+    val payloadForShare = state.payload
+    // Health and wealth carry a "not medical / not financial guidance" note on screen;
+    // the card leaves the app, so it must carry the same note (PRD 12.1 / 13.7).
     val cardLabels = ShareCardRenderer.CardLabels(
         analysis = stringResource(R.string.share_card_analysis),
         actions = stringResource(R.string.share_card_actions),
         reflection = stringResource(R.string.share_card_reflection),
         watermark = stringResource(R.string.share_watermark),
+        disclaimer = payloadForShare?.safetyNotes?.firstOrNull().orEmpty(),
     )
-    val payloadForShare = state.payload
     val gradeDisplayForShare = gradeDisplayName(payloadForShare?.scoreCard?.grade ?: "")
     val scoreLine = stringResource(R.string.share_score_format, payloadForShare?.scoreCard?.totalScore ?: 0, gradeDisplayForShare)
     val analysisLine = stringResource(R.string.share_analysis_label, ShareHelper.truncate(payloadForShare?.interpretation?.pattern.orEmpty(), 100))
@@ -100,8 +108,16 @@ fun DomainDetailScreen(
                                 actionToday = payload.actionToday,
                                 prompt = payload.prompt,
                             )
-                            shareText = ShareHelper.buildShareText(domainHeader, scoreLine, analysisLine, actionLine)
-                            previewBitmap = ShareCardRenderer.renderDomainDetailCard(data, cardLabels)
+                            shareText = ShareHelper.buildShareText(
+                                domainHeader, scoreLine, analysisLine, actionLine, cardLabels.disclaimer,
+                            )
+                            // ~2.4 MB bitmap plus software text wrapping: off the main
+                            // thread so the toolbar tap never costs a frame.
+                            scope.launch {
+                                previewBitmap = withContext(Dispatchers.Default) {
+                                    ShareCardRenderer.renderDomainDetailCard(data, cardLabels)
+                                }
+                            }
                         }) {
                             Icon(Icons.Default.Share, contentDescription = stringResource(R.string.detail_share))
                         }
@@ -112,13 +128,11 @@ fun DomainDetailScreen(
     ) { padding ->
         when {
             state.isLoading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            state.error != null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(
-                    stringResource(R.string.detail_not_found),
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-                )
-            }
+            state.error != null -> DetailFailureState(
+                diagnostic = state.error,
+                padding = padding,
+                onRetry = viewModel::retry,
+            )
             state.payload != null -> {
                 val payload = state.payload!!
                 val gc = gradeColor(payload.scoreCard.grade)
@@ -135,7 +149,7 @@ fun DomainDetailScreen(
                         Spacer(Modifier.height(24.dp))
 
                         // 2. Interpretation: pattern / trigger / cost as labeled paragraphs.
-                        SectionWithIcon(Icons.Outlined.Analytics, stringResource(R.string.detail_analysis))
+                        SectionHeader(Icons.Outlined.Analytics, stringResource(R.string.detail_analysis))
                         Spacer(Modifier.height(8.dp))
                         LabeledParagraph(stringResource(R.string.detail_pattern_label), payload.interpretation.pattern)
                         if (payload.interpretation.trigger.isNotBlank()) {
@@ -157,7 +171,7 @@ fun DomainDetailScreen(
                         // 4. Observed signals
                         if (payload.observations.isNotEmpty()) {
                             Spacer(Modifier.height(28.dp))
-                            SectionWithIcon(Icons.Outlined.TrendingUp, stringResource(R.string.detail_observations))
+                            SectionHeader(Icons.Outlined.TrendingUp, stringResource(R.string.detail_observations))
                             Spacer(Modifier.height(8.dp))
                             payload.observations.forEach { obs ->
                                 ObservationItem(obs)
@@ -168,7 +182,7 @@ fun DomainDetailScreen(
                         // 5. Blind spot — calm tertiary idiom shared with Guidance "mindful"
                         // cards; error red stays reserved for true errors (PRD 12.3).
                         Spacer(Modifier.height(28.dp))
-                        SectionWithIcon(Icons.Outlined.Visibility, stringResource(R.string.detail_blindspot))
+                        SectionHeader(Icons.Outlined.Visibility, stringResource(R.string.detail_blindspot))
                         Spacer(Modifier.height(8.dp))
                         Card(
                             colors = CardDefaults.cardColors(
@@ -184,7 +198,7 @@ fun DomainDetailScreen(
 
                         // 6 + 7. Actions
                         Spacer(Modifier.height(28.dp))
-                        SectionWithIcon(Icons.Outlined.Checklist, stringResource(R.string.detail_actions))
+                        SectionHeader(Icons.Outlined.Checklist, stringResource(R.string.detail_actions))
                         Spacer(Modifier.height(8.dp))
                         // 45%-alpha containers (the Guidance card idiom): opaque dark-theme
                         // containers dropped the 11sp chip label below 4.5:1 (measured 4.0:1).
@@ -202,7 +216,7 @@ fun DomainDetailScreen(
 
                         // 8. Reflection prompt
                         Spacer(Modifier.height(28.dp))
-                        SectionWithIcon(Icons.Outlined.Psychology, stringResource(R.string.detail_reflection))
+                        SectionHeader(Icons.Outlined.Psychology, stringResource(R.string.detail_reflection))
                         Spacer(Modifier.height(8.dp))
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -222,7 +236,7 @@ fun DomainDetailScreen(
                         Spacer(Modifier.height(16.dp))
                         OutlinedButton(
                             onClick = onJournalClick,
-                            modifier = Modifier.fillMaxWidth().height(48.dp),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                             shape = RoundedCornerShape(12.dp),
                         ) {
                             Icon(Icons.Outlined.EditNote, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -257,14 +271,51 @@ fun DomainDetailScreen(
     }
 
     previewBitmap?.let { bitmap ->
-        SharePreviewDialog(
+        ShareFlowDialog(
             bitmap = bitmap,
+            shareText = shareText,
+            chooserTitle = chooserTitle,
             onDismiss = { previewBitmap = null },
-            onConfirm = {
-                ShareHelper.share(context, bitmap, shareText, chooserTitle)
-                previewBitmap = null
-            },
         )
+    }
+}
+
+/**
+ * Failure state in the app's what/why/next idiom (ScanScreen). A month with no stored
+ * row is missing data, not an error, so it stays in the calm onSurfaceVariant treatment
+ * Explainability uses for the same condition — error red is reserved for a real failure
+ * (PRD 12.3). Both branches offer the reload the view model already knows how to do.
+ */
+@Composable
+private fun DetailFailureState(diagnostic: String?, padding: PaddingValues, onRetry: () -> Unit) {
+    val missing = diagnostic == "not_found" || diagnostic == "domain_not_found"
+    val what = if (missing) R.string.detail_missing_what else R.string.detail_error_what
+    val why = if (missing) R.string.detail_missing_why else R.string.detail_error_why
+    val next = if (missing) R.string.detail_missing_next else R.string.detail_error_next
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            stringResource(what),
+            fontSize = 20.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
+            color = if (missing) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite; heading() },
+        )
+        Spacer(Modifier.height(12.dp))
+        Text(
+            stringResource(why),
+            fontSize = 15.sp, lineHeight = 21.sp, textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(stringResource(next), fontSize = 15.sp, lineHeight = 21.sp, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(24.dp))
+        Button(onClick = onRetry, modifier = Modifier.heightIn(min = 48.dp)) {
+            Text(stringResource(R.string.common_retry))
+        }
     }
 }
 
@@ -298,7 +349,10 @@ private fun HowCalculatedRow(confidence: String, onClick: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
         shape = RoundedCornerShape(12.dp),
+        // clip BEFORE clickable: Card appends its own clip after the caller's modifiers,
+        // so an unclipped ripple would paint square corners over the rounded row.
         modifier = Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
             .semantics { role = Role.Button },
     ) {
@@ -331,15 +385,6 @@ private fun LabeledParagraph(label: String, text: String) {
 }
 
 @Composable
-private fun SectionWithIcon(icon: ImageVector, title: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-        Spacer(Modifier.width(8.dp))
-        Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp)
-    }
-}
-
-@Composable
 private fun ActionChip(label: String, text: String, containerColor: Color) {
     Card(colors = CardDefaults.cardColors(containerColor = containerColor), shape = RoundedCornerShape(12.dp)) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
@@ -361,7 +406,7 @@ private fun ActionChip(label: String, text: String, containerColor: Color) {
 
 @Composable
 private fun ObservationItem(obs: Observation) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)), shape = RoundedCornerShape(10.dp)) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)), shape = RoundedCornerShape(12.dp)) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(obs.displayName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
             Text(obs.evidenceSummary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -380,13 +425,13 @@ private fun ScoreEducationCard(score: Int, confidence: String) {
     }
     val tierColor = gradeColor(tierGrade)
 
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow), shape = RoundedCornerShape(16.dp)) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.School, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.detail_understanding_score), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp)
-            }
+            SectionHeader(Icons.Outlined.School, stringResource(R.string.detail_understanding_score))
             Spacer(Modifier.height(14.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -407,7 +452,7 @@ private fun ScoreEducationCard(score: Int, confidence: String) {
             Text(stringResource(tierDescRes), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
 
             Spacer(Modifier.height(16.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.height(16.dp))
 
             Text(stringResource(R.string.detail_how_improve), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)

@@ -78,7 +78,7 @@ struct ScoreGaugeView: View {
                 .monospacedDigit()
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
-            Text(verbatim: grade)
+            Text(verbatim: gradeDisplayName(grade))
                 .font(style.gradeFont)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -106,7 +106,7 @@ struct ScoreGaugeView: View {
     private var accessibilitySummary: String {
         String(
             format: NSLocalizedString("gauge_a11y_format", comment: "Score gauge accessibility summary"),
-            titleText, score, grade
+            titleText, score, gradeDisplayName(grade)
         )
     }
 

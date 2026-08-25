@@ -25,8 +25,10 @@ import com.palmastro.data.entities.MonthlyResultEntity
 import com.palmastro.data.entities.UserProfileEntity
 import com.palmastro.data.repository.ResultRepository
 import com.palmastro.data.repository.UserRepository
+import com.palmastro.scan.CoachingHints
 import io.mockk.*
 import java.io.File
+import java.nio.file.Files
 import java.time.YearMonth
 import java.util.Locale
 import kotlin.test.assertEquals
@@ -61,12 +63,17 @@ class ScanViewModelTest {
     private val monthKey = YearMonth.now().toString()
     private var defaultLocale: Locale = Locale.getDefault()
 
+    // Real directory: the ViewModel reads and deletes scan files through appContext.filesDir.
+    private lateinit var filesDir: File
+
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         defaultLocale = Locale.getDefault()
         Locale.setDefault(Locale.US)
         clearAllMocks()
+        filesDir = Files.createTempDirectory("palmastro-scan").toFile()
+        every { context.filesDir } returns filesDir
         mockkObject(ModelManager)
         every { ModelManager.isModelReady(any()) } returns true
         every { ModelManager.getModelSource(any()) } returns ModelSource.FileSystem("/models/hand_landmarker.task")
@@ -78,6 +85,7 @@ class ScanViewModelTest {
 
     @AfterEach
     fun tearDown() {
+        filesDir.deleteRecursively()
         unmockkObject(ModelManager)
         Locale.setDefault(defaultLocale)
         Dispatchers.resetMain()
@@ -162,7 +170,7 @@ class ScanViewModelTest {
 
     private fun stubHappyPipeline() {
         coEvery { userRepository.get() } returns makeProfile()
-        coEvery { resultRepository.getRecent(1) } returns emptyList()
+        coEvery { resultRepository.getRecent(2) } returns emptyList()
         coJustRun { resultRepository.saveResult(any()) }
         coJustRun { resultRepository.saveDelta(any<String>(), any<DeltaResult>()) }
         every { palmFeatureExtractor.extract(any(), any()) } returns
@@ -221,7 +229,7 @@ class ScanViewModelTest {
     @Test
     fun `download failure surfaces typed MODEL_DOWNLOAD_FAILED and retry recovers`() = runTest {
         every { ModelManager.isModelReady(any()) } returns false
-        every { ModelManager.downloadModel(any()) } returns Result.failure(
+        every { ModelManager.downloadModel(any(), any()) } returns Result.failure(
             ScanErrorException(ScanError.MODEL_DOWNLOAD_FAILED, "HTTP 503")
         )
         val vm = buildViewModel()
@@ -230,7 +238,7 @@ class ScanViewModelTest {
         assertFalse(vm.state.value.modelReady)
         assertTrue(vm.state.value.modelError!!.retryable)
 
-        every { ModelManager.downloadModel(any()) } returns Result.success(File("/models/hand_landmarker.task"))
+        every { ModelManager.downloadModel(any(), any()) } returns Result.success(File("/models/hand_landmarker.task"))
         vm.retryModelDownload()
         advanceUntilIdle()
         assertTrue(vm.state.value.modelReady)
@@ -240,7 +248,7 @@ class ScanViewModelTest {
     @Test
     fun `checksum mismatch surfaces MODEL_CORRUPT`() = runTest {
         every { ModelManager.isModelReady(any()) } returns false
-        every { ModelManager.downloadModel(any()) } returns Result.failure(
+        every { ModelManager.downloadModel(any(), any()) } returns Result.failure(
             ScanErrorException(ScanError.MODEL_CORRUPT, "SHA-256 mismatch")
         )
         val vm = buildViewModel()
@@ -343,7 +351,7 @@ class ScanViewModelTest {
     @Test
     fun `delta is computed against previous month and saved`() = runTest {
         val delta = makeDelta("2026-06")
-        coEvery { resultRepository.getRecent(1) } returns listOf(makePrevEntity("2026-06"))
+        coEvery { resultRepository.getRecent(2) } returns listOf(makePrevEntity("2026-06"))
         every { deltaEngine.computeDelta(any(), any()) } returns delta
         val inputSlot = slot<ContentInput>()
         every { contentComposer.compose(capture(inputSlot)) } returns makePayloads()
@@ -356,8 +364,22 @@ class ScanViewModelTest {
     }
 
     @Test
-    fun `no delta saved when previous result is same month`() = runTest {
-        coEvery { resultRepository.getRecent(1) } returns listOf(makePrevEntity(monthKey))
+    fun `same-month rescan recomputes the delta against the prior month`() = runTest {
+        val delta = makeDelta("2026-06")
+        coEvery { resultRepository.getRecent(2) } returns
+            listOf(makePrevEntity(monthKey), makePrevEntity("2026-06"))
+        every { deltaEngine.computeDelta(any(), any()) } returns delta
+
+        val vm = buildViewModel()
+        runPipelineToCompletion(vm, this)
+
+        // Without this the rescan leaves the previous scan's arrows next to new scores.
+        coVerify { resultRepository.saveDelta(monthKey, delta) }
+    }
+
+    @Test
+    fun `no delta saved when no earlier month exists`() = runTest {
+        coEvery { resultRepository.getRecent(2) } returns listOf(makePrevEntity(monthKey))
 
         val vm = buildViewModel()
         runPipelineToCompletion(vm, this)
@@ -456,6 +478,50 @@ class ScanViewModelTest {
         assertNull(vm.state.value.error)
         assertFalse(vm.state.value.isProcessing)
         verify(exactly = 0) { analytics.emit("inference_start", any()) }
+    }
+
+    // ------------------------------------------------------------------ raw media retention
+
+    @Test
+    fun `retention off empties the image path and deletes the captured frames`() = runTest {
+        coEvery { userRepository.get() } returns makeProfile().copy(rawMediaRetention = false)
+        val scanDir = File(filesDir, "scans/$monthKey").apply { mkdirs() }
+        val frame = File(scanDir, "FRONT.jpg").apply { writeText("jpeg") }
+
+        val vm = buildViewModel()
+        val entity = runPipelineToCompletion(vm, this)
+
+        assertEquals("", entity.scanImagePath)
+        assertFalse(frame.exists())
+        assertFalse(scanDir.exists())
+    }
+
+    @Test
+    fun `retention on keeps the captured frames and records the image path`() = runTest {
+        val scanDir = File(filesDir, "scans/$monthKey").apply { mkdirs() }
+        val frame = File(scanDir, "FRONT.jpg").apply { writeText("jpeg") }
+
+        val vm = buildViewModel()
+        val entity = runPipelineToCompletion(vm, this)
+
+        assertEquals("scans/$monthKey", entity.scanImagePath)
+        assertTrue(frame.exists())
+    }
+
+    // ------------------------------------------------------------------ coaching direction
+
+    @Test
+    fun `an over-exposed frame is coached away from the light, not toward it`() = runTest {
+        val vm = buildViewModel()
+        val bright = ImageQualityMetrics(
+            blur = 0.45f, glare = 0.55f, exposure = 0.40f, coverage = 0.60f, meanBrightness = 205f,
+        )
+        val dark = bright.copy(meanBrightness = 35f)
+
+        assertEquals("over_exposure", vm.coachingReasonFor("low_light", bright))
+        assertEquals("coach_over_exposure", CoachingHints.keyFor(vm.coachingReasonFor("low_light", bright)))
+        assertEquals("low_light", vm.coachingReasonFor("low_light", dark))
+        assertEquals("blur", vm.coachingReasonFor("blur", bright))
     }
 
     // ------------------------------------------------------------------ analyzer close race

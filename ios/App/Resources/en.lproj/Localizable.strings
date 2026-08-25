@@ -105,6 +105,20 @@
 "domain_wealth" = "Wealth";
 "domain_family" = "Family";
 "domain_health" = "Health";
+
+/* Engine grade tokens rendered in chrome. Wording matches the Android
+   strings.xml so the two platforms label the same month identically. */
+"grade_growing" = "Growing";
+"grade_stable" = "Stable";
+"grade_building" = "Building";
+"grade_watchout" = "Watch Out";
+
+/* History (PRD §54) — reached from Results, copy matched to the Android screen. */
+"history_title" = "History";
+"history_single_record" = "Only one record — scan more months to see trends";
+"history_empty_title" = "No scans yet";
+"history_empty_desc" = "Your monthly readings will appear here after your first palm scan.";
+"history_delta_desc" = "%1$@ changed by %2$ld compared to the previous month";
 "confidence_high" = "High confidence";
 "confidence_med" = "Medium confidence";
 "confidence_low" = "Low confidence";

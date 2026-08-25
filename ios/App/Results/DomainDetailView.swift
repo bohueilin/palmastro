@@ -26,7 +26,7 @@ struct DomainDetailView: View {
                         style: .hero
                     )
                     VStack(alignment: .leading, spacing: 8) {
-                        ConfidenceChip(confidence: payload.confidence)
+                        ConfidenceLabel(confidence: payload.confidence)
                         if let delta = payload.scoreCard.delta, delta.value != 0 {
                             Label {
                                 Text(verbatim: "\(abs(delta.value))")
@@ -34,7 +34,9 @@ struct DomainDetailView: View {
                                 Image(systemName: delta.arrow == "up" ? "arrow.up" : "arrow.down")
                             }
                             .font(.subheadline)
-                            .foregroundStyle(delta.arrow == "up" ? .green : .orange)
+                            .foregroundStyle(
+                                delta.arrow == "up" ? BrandPalette.deltaPositive : BrandPalette.deltaNegative
+                            )
                             .accessibilityLabel(Text(
                                 delta.arrow == "up" ? "results_delta_up_a11y" : "results_delta_down_a11y"
                             ))

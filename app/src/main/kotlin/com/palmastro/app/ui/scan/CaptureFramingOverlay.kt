@@ -8,12 +8,14 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.dp
 
 /**
  * Corner-bracket framing guide for the live capture preview.
@@ -37,10 +39,15 @@ fun CaptureFramingOverlay(visible: Boolean, reduceMotion: Boolean, modifier: Mod
     }
 }
 
+/**
+ * The pulse is read inside `graphicsLayer`, not inside the draw lambda: reading it in the
+ * lambda invalidates the draw phase every tick, which re-records the whole full-screen
+ * display list for the entire capture session (same idiom as ConstellationReveal).
+ */
 @Composable
 private fun PulsingBracketsCanvas(modifier: Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "capture_framing")
-    val pulseAlpha by infiniteTransition.animateFloat(
+    val pulseAlpha: State<Float> = infiniteTransition.animateFloat(
         initialValue = PULSE_MIN_ALPHA, targetValue = PULSE_MAX_ALPHA,
         animationSpec = infiniteRepeatable(
             tween(durationMillis = PULSE_DURATION_MS, easing = FastOutSlowInEasing),
@@ -48,7 +55,7 @@ private fun PulsingBracketsCanvas(modifier: Modifier) {
         ),
         label = "bracket_pulse",
     )
-    Canvas(modifier = modifier) { drawBrackets(alpha = pulseAlpha) }
+    Canvas(modifier = modifier.graphicsLayer { alpha = pulseAlpha.value }) { drawBrackets(alpha = 1f) }
 }
 
 private fun DrawScope.drawBrackets(alpha: Float) {
@@ -60,7 +67,7 @@ private fun DrawScope.drawBrackets(alpha: Float) {
     val right = w * FRAME_RIGHT_FRACTION
     val top = h * FRAME_TOP_FRACTION
     val bottom = h * FRAME_BOTTOM_FRACTION
-    val strokeW = BRACKET_STROKE_PX
+    val strokeW = BRACKET_STROKE_DP.dp.toPx()
 
     // Top-left
     drawLine(bracketColor, Offset(left, top), Offset(left + bracketLen, top), strokeW, StrokeCap.Round)
@@ -87,4 +94,4 @@ private const val FRAME_RIGHT_FRACTION = 0.85f
 private const val FRAME_TOP_FRACTION = 0.2f
 private const val FRAME_BOTTOM_FRACTION = 0.75f
 private const val BRACKET_LEN_FRACTION = 0.08f
-private const val BRACKET_STROKE_PX = 3f
+private const val BRACKET_STROKE_DP = 3f

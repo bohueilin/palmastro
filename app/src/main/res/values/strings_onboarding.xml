@@ -69,6 +69,7 @@
     <string name="ob_birth_time_label">Time of birth</string>
     <string name="ob_birth_hour">Hour</string>
     <string name="ob_birth_minute">Minute</string>
+    <string name="ob_birth_time_unknown">Unknown</string>
     <string name="ob_birth_place_label">Place of birth</string>
     <string name="ob_birth_place_search">Search city…</string>
     <string name="ob_birth_place_unknown">Other / Unknown</string>
@@ -103,6 +104,8 @@
     <string name="ob_summary_status">Status</string>
     <string name="ob_summary_tone">Style</string>
     <string name="ob_summary_language">Language</string>
+    <string name="ob_summary_birth_time">Birth time</string>
+    <string name="ob_summary_birth_place">Birth place</string>
     <string name="ob_summary_analysis">Analysis</string>
     <string name="ob_summary_l2">L2 (detailed)</string>
     <string name="ob_summary_l1">L1 (standard)</string>

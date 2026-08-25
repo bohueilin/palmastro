@@ -104,6 +104,20 @@
 "domain_wealth" = "財富";
 "domain_family" = "家庭";
 "domain_health" = "健康";
+
+/* 引擎輸出的等級代碼在介面上的顯示文字，與 Android strings.xml 一致，
+   讓兩個平台對同一個月份的標示相同。 */
+"grade_growing" = "成長期";
+"grade_stable" = "穩定期";
+"grade_building" = "累積期";
+"grade_watchout" = "注意期";
+
+/* 歷史記錄（PRD §54）：由解讀頁進入，文案與 Android 畫面一致。 */
+"history_title" = "歷史記錄";
+"history_single_record" = "只有一筆記錄，掃描更多月份來查看趨勢";
+"history_empty_title" = "還沒有掃描記錄";
+"history_empty_desc" = "完成第一次掌紋掃描後，你的每月報告會顯示在這裡。";
+"history_delta_desc" = "%1$@ 與上月相比變化 %2$ld";
 "confidence_high" = "高信心";
 "confidence_med" = "中信心";
 "confidence_low" = "低信心";

@@ -32,6 +32,15 @@
     <string name="detail_tip_reflect">Record reflections in your journal</string>
     <string name="detail_tip_next_month">Scan again next month to track your growth</string>
 
+    <!-- Domain-detail failure states, what/why/next (the ScanScreen error idiom).
+         Missing data reads as a calm empty state; only a load failure is an error. -->
+    <string name="detail_missing_what">This reading isn\'t here</string>
+    <string name="detail_missing_why">The reading for this month may have been deleted, or it was never saved.</string>
+    <string name="detail_missing_next">Go back and choose another month, or scan again to create a new reading.</string>
+    <string name="detail_error_what">Couldn\'t open this reading</string>
+    <string name="detail_error_why">Something interrupted reading the saved analysis from this device.</string>
+    <string name="detail_error_next">Try again — nothing on your device has changed.</string>
+
     <string name="explain_title">How this was calculated</string>
     <string name="explain_intro">Every domain starts from a neutral baseline. Palm and astrological signals then nudge the score up or down. Here is exactly what moved yours.</string>
     <string name="explain_baseline_label">Baseline score</string>
@@ -52,6 +61,10 @@
     <string name="journal_delete_confirm_title">Delete this entry?</string>
     <string name="journal_delete_confirm_message">This journal entry will be permanently deleted.</string>
     <string name="journal_general_entry">General reflection</string>
+    <string name="journal_discard_title">Keep what you wrote?</string>
+    <string name="journal_discard_message">This reflection hasn\'t been saved yet.</string>
+    <string name="journal_discard_confirm">Save</string>
+    <string name="journal_discard_dismiss">Discard</string>
 
     <!-- Score gauge component (ui/components/ScoreGauge.kt) — shared by the Domain Detail
          hero and the Results overall gauge. Announced as one merged element. -->

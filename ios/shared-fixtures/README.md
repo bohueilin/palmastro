@@ -8,6 +8,7 @@ for identical inputs — PRD §10 (Cross-Platform Parity) and Workstream C.
 
 ```
 shared-fixtures/
+├── astro/     *.json — AstroEngine fixtures
 ├── scoring/   *.json — ScoringEngine fixtures
 ├── content/   *.json — ContentComposer fixtures
 └── guidance/  *.json — GuidanceBuilder fixtures
@@ -27,6 +28,26 @@ it with Android-generated fixtures at integration.
 ## Fixture format
 
 Every file is one JSON object: `{ "input": ..., "expected": ... }`.
+
+### astro/*.json
+
+- `input`: `{ "birthday": CivilDate, "birthTime": CivilTime?,
+  "birthPlaceLat": Double?, "birthPlaceLon": Double? }` — the
+  `AstroEngine.compute` arguments. Omit the three optional fields for an L1
+  case.
+- `expected`: the `AstroResult` produced by the Android `AstroEngineImpl`.
+
+Compared: `calcLevel`, the signal id list including order (the first
+`ASTRO_SUN_`-prefixed signal is the sign, which downstream consumers rely on),
+and every signal's direction / magnitude / confidence / safetyTag.
+
+The committed cases are cusp cases: each moon longitude lands within 0.08 deg
+of a 30-deg sign boundary, and `polar_ascendant_tromso.json` sits above the
+polar circle. Both are the places where a change to the truncated lunar series
+or to the ascendant latitude clamp silently flips an element — the exact
+divergences that shipped before this category existed. Their expected values
+were computed from the Kotlin `AstroMath` / `AstroEngineImpl` source; replace
+them with generator output at integration.
 
 ### scoring/*.json
 
@@ -73,3 +94,5 @@ including selection order.
   Bump fixtures together with resource versions.
 - Keep fixtures small and named by scenario, e.g.
   `scoring/high_quality_l2_zh.json`, `content/low_scores_l1_en.json`.
+- The astro engine has no versioned resource file; its fixtures track the
+  engine version instead (`expected.engineVersion`).

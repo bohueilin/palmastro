@@ -32,6 +32,15 @@
     <string name="detail_tip_reflect">在日記中記錄你的反思</string>
     <string name="detail_tip_next_month">下個月再掃描一次，追蹤你的成長</string>
 
+    <!-- 領域詳情的失敗狀態，採用「發生什麼／為什麼／接下來」的掃描錯誤語法。
+         資料不存在視為平靜的空狀態，只有讀取失敗才算錯誤。 -->
+    <string name="detail_missing_what">找不到這份解讀</string>
+    <string name="detail_missing_why">這個月的解讀可能已被刪除，或是從未儲存。</string>
+    <string name="detail_missing_next">回上一頁選擇其他月份，或重新掃描建立新的解讀。</string>
+    <string name="detail_error_what">無法開啟這份解讀</string>
+    <string name="detail_error_why">讀取裝置上已儲存的分析時被中斷了。</string>
+    <string name="detail_error_next">再試一次，你裝置上的資料沒有任何變動。</string>
+
     <string name="explain_title">分數是怎麼算出來的</string>
     <string name="explain_intro">每個領域都從中性的基準分開始，掌紋與星象訊號再把分數往上或往下調整。以下是影響你分數的完整過程。</string>
     <string name="explain_baseline_label">基準分數</string>
@@ -52,6 +61,10 @@
     <string name="journal_delete_confirm_title">要刪除這則日記嗎？</string>
     <string name="journal_delete_confirm_message">這則日記將被永久刪除。</string>
     <string name="journal_general_entry">一般反思</string>
+    <string name="journal_discard_title">要保留剛才寫的內容嗎？</string>
+    <string name="journal_discard_message">這則反思還沒有儲存。</string>
+    <string name="journal_discard_confirm">儲存</string>
+    <string name="journal_discard_dismiss">不保留</string>
 
     <!-- 分數儀表元件（ui/components/ScoreGauge.kt）— 領域詳情主視覺與結果總覽共用，
          以單一元素向螢幕閱讀器朗讀。 -->

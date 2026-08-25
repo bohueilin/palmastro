@@ -9,7 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Checklist
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.TrendingUp
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.*
@@ -43,6 +42,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
 import com.palmastro.app.haptics.rememberHapticPlayer
 import com.palmastro.app.ui.components.entranceReveal
+import com.palmastro.app.ui.components.SafetyNoteCard
+import com.palmastro.app.ui.components.SectionHeader
 import com.palmastro.app.ui.components.rememberReduceMotion
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
@@ -184,7 +185,11 @@ private fun GuidanceContent(
         }
 
         Spacer(Modifier.height(28.dp))
-        GuidanceFooter()
+        SafetyNoteCard(
+            body = stringResource(R.string.results_safety_body),
+            title = stringResource(R.string.results_safety_title),
+            extra = stringResource(R.string.guidance_footer_reflection),
+        )
         Spacer(Modifier.height(40.dp))
     }
 }
@@ -260,16 +265,10 @@ private fun MonthThemeHero(monthKey: String, grade: String, monthTheme: String) 
 
 @Composable
 private fun GuidanceSectionHeader(icon: ImageVector, title: String, description: String) {
-    Column(modifier = Modifier.semantics(mergeDescendants = true) { heading() }) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.width(8.dp))
-            Text(
-                title,
-                fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp,
-            )
-        }
+    // heading() now sits on the shared header row, so TalkBack speaks the section title
+    // alone as the heading and reads the description as ordinary following text.
+    Column {
+        SectionHeader(icon = icon, title = title)
         Spacer(Modifier.height(4.dp))
         Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -340,35 +339,5 @@ private fun WeekPlanRow(index: Int, text: String) {
             text, fontSize = 15.sp, lineHeight = 22.sp,
             modifier = Modifier.weight(1f).padding(top = 3.dp),
         )
-    }
-}
-
-/** Footer safety/reflection note; reuses the shared Results disclaimer strings. */
-@Composable
-private fun GuidanceFooter() {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-        shape = RoundedCornerShape(12.dp),
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-            Icon(
-                Icons.Outlined.Shield, contentDescription = null,
-                modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text(stringResource(R.string.results_safety_title), fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    stringResource(R.string.guidance_footer_reflection),
-                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    stringResource(R.string.results_safety_body),
-                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp,
-                )
-            }
-        }
     }
 }

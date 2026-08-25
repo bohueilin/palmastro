@@ -1,6 +1,6 @@
 package com.palmastro.app.ui.history
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,8 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -29,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
 import com.palmastro.app.ui.components.BrandIllustration
 import com.palmastro.app.ui.components.BrandScene
+import com.palmastro.app.ui.monthTitleLocalized
 import com.palmastro.app.ui.results.confidenceDisplayName
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
@@ -47,7 +47,7 @@ fun HistoryScreen(onBack: () -> Unit, onMonthClick: (String) -> Unit, viewModel:
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.history_title)) },
+                title = { Text(stringResource(R.string.history_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
@@ -100,16 +100,23 @@ private fun EmptyHistory(padding: PaddingValues) {
 @Composable
 private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
     val gradeText = gradeDisplayName(month.grade)
+    val monthTitle = monthTitleLocalized(month.monthKey)
     val gc = gradeColor(month.grade)
     val confidenceText = confidenceDisplayName(month.confidence)
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick, role = Role.Button)
-            .semantics(mergeDescendants = true) { contentDescription = "${month.monthKey} $gradeText" },
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        // clip BEFORE clickable: Card appends its own clip after the caller's modifiers,
+        // so an unclipped ripple would paint square corners over the rounded card.
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick, role = Role.Button)
+            .semantics(mergeDescendants = true) { contentDescription = "$monthTitle $gradeText" },
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(month.monthKey, fontSize = 18.sp, lineHeight = 26.sp, fontWeight = FontWeight.Medium)
+                Text(monthTitle, fontSize = 18.sp, lineHeight = 26.sp, fontWeight = FontWeight.Medium)
                 // Solid chip with the paired on-color: the raw grade color on a 15% tint
                 // measured ~3.6:1 for two grades — below the 4.5:1 small-text floor.
                 Surface(color = gc, shape = MaterialTheme.shapes.small) {
@@ -123,30 +130,12 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
             }
             Spacer(Modifier.height(12.dp))
             orderedDomains.forEach { domain ->
-                val score = month.domainScores[domain] ?: 0
-                val delta = month.deltas[domain]
-                val domainText = domainDisplayName(domain)
-                val deltaDesc = delta?.let { stringResource(R.string.history_delta_desc, domainText, it) }
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
-                        .semantics(mergeDescendants = true) {
-                            contentDescription = listOfNotNull("$domainText $score", deltaDesc).joinToString(", ")
-                        },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(domainText, style = MaterialTheme.typography.bodySmall, modifier = Modifier.widthIn(min = 64.dp))
-                    LinearProgressIndicator(
-                        progress = { score / 100f },
-                        modifier = Modifier.weight(1f).height(6.dp).clearAndSetSemantics {},
-                        color = gc,
-                    )
-                    Text(
-                        "$score",
-                        fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium,
-                        modifier = Modifier.widthIn(min = 36.dp).padding(start = 8.dp).clearAndSetSemantics {},
-                    )
-                    DeltaText(delta)
-                }
+                MonthDomainRow(
+                    domain = domain,
+                    score = month.domainScores[domain] ?: 0,
+                    delta = month.deltas[domain],
+                    barColor = gc,
+                )
             }
             Spacer(Modifier.height(4.dp))
             Text(
@@ -154,6 +143,37 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
                 fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+/**
+ * One domain's bar inside a month card. The row is a single merged TalkBack element:
+ * the bar and both numerals are cleared so the name, score and delta are announced once,
+ * from the row description, instead of three times over.
+ */
+@Composable
+private fun MonthDomainRow(domain: String, score: Int, delta: Int?, barColor: Color) {
+    val domainText = domainDisplayName(domain)
+    val deltaDesc = delta?.let { stringResource(R.string.history_delta_desc, domainText, it) }
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+            .semantics(mergeDescendants = true) {
+                contentDescription = listOfNotNull("$domainText $score", deltaDesc).joinToString(", ")
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(domainText, style = MaterialTheme.typography.bodySmall, modifier = Modifier.widthIn(min = 64.dp))
+        LinearProgressIndicator(
+            progress = { score / 100f },
+            modifier = Modifier.weight(1f).height(6.dp).clearAndSetSemantics {},
+            color = barColor,
+        )
+        Text(
+            "$score",
+            fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium,
+            modifier = Modifier.widthIn(min = 36.dp).padding(start = 8.dp).clearAndSetSemantics {},
+        )
+        DeltaText(delta)
     }
 }
 

@@ -16,6 +16,15 @@
     <string name="results_delta_down">Down %1$d from last month</string>
     <string name="results_delta_flat">Same as last month</string>
     <string name="results_card_confidence">Confidence %1$s</string>
+    <!-- Rescan invitation shown when the newest reading predates the current month.
+         Calm and invitational by design: never streak pressure or loss framing. -->
+    <string name="results_new_month_title">A new month has begun</string>
+    <string name="results_new_month_desc">This reading is from %1$s. Scan again whenever you are ready to see what has shifted.</string>
+    <string name="results_past_month">Viewing a past reading</string>
+    <string name="results_comparability_chip">Comparable to last month %1$d/100</string>
+    <string name="results_delta_approx">Comparison with last month is approximate</string>
+    <string name="results_rescan_confirm_title">Replace this month\'s reading?</string>
+    <string name="results_rescan_confirm_message">A new scan replaces the reading saved for this month. Your journal entries are kept.</string>
     <string name="results_safety_title">For Personal Reflection</string>
     <string name="results_safety_body">PalmAstro is for self-growth and entertainment. Not medical, financial, or professional advice. All analysis runs on your device.</string>
 

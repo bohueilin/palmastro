@@ -1,6 +1,7 @@
 package com.palmastro.app.viewmodel
 
 import android.content.Context
+import com.palmastro.app.config.FeatureFlags
 import com.palmastro.data.entities.UserProfileEntity
 import com.palmastro.data.repository.UserRepository
 import com.palmastro.data.repository.WipeManager
@@ -18,6 +19,7 @@ class SettingsViewModelTest {
     private val context = mockk<Context>(relaxed = true)
     private val userRepository = mockk<UserRepository>(relaxed = true)
     private val wipeManager = mockk<WipeManager>(relaxed = true)
+    private val featureFlags = mockk<FeatureFlags>(relaxed = true)
     private val testDispatcher = UnconfinedTestDispatcher()
 
     private fun makeProfile(tone: String = "scientific", reminders: String = "monthly") = UserProfileEntity(
@@ -29,7 +31,7 @@ class SettingsViewModelTest {
 
     private fun createViewModel(): SettingsViewModel {
         coEvery { userRepository.get() } returns makeProfile()
-        return SettingsViewModel(context, userRepository, wipeManager)
+        return SettingsViewModel(context, userRepository, wipeManager, featureFlags)
     }
 
     @Test
@@ -130,7 +132,7 @@ class SettingsViewModelTest {
     @Test
     fun `handles missing profile gracefully`() = runTest {
         coEvery { userRepository.get() } returns null
-        val vm = SettingsViewModel(context, userRepository, wipeManager)
+        val vm = SettingsViewModel(context, userRepository, wipeManager, featureFlags)
         assertEquals("scientific", vm.state.value.tone)
     }
 }

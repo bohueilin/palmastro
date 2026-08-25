@@ -1,9 +1,30 @@
 package com.palmastro.app.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import com.palmastro.app.R
 import com.palmastro.contracts.Angle
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+
+/**
+ * Storage month key ("2026-08") rendered in the app locale. The raw key is a database
+ * detail and must never reach a label; a malformed key falls back to itself so a bad
+ * row still renders something readable.
+ */
+@Composable
+fun monthTitleLocalized(monthKey: String): String {
+    val datePattern = stringResource(R.string.results_date_pattern)
+    val configuration = LocalConfiguration.current
+    return remember(monthKey, datePattern, configuration) {
+        runCatching {
+            val locale = configuration.locales.get(0)
+            YearMonth.parse(monthKey).atDay(1).format(DateTimeFormatter.ofPattern(datePattern, locale))
+        }.getOrDefault(monthKey)
+    }
+}
 
 @Composable
 fun gradeNameLocalized(grade: String): String = when (grade) {

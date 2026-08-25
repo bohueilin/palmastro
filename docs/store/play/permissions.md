@@ -35,6 +35,16 @@ responses.
   permission is requested only at the moment the user enables reminders in Settings
   (EXECUTION_SPEC launch decision). Denial simply leaves reminders off — no nagging.
 
+### `android.permission.VIBRATE`
+
+- **Why:** Haptic feedback in the scan and reveal flows (capture tick, quality-gate
+  pass/fail, guidance reveal) — `HapticPlayer` in
+  `app/src/main/kotlin/com/palmastro/app/haptics/Haptics.kt`, called from
+  `ScanScreen.kt` and `GuidanceScreen.kt`.
+- **Scope:** Short low-amplitude effects only; no-ops when the device has no vibrator
+  or the system touch-feedback setting is off. Collects and transmits nothing. Normal
+  install-time permission — no Play Console declaration form applies.
+
 ## Permissions intentionally NOT used
 
 - **No photo/video/storage permissions** (`READ_MEDIA_IMAGES`,
@@ -69,7 +79,7 @@ an advertising ID.**
 ## Pre-submission verification checklist
 
 - [ ] `aapt dump permissions` on the release AAB lists exactly: `CAMERA`, `INTERNET`,
-      `POST_NOTIFICATIONS` (plus any OS-implied ones such as
+      `POST_NOTIFICATIONS`, `VIBRATE` (plus any OS-implied ones such as
       `RECEIVE_BOOT_COMPLETED`/`SCHEDULE_EXACT_ALARM` only if WorkManager/reminders
       actually require them — audit anything unexpected).
 - [ ] `com.google.android.gms.permission.AD_ID` absent from the merged manifest.

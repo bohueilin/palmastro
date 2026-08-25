@@ -1,0 +1,36 @@
+{
+  "input": {
+    "birthday": {
+      "year": 1995,
+      "month": 8,
+      "day": 2
+    }
+  },
+  "expected": {
+    "calcLevel": "L1",
+    "signals": [
+      {
+        "signalId": "ASTRO_SUN_LEO",
+        "direction": "+",
+        "magnitude": 3,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_SUN_FIRE",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      },
+      {
+        "signalId": "ASTRO_SUN_FIXED",
+        "direction": "+",
+        "magnitude": 2,
+        "confidence": "high",
+        "safetyTag": "SAFE_GENERAL"
+      }
+    ],
+    "engineVersion": "2.0.0"
+  }
+}

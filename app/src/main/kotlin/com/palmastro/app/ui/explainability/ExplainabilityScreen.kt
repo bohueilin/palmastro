@@ -1,5 +1,6 @@
 package com.palmastro.app.ui.explainability
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,7 +12,6 @@ import androidx.compose.material.icons.outlined.Balance
 import androidx.compose.material.icons.outlined.BackHand
 import androidx.compose.material.icons.outlined.NightsStay
 import androidx.compose.material.icons.outlined.PhotoCamera
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -24,13 +24,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
+import com.palmastro.app.ui.components.SafetyNoteCard
+import com.palmastro.app.ui.components.SectionHeader
 import com.palmastro.app.ui.results.confidenceDisplayName
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
@@ -103,7 +104,11 @@ fun ExplainabilityScreen(
 
                     // Baseline
                     Spacer(Modifier.height(20.dp))
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow), shape = RoundedCornerShape(16.dp)) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                        shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    ) {
                         Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Outlined.Balance, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                             Spacer(Modifier.width(12.dp))
@@ -178,37 +183,12 @@ fun ExplainabilityScreen(
 
                     // Safety note (PRD 13.5 honesty statement)
                     Spacer(Modifier.height(24.dp))
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)), shape = RoundedCornerShape(12.dp)) {
-                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-                            Icon(Icons.Outlined.Shield, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Spacer(Modifier.width(12.dp))
-                            Text(
-                                stringResource(R.string.explain_safety_note),
-                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
+                    SafetyNoteCard(body = stringResource(R.string.explain_safety_note))
 
                     Spacer(Modifier.height(40.dp))
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun SectionHeader(icon: ImageVector, title: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.semantics(mergeDescendants = true) { heading() },
-    ) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-        Spacer(Modifier.width(8.dp))
-        Text(
-            title,
-            fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp,
-        )
     }
 }
 

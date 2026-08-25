@@ -89,22 +89,86 @@ public struct Ruleset: Codable, Equatable, Sendable {
     }
 
     /// Startup validation per PRD §49 (rulesets must be versioned, validated).
+    /// Same invariants and the same stable machine-readable keys as
+    /// `Ruleset.validateOrThrow()` on Android, so a ruleset either loads on
+    /// both platforms or fails on both with a comparable message:
+    /// - version present, signal list non-empty, no duplicate signal IDs;
+    /// - every signal weights all four domains, weights in 0...1,
+    ///   direction is +1/-1, magnitude >= 1;
+    /// - every domain has at least one reachable positive AND one reachable
+    ///   negative contribution;
+    /// - confidence multipliers cover high/med/low and are in 0...1;
+    /// - grade thresholds cover 0...100 gap-free with no overlap.
     public func validate() throws {
-        if version.isEmpty {
-            throw RulesetError.invalidRuleset("missing version")
+        try require(!version.isBlank, "ruleset_version_blank")
+        try require(!signals.isEmpty, "ruleset_signals_empty")
+
+        let ids = signals.map(\.signalId)
+        try require(ids.count == Set(ids).count, "ruleset_duplicate_signal_ids")
+
+        let requiredDomains = Set(Domains.all)
+        for signal in signals {
+            try require(
+                requiredDomains.isSubset(of: Set(signal.domainWeights.keys)),
+                "ruleset_signal_missing_domain:\(signal.signalId)"
+            )
+            for weight in signal.domainWeights.values {
+                try require(
+                    weight >= 0.0 && weight <= 1.0,
+                    "ruleset_domain_weight_out_of_range:\(signal.signalId)"
+                )
+            }
+            try require(
+                signal.direction == 1 || signal.direction == -1,
+                "ruleset_invalid_direction:\(signal.signalId)"
+            )
+            try require(signal.magnitude >= 1, "ruleset_invalid_magnitude:\(signal.signalId)")
         }
-        if signals.isEmpty {
-            throw RulesetError.invalidRuleset("no signals")
+
+        for domain in Domains.all {
+            try require(
+                signals.contains { $0.direction > 0 && ($0.domainWeights[domain] ?? 0.0) > 0.0 },
+                "ruleset_domain_missing_positive_signal:\(domain)"
+            )
+            try require(
+                signals.contains { $0.direction < 0 && ($0.domainWeights[domain] ?? 0.0) > 0.0 },
+                "ruleset_domain_missing_negative_signal:\(domain)"
+            )
         }
-        if gradeThresholds.isEmpty {
-            throw RulesetError.invalidRuleset("no grade thresholds")
+
+        try require(
+            Set(["high", "med", "low"]).isSubset(of: Set(confidenceMultipliers.keys)),
+            "ruleset_missing_confidence_levels"
+        )
+        for multiplier in confidenceMultipliers.values {
+            try require(
+                multiplier >= 0.0 && multiplier <= 1.0,
+                "ruleset_confidence_multiplier_out_of_range"
+            )
         }
-        for signal in signals where signal.domainWeights.isEmpty {
-            throw RulesetError.invalidRuleset("signal \(signal.signalId) has no domain weights")
+
+        try require(!gradeThresholds.isEmpty, "ruleset_grade_thresholds_empty")
+        let ranges = gradeThresholds.values.sorted { $0.min < $1.min }
+        for range in ranges {
+            try require(range.min <= range.max, "ruleset_grade_range_inverted")
+        }
+        try require(ranges[0].min == 0, "ruleset_grades_must_start_at_0")
+        try require(ranges[ranges.count - 1].max == 100, "ruleset_grades_must_end_at_100")
+        for i in 0..<(ranges.count - 1) {
+            try require(
+                ranges[i].max + 1 == ranges[i + 1].min,
+                "ruleset_grade_thresholds_not_contiguous"
+            )
         }
     }
 
+    private func require(_ condition: Bool, _ key: String) throws {
+        if !condition { throw RulesetError.invalidRuleset(key) }
+    }
+
     public func grade(forScore score: Int) -> String {
+        // Validation guarantees the bands are disjoint, so this unordered walk
+        // finds exactly one match — the same grade Kotlin's ordered walk finds.
         for (grade, range) in gradeThresholds where range.contains(score) {
             return grade
         }
@@ -113,4 +177,9 @@ public struct Ruleset: Codable, Equatable, Sendable {
         if let first = sorted.first, score < first.value.min { return first.key }
         return sorted.last?.key ?? ""
     }
+}
+
+private extension String {
+    /// Kotlin `isBlank()` parity: empty or whitespace-only.
+    var isBlank: Bool { allSatisfy { $0.isWhitespace } }
 }

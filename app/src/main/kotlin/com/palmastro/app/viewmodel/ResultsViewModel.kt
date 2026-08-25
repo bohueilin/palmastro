@@ -4,17 +4,24 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.palmastro.app.config.FeatureFlags
+import com.palmastro.app.di.IoDispatcher
 import com.palmastro.content.GuidanceBuilder
 import com.palmastro.contracts.ComparabilityBucket
+import com.palmastro.contracts.DeltaResult
 import com.palmastro.contracts.Domains
 import com.palmastro.contracts.SemanticPayload
 import com.palmastro.data.repository.ResultRepository
 import com.palmastro.data.repository.UserRepository
+import dagger.Lazy
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.time.YearMonth
 import javax.inject.Inject
 
 data class DomainCard(
@@ -53,6 +60,14 @@ data class ResultsState(
     val shareCardsEnabled: Boolean = true,
     /** Guidance entry-card preview; null when guidance could not be built. */
     val guidance: GuidanceSummary? = null,
+    /** The newest reading predates the current month — invite a rescan (PRD §3.3 loop). */
+    val isStale: Boolean = false,
+    /** A month opened deliberately from History or a deep link, and not the current one. */
+    val isPastMonth: Boolean = false,
+    /** 0-100 comparability of this month against the previous one; null when no delta is shown. */
+    val comparabilityScore: Int? = null,
+    /** MED comparability: the deltas are shown, but weakened rather than stated flatly. */
+    val deltaApproximate: Boolean = false,
 )
 
 @HiltViewModel
@@ -61,8 +76,11 @@ class ResultsViewModel @Inject constructor(
     private val resultRepository: ResultRepository,
     private val userRepository: UserRepository,
     private val featureFlags: FeatureFlags,
+    // Lazy, not the builder itself: constructing it parses the 139 KB content templates,
+    // and Hilt builds this view model inside the first composition of the start screen.
     // Default keeps existing direct constructions compiling; Hilt injects the singleton.
-    private val guidanceBuilder: GuidanceBuilder = GuidanceBuilder(),
+    private val guidanceBuilder: Lazy<GuidanceBuilder> = Lazy<GuidanceBuilder> { GuidanceBuilder() },
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ResultsState())
     val state = _state.asStateFlow()
@@ -96,8 +114,10 @@ class ResultsViewModel @Inject constructor(
             } catch (_: Exception) {
                 emptyMap()
             }
-            val cards = buildDomainCards(entity, scores, payloads)
+            val delta = loadDelta(entity.monthKey)
+            val cards = buildDomainCards(entity, scores, payloads, delta)
             val guidanceSummary = buildGuidanceSummary(entity.grade, payloads, profile?.language)
+            val currentMonth = YearMonth.now().toString()
 
             _state.update {
                 it.copy(
@@ -112,21 +132,38 @@ class ResultsViewModel @Inject constructor(
                     topDomain = scores.maxByOrNull { entry -> entry.value }?.key,
                     shareCardsEnabled = featureFlags.shareCardsEnabled,
                     guidance = guidanceSummary,
+                    // Opening a stored month from History is deliberate and gets a badge;
+                    // only the live dashboard falling behind the calendar invites a rescan.
+                    isStale = targetMonthKey == null && entity.monthKey != currentMonth,
+                    isPastMonth = targetMonthKey != null && entity.monthKey != currentMonth,
+                    comparabilityScore = comparabilityScoreOf(delta),
+                    deltaApproximate = delta?.comparabilityBucket == ComparabilityBucket.MED,
                 )
             }
         }
     }
 
-    private suspend fun buildDomainCards(
+    /** A missing or unreadable delta row means "no arrows", never a failed screen. */
+    private suspend fun loadDelta(monthKey: String): DeltaResult? = try {
+        resultRepository.getDeltaFor(monthKey)
+    } catch (_: Exception) {
+        null
+    }
+
+    /**
+     * The score behind the arrows (PRD §3.3 "delta is shown with a comparability score").
+     * Null whenever no delta is rendered, so the chip never claims comparability the
+     * cards do not show.
+     */
+    private fun comparabilityScoreOf(delta: DeltaResult?): Int? =
+        delta?.takeIf { it.comparabilityBucket != ComparabilityBucket.LOW }?.comparabilityScore
+
+    private fun buildDomainCards(
         entity: com.palmastro.data.entities.MonthlyResultEntity,
         scores: Map<String, Int>,
         payloads: Map<String, SemanticPayload>,
+        delta: DeltaResult?,
     ): List<DomainCard> {
-        val delta = try {
-            resultRepository.getDeltaFor(entity.monthKey)
-        } catch (_: Exception) {
-            null
-        }
         // Comparability gate (PRD delta rules): LOW-comparability deltas are not shown.
         val deltaComparable = delta != null && delta.comparabilityBucket != ComparabilityBucket.LOW
         val orderedDomains = Domains.ALL.filter { scores.containsKey(it) } +
@@ -151,20 +188,25 @@ class ResultsViewModel @Inject constructor(
      * the stored payloads; any failure degrades to "no card", never an error state.
      * Uses the language the payloads were composed in (falling back to the resolver)
      * so the preview never mixes languages with the stored content.
+     *
+     * Off the main thread: the first [guidanceBuilder] access reads and parses the
+     * bundled content templates, which must never land on the composing frame.
      */
-    private fun buildGuidanceSummary(
+    private suspend fun buildGuidanceSummary(
         grade: String,
         payloads: Map<String, SemanticPayload>,
         profileLanguage: String?,
-    ): GuidanceSummary? = runCatching {
-        val language = storedPayloadLanguage(payloads) ?: resolveContentLanguage(profileLanguage)
-        val guidance = guidanceBuilder.build(payloads, grade, language)
-        GuidanceSummary(
-            monthTheme = guidance.monthTheme,
-            firstStrengthTitle = guidance.strengths.firstOrNull()?.title.orEmpty(),
-            firstMindfulTitle = guidance.mindful.firstOrNull()?.title.orEmpty(),
-        )
-    }.getOrNull()
+    ): GuidanceSummary? = withContext(ioDispatcher) {
+        runCatching {
+            val language = storedPayloadLanguage(payloads) ?: resolveContentLanguage(profileLanguage)
+            val guidance = guidanceBuilder.get().build(payloads, grade, language)
+            GuidanceSummary(
+                monthTheme = guidance.monthTheme,
+                firstStrengthTitle = guidance.strengths.firstOrNull()?.title.orEmpty(),
+                firstMindfulTitle = guidance.mindful.firstOrNull()?.title.orEmpty(),
+            )
+        }.getOrNull()
+    }
 
     companion object {
         private val SENTENCE_ENDINGS = charArrayOf('.', '!', '?', '。', '！', '？')

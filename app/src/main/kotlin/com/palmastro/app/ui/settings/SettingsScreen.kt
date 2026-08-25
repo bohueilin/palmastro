@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -34,10 +33,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.BuildConfig
 import com.palmastro.app.R
+import com.palmastro.app.ui.components.SectionHeader
 import com.palmastro.app.ui.legal.LEGAL_DOC_PRIVACY
 import com.palmastro.app.ui.legal.LEGAL_DOC_TERMS
 import com.palmastro.app.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
+
+/** Android 13, the first release where POST_NOTIFICATIONS is a runtime grant. */
+private const val POST_NOTIFICATIONS_SDK = 33
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +53,8 @@ fun SettingsScreen(
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     var showWipeDialog by remember { mutableStateOf(false) }
+    // Non-null while the diagnostic report is being previewed before sending.
+    var diagnosticReport by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     LaunchedEffect(state.isWipeComplete) { if (state.isWipeComplete) onWipeComplete() }
@@ -62,6 +67,8 @@ fun SettingsScreen(
 
     val supportEmail = stringResource(R.string.settings_support_email)
     val supportErrorMessage = stringResource(R.string.settings_support_error, supportEmail)
+    val diagnosticSubject = stringResource(R.string.settings_diagnostic_export)
+    val diagnosticErrorMessage = stringResource(R.string.settings_diagnostic_error)
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -77,55 +84,17 @@ fun SettingsScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
-            // Analysis style (PRD §45 display names: Analytical / Gentle / Direct)
-            SettingsSection(icon = Icons.Outlined.Palette, title = stringResource(R.string.settings_tone_label)) {
-                val tones = listOf(
-                    "scientific" to stringResource(R.string.settings_tone_analytical),
-                    "healing" to stringResource(R.string.settings_tone_gentle),
-                    "roast_safe" to stringResource(R.string.settings_tone_direct),
-                )
-                tones.forEach { (key, label) ->
-                    SettingsRadioItem(label = label, selected = state.tone == key, onClick = { viewModel.setTone(key) })
-                }
-            }
+            ToneSection(selected = state.tone, onSelect = { viewModel.setTone(it) })
 
-            // Language (per-app locale + profile.language)
-            SettingsSection(icon = Icons.Outlined.Language, title = stringResource(R.string.settings_language_label)) {
-                val languages = listOf(
-                    "system" to stringResource(R.string.settings_language_system),
-                    "en" to stringResource(R.string.settings_language_english),
-                    "zh-TW" to stringResource(R.string.settings_language_zh_tw),
-                )
-                languages.forEach { (key, label) ->
-                    SettingsRadioItem(label = label, selected = state.language == key, onClick = { viewModel.setLanguage(key) })
-                }
-            }
+            LanguageSection(selected = state.language, onSelect = { viewModel.setLanguage(it) })
 
-            // Reminders (opt-in; permission requested on enable)
-            SettingsSection(icon = Icons.Outlined.Notifications, title = stringResource(R.string.settings_reminder_label)) {
-                val reminders = listOf(
-                    "30d" to stringResource(R.string.settings_reminder_30d),
-                    "monthly" to stringResource(R.string.settings_reminder_monthly),
-                    "off" to stringResource(R.string.settings_reminder_off),
-                )
-                reminders.forEach { (key, label) ->
-                    SettingsRadioItem(
-                        label = label,
-                        selected = state.reminders == key,
-                        onClick = {
-                            viewModel.setReminders(key)
-                            if (key != "off" && Build.VERSION.SDK_INT >= 33) {
-                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            }
-                        },
-                    )
-                }
-                Text(
-                    stringResource(R.string.settings_reminder_permission_note),
-                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
-                )
-            }
+            RemindersSection(
+                selected = state.reminders,
+                onSelect = { viewModel.setReminders(it) },
+                onRequestPermission = {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                },
+            )
 
             // Privacy
             SettingsSection(icon = Icons.Outlined.Shield, title = stringResource(R.string.settings_section_privacy)) {
@@ -171,6 +140,11 @@ fun SettingsScreen(
                             scope.launch { snackbarHostState.showSnackbar(supportErrorMessage) }
                         }
                     },
+                )
+                SettingsLinkRow(
+                    icon = Icons.Outlined.BugReport,
+                    label = stringResource(R.string.settings_diagnostic_export),
+                    onClick = { diagnosticReport = viewModel.buildDiagnosticReport() },
                 )
             }
 
@@ -268,23 +242,123 @@ fun SettingsScreen(
             },
         )
     }
+
+    // Preview before send: the user reads the exact text that would leave the device.
+    diagnosticReport?.let { report ->
+        AlertDialog(
+            onDismissRequest = { diagnosticReport = null },
+            icon = { Icon(Icons.Outlined.BugReport, contentDescription = null) },
+            title = { Text(stringResource(R.string.settings_diagnostic_export), fontWeight = FontWeight.SemiBold) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Text(
+                        stringResource(R.string.settings_diagnostic_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(report, style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        diagnosticReport = null
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_EMAIL, arrayOf(supportEmail))
+                            putExtra(Intent.EXTRA_SUBJECT, diagnosticSubject)
+                            putExtra(Intent.EXTRA_TEXT, report)
+                        }
+                        try {
+                            context.startActivity(Intent.createChooser(intent, null))
+                        } catch (_: ActivityNotFoundException) {
+                            scope.launch { snackbarHostState.showSnackbar(diagnosticErrorMessage) }
+                        }
+                    },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                ) { Text(stringResource(R.string.settings_diagnostic_send)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { diagnosticReport = null }, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
+    }
+}
+
+/** Analysis style (PRD §45 display names: Analytical / Gentle / Direct). */
+@Composable
+private fun ToneSection(selected: String, onSelect: (String) -> Unit) {
+    SettingsSection(icon = Icons.Outlined.Palette, title = stringResource(R.string.settings_tone_label)) {
+        val tones = listOf(
+            "scientific" to stringResource(R.string.settings_tone_analytical),
+            "healing" to stringResource(R.string.settings_tone_gentle),
+            "roast_safe" to stringResource(R.string.settings_tone_direct),
+        )
+        tones.forEach { (key, label) ->
+            SettingsRadioItem(label = label, selected = selected == key, onClick = { onSelect(key) })
+        }
+    }
+}
+
+/** Per-app locale + profile.language. */
+@Composable
+private fun LanguageSection(selected: String, onSelect: (String) -> Unit) {
+    SettingsSection(icon = Icons.Outlined.Language, title = stringResource(R.string.settings_language_label)) {
+        val languages = listOf(
+            "system" to stringResource(R.string.settings_language_system),
+            "en" to stringResource(R.string.settings_language_english),
+            "zh-TW" to stringResource(R.string.settings_language_zh_tw),
+        )
+        languages.forEach { (key, label) ->
+            SettingsRadioItem(label = label, selected = selected == key, onClick = { onSelect(key) })
+        }
+    }
+}
+
+/** Reminders are opt-in; [onRequestPermission] fires only when a cadence is switched on. */
+@Composable
+private fun RemindersSection(
+    selected: String,
+    onSelect: (String) -> Unit,
+    onRequestPermission: () -> Unit,
+) {
+    SettingsSection(icon = Icons.Outlined.Notifications, title = stringResource(R.string.settings_reminder_label)) {
+        val reminders = listOf(
+            "30d" to stringResource(R.string.settings_reminder_30d),
+            "monthly" to stringResource(R.string.settings_reminder_monthly),
+            "off" to stringResource(R.string.settings_reminder_off),
+        )
+        reminders.forEach { (key, label) ->
+            SettingsRadioItem(
+                label = label,
+                selected = selected == key,
+                onClick = {
+                    // Re-tapping the current cadence must not reschedule: that would
+                    // restart the countdown and re-prompt for the permission.
+                    if (selected != key) {
+                        onSelect(key)
+                        if (key != "off" && Build.VERSION.SDK_INT >= POST_NOTIFICATIONS_SDK) {
+                            onRequestPermission()
+                        }
+                    }
+                },
+            )
+        }
+        Text(
+            stringResource(R.string.settings_reminder_permission_note),
+            fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+        )
+    }
 }
 
 @Composable
 private fun SettingsSection(icon: ImageVector, title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier = Modifier.padding(top = 24.dp)) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 20.dp).semantics(mergeDescendants = true) { heading() },
-        ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.width(8.dp))
-            Text(
-                title,
-                fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary, letterSpacing = 0.5.sp,
-            )
-        }
+        SectionHeader(icon = icon, title = title, modifier = Modifier.padding(horizontal = 20.dp))
         Spacer(Modifier.height(8.dp))
         content()
     }

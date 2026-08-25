@@ -72,6 +72,22 @@ class OnboardingViewModel @Inject constructor(
     fun setLanguage(language: String) = _state.update { it.copy(language = language) }
     fun setBirthTime(hour: Int, minute: Int) = _state.update { it.copy(hasBirthTime = true, birthTimeHour = hour, birthTimeMinute = minute) }
     fun setBirthPlace(name: String, lat: Double, lon: Double) = _state.update { it.copy(hasBirthPlace = true, birthPlaceName = name, birthPlaceLat = lat, birthPlaceLon = lon) }
+    /**
+     * Confirming the optional birth step states both fields at once: an hour or a place
+     * the user cleared on a return visit must actually clear, and an hour never chosen
+     * must not be recorded as a real birth time — that is what promotes a reading to L2.
+     */
+    fun setBirthDetails(hour: Int?, minute: Int?, placeName: String?, lat: Double?, lon: Double?) = _state.update {
+        it.copy(
+            hasBirthTime = hour != null,
+            birthTimeHour = hour ?: it.birthTimeHour,
+            birthTimeMinute = minute ?: it.birthTimeMinute,
+            hasBirthPlace = placeName != null,
+            birthPlaceName = placeName ?: "",
+            birthPlaceLat = lat,
+            birthPlaceLon = lon,
+        )
+    }
     fun skipBirthDetails() = _state.update { it.copy(hasBirthTime = false, hasBirthPlace = false) }
     fun setRelationshipStatus(status: String) = _state.update { it.copy(relationshipStatus = status) }
     fun nextStep() = _state.update { it.copy(step = minOf(OnboardingSteps.TOTAL - 1, it.step + 1)) }
