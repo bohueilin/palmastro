@@ -3,6 +3,7 @@ package com.palmastro.app.ui.onboarding
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -36,6 +37,8 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.snap
+import com.palmastro.app.ui.components.BrandIllustration
+import com.palmastro.app.ui.components.BrandScene
 import com.palmastro.app.ui.components.rememberReduceMotion
 import com.palmastro.app.R
 import com.palmastro.app.viewmodel.OnboardingState
@@ -126,10 +129,9 @@ fun OnboardingScreen(onComplete: () -> Unit, viewModel: OnboardingViewModel = hi
                 transitionSpec = { stepTransition(reduceMotion) },
                 label = "step",
             ) { step ->
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+                // Short steps centre in the viewport instead of hugging the top and
+                // leaving a third of the screen empty; long ones scroll as before.
+                StepScaffold {
                     when (step) {
                         OnboardingSteps.WELCOME -> WelcomeStep { viewModel.nextStep() }
                         OnboardingSteps.PRIVACY -> PrivacyStep { viewModel.nextStep() }
@@ -154,11 +156,36 @@ fun OnboardingScreen(onComplete: () -> Unit, viewModel: OnboardingViewModel = hi
     }
 }
 
+/**
+ * Layout shell for one onboarding step: fills the viewport and centres content
+ * that fits, scrolls content that does not. Without the min-height the steps
+ * top-aligned inside the scroll container and left the lower third of the
+ * screen empty, which read as an unfinished screen rather than a calm one.
+ */
 @Composable
-private fun Illustration(resId: Int) {
-    Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().height(160.dp)) {
-        Image(painter = painterResource(resId), contentDescription = null, modifier = Modifier.fillMaxSize().padding(12.dp), contentScale = ContentScale.Fit)
+private fun StepScaffold(content: @Composable ColumnScope.() -> Unit) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val viewportHeight = maxHeight
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().heightIn(min = viewportHeight),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                content = content,
+            )
+        }
     }
+}
+
+@Composable
+private fun Illustration(scene: BrandScene) {
+    BrandIllustration(scene)
     Spacer(Modifier.height(16.dp))
 }
 
@@ -247,7 +274,7 @@ private fun OptionRow(
 // ── Step: Welcome / value proposition ──
 @Composable
 private fun WelcomeStep(onNext: () -> Unit) {
-    Illustration(R.drawable.img_onboarding_welcome)
+    Illustration(BrandScene.Welcome)
     Title(stringResource(R.string.ob_welcome_title), stringResource(R.string.ob_welcome_subtitle))
     Text(stringResource(R.string.ob_welcome_body), fontSize = 15.sp, lineHeight = 22.sp, textAlign = TextAlign.Center)
     Spacer(Modifier.height(32.dp))
@@ -257,13 +284,7 @@ private fun WelcomeStep(onNext: () -> Unit) {
 // ── Step: Privacy promise (PRD 12.1) ──
 @Composable
 private fun PrivacyStep(onNext: () -> Unit) {
-    Icon(
-        Icons.Filled.Lock,
-        contentDescription = stringResource(R.string.ob_privacy_icon),
-        tint = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.size(56.dp),
-    )
-    Spacer(Modifier.height(16.dp))
+    Illustration(BrandScene.Privacy)
     Title(stringResource(R.string.ob_privacy_title), stringResource(R.string.ob_privacy_subtitle))
     Column(modifier = Modifier.fillMaxWidth()) {
         BulletPoint(stringResource(R.string.ob_privacy_point_on_device))
@@ -278,7 +299,7 @@ private fun PrivacyStep(onNext: () -> Unit) {
 // ── Step: Name (clearly optional) + gender (optional) ──
 @Composable
 private fun NameStep(name: String, gender: String?, onName: (String) -> Unit, onGender: (String) -> Unit, onNext: () -> Unit) {
-    Illustration(R.drawable.img_onboarding_welcome)
+    Illustration(BrandScene.Identity)
     Title(stringResource(R.string.ob_name_title), stringResource(R.string.ob_name_subtitle))
     OutlinedTextField(
         value = name, onValueChange = onName,
@@ -316,7 +337,7 @@ private fun BirthdayStep(existing: LocalDate?, onConfirm: (LocalDate) -> Unit) {
     val locale = Locale.getDefault()
     val (zodiacRes, zodiacEmoji) = zodiacFor(selMonth, selDay)
 
-    Illustration(R.drawable.img_onboarding_birthday)
+    Illustration(BrandScene.Birthday)
     Title(stringResource(R.string.ob_birthday_title), stringResource(R.string.ob_birthday_subtitle))
 
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
@@ -399,7 +420,7 @@ private fun HandStatusStep(
     canProceed: Boolean,
     onNext: () -> Unit,
 ) {
-    Illustration(R.drawable.img_onboarding_hands)
+    Illustration(BrandScene.Hands)
     Title(stringResource(R.string.ob_hand_title), stringResource(R.string.ob_hand_subtitle))
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.selectableGroup()) {
         OptionRow(selected = hand == "left", label = stringResource(R.string.ob_hand_left)) { onHand("left") }
@@ -432,7 +453,7 @@ private fun BirthDetailsStep(onSkip: () -> Unit, onContinue: (Int, Int, Location
     var locExpanded by remember { mutableStateOf(false) }
     val filtered = remember(searchQuery) { if (searchQuery.isBlank()) locations else locations.filter { it.name.contains(searchQuery, ignoreCase = true) } }
 
-    Illustration(R.drawable.img_onboarding_birth_details)
+    Illustration(BrandScene.BirthDetails)
     Title(stringResource(R.string.ob_birth_details_title), stringResource(R.string.ob_birth_details_subtitle))
 
     Label(stringResource(R.string.ob_birth_time_label))
@@ -481,7 +502,7 @@ private fun BirthDetailsStep(onSkip: () -> Unit, onContinue: (Int, Int, Location
 // ── Step: Tone (PRD 45 display names) ──
 @Composable
 private fun ToneStep(selected: String, onSelect: (String) -> Unit, onNext: () -> Unit) {
-    Illustration(R.drawable.img_onboarding_tone)
+    Illustration(BrandScene.Tone)
     Title(stringResource(R.string.ob_tone_title), stringResource(R.string.ob_tone_subtitle))
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.selectableGroup()) {
         OptionRow(selected = selected == "scientific", label = stringResource(R.string.ob_tone_analytical), description = stringResource(R.string.ob_tone_analytical_desc)) { onSelect("scientific") }
@@ -510,7 +531,7 @@ private fun LanguageStep(selected: String, onSelect: (String) -> Unit, onNext: (
 private fun SummaryStep(state: OnboardingState, onNext: () -> Unit) {
     val (zodiacRes, zodiacEmoji) = zodiacFor(state.birthdayMonth, state.birthdayDay)
     val locale = Locale.getDefault()
-    Illustration(R.drawable.img_onboarding_ready)
+    Illustration(BrandScene.Ready)
     Title(stringResource(R.string.ob_summary_title), stringResource(R.string.ob_summary_subtitle))
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)), shape = RoundedCornerShape(16.dp)) {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -586,7 +607,7 @@ private fun SummaryRow(label: String, value: String) {
 // ── Step: Camera permission education (permission itself is requested on the scan screen) ──
 @Composable
 private fun CameraEducationStep(enabled: Boolean, onStart: () -> Unit) {
-    Illustration(R.drawable.img_onboarding_hands)
+    Illustration(BrandScene.Hands)
     Title(stringResource(R.string.ob_camera_title), stringResource(R.string.ob_camera_subtitle))
     Text(stringResource(R.string.ob_camera_body), fontSize = 15.sp, lineHeight = 22.sp, textAlign = TextAlign.Center)
     Spacer(Modifier.height(16.dp))

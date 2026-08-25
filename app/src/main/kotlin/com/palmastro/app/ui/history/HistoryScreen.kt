@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.palmastro.app.R
+import com.palmastro.app.ui.components.BrandIllustration
+import com.palmastro.app.ui.components.BrandScene
 import com.palmastro.app.ui.results.confidenceDisplayName
 import com.palmastro.app.ui.results.domainDisplayName
 import com.palmastro.app.ui.results.gradeColor
@@ -79,12 +81,7 @@ private fun EmptyHistory(padding: PaddingValues) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Image(
-            painter = painterResource(R.drawable.img_empty_no_history),
-            contentDescription = null,
-            modifier = Modifier.size(180.dp).clip(RoundedCornerShape(20.dp)),
-            contentScale = ContentScale.Fit,
-        )
+        BrandIllustration(BrandScene.NoHistory, height = 150.dp)
         Spacer(Modifier.height(24.dp))
         Text(
             stringResource(R.string.history_empty_title),

@@ -46,6 +46,9 @@ import com.palmastro.app.ui.theme.LocalPalmAstroExtendedColors
 import com.palmastro.app.R
 import com.palmastro.app.share.ShareCardRenderer
 import com.palmastro.app.share.ShareHelper
+import com.palmastro.app.ui.components.BrandIllustration
+import com.palmastro.app.ui.components.BrandScene
+import com.palmastro.app.ui.components.DomainGlyph
 import com.palmastro.app.ui.components.ScoreGauge
 import com.palmastro.app.ui.components.ScoreGaugeMath
 import com.palmastro.app.ui.components.ScoreGaugeStyle
@@ -234,12 +237,7 @@ private fun EmptyResults(padding: PaddingValues, onScanClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Image(
-            painter = painterResource(R.drawable.img_empty_no_results),
-            contentDescription = null,
-            modifier = Modifier.size(200.dp).clip(RoundedCornerShape(20.dp)),
-            contentScale = ContentScale.Fit,
-        )
+        BrandIllustration(BrandScene.NoResults, height = 180.dp)
         Spacer(Modifier.height(24.dp))
         Text(stringResource(R.string.results_welcome_title), fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
         Spacer(Modifier.height(8.dp))
@@ -428,13 +426,6 @@ private fun GuidanceEntryCard(
     }
 }
 
-private val domainImages = mapOf(
-    "career" to R.drawable.img_domain_career,
-    "wealth" to R.drawable.img_domain_wealth,
-    "family" to R.drawable.img_domain_family,
-    "health" to R.drawable.img_domain_health,
-)
-
 @Composable
 private fun DomainCardHeader(
     card: DomainCard,
@@ -449,12 +440,7 @@ private fun DomainCardHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-            Image(
-                painter = painterResource(domainImages[card.domain] ?: R.drawable.img_domain_career),
-                contentDescription = null,
-                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop,
-            )
+            DomainGlyph(domain = card.domain, tint = gc)
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(displayName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
