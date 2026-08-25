@@ -137,13 +137,15 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
 
-    val cameraVersion = "1.3.1"
+    // 1.4.2+: native libs are 16 KB page-aligned (Play requirement, Nov 2025).
+    val cameraVersion = "1.4.2"
     implementation("androidx.camera:camera-core:$cameraVersion")
     implementation("androidx.camera:camera-camera2:$cameraVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraVersion")
     implementation("androidx.camera:camera-view:$cameraVersion")
 
-    implementation("com.google.mediapipe:tasks-vision:0.10.9")
+    // 0.10.35: 16 KB page-aligned native libs; HandLandmarker API unchanged from 0.10.9.
+    implementation("com.google.mediapipe:tasks-vision:0.10.35")
 
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 

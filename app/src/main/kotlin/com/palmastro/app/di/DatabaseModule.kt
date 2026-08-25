@@ -10,8 +10,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import net.sqlcipher.database.SQLiteDatabase
-import net.sqlcipher.database.SupportFactory
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import javax.inject.Singleton
 
 @Module
@@ -20,12 +19,13 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): PalmAstroDatabase {
-        // Load the SQLCipher native libraries before any encrypted DB access
-        // (SupportFactory also does this defensively; being explicit is cheap).
-        SQLiteDatabase.loadLibs(context)
+        // sqlcipher-android does NOT auto-load its native library (unlike the retired
+        // android-database-sqlcipher, whose SQLiteDatabase.loadLibs did it): without this
+        // the first query dies with UnsatisfiedLinkError on nativeOpen.
+        System.loadLibrary("sqlcipher")
         val passphrase = DatabaseKeyManager.getOrCreateDatabaseKey(context)
         return Room.databaseBuilder(context, PalmAstroDatabase::class.java, "palmastro.db")
-            .openHelperFactory(SupportFactory(passphrase))
+            .openHelperFactory(SupportOpenHelperFactory(passphrase))
             .addMigrations(*PalmAstroDatabase.ALL_MIGRATIONS)
             .build()
     }

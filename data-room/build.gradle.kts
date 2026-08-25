@@ -35,8 +35,10 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    // `api`: the app's DatabaseModule builds the SQLCipher SupportFactory (PRD §27).
-    api("net.zetetic:android-database-sqlcipher:4.5.4")
+    // `api`: the app's DatabaseModule builds the SQLCipher open-helper factory (PRD §27).
+    // sqlcipher-android replaces the retired android-database-sqlcipher artifact and is
+    // the one that ships 16 KB page-aligned natives (Play requirement, Nov 2025).
+    api("net.zetetic:sqlcipher-android:4.9.0")
     implementation("androidx.sqlite:sqlite-ktx:2.4.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
