@@ -3,6 +3,7 @@ package com.palmastro.app.ui.onboarding
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -185,6 +186,9 @@ private fun StepScaffold(content: @Composable ColumnScope.() -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
+                // The keyboard's height comes out of the scroll area, so a focused field
+                // scrolls into view instead of the window panning the header off-screen.
+                .imePadding()
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

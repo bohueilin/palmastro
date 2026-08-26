@@ -2,6 +2,7 @@ package com.palmastro.app.ui.journal
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -56,7 +57,10 @@ fun JournalScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                // Journal is a long free-text field: without this the keyboard covers
+                // what the user is typing.
+                .imePadding(),
         ) {
             if (state.domain != null) {
                 Text(
