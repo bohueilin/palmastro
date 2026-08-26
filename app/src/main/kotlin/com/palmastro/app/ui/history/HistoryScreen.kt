@@ -134,6 +134,7 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
                     domain = domain,
                     score = month.domainScores[domain] ?: 0,
                     delta = month.deltas[domain],
+                    approximate = month.deltaApproximate,
                     barColor = gc,
                 )
             }
@@ -152,13 +153,16 @@ private fun MonthCard(month: MonthSummary, onClick: () -> Unit) {
  * from the row description, instead of three times over.
  */
 @Composable
-private fun MonthDomainRow(domain: String, score: Int, delta: Int?, barColor: Color) {
+private fun MonthDomainRow(domain: String, score: Int, delta: Int?, approximate: Boolean, barColor: Color) {
     val domainText = domainDisplayName(domain)
     val deltaDesc = delta?.let { stringResource(R.string.history_delta_desc, domainText, it) }
+    // The caveat is spoken, not just tinted: an approximate change must not reach a
+    // TalkBack user as flatly as a high-comparability one.
+    val approxDesc = stringResource(R.string.results_delta_approx).takeIf { approximate && delta != null }
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
             .semantics(mergeDescendants = true) {
-                contentDescription = listOfNotNull("$domainText $score", deltaDesc).joinToString(", ")
+                contentDescription = listOfNotNull("$domainText $score", deltaDesc, approxDesc).joinToString(", ")
             },
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -173,13 +177,13 @@ private fun MonthDomainRow(domain: String, score: Int, delta: Int?, barColor: Co
             fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium,
             modifier = Modifier.widthIn(min = 36.dp).padding(start = 8.dp).clearAndSetSemantics {},
         )
-        DeltaText(delta)
+        DeltaText(delta, approximate)
     }
 }
 
 /** Signed month-over-month change; glyph + number so direction is not color-only. */
 @Composable
-private fun DeltaText(delta: Int?) {
+private fun DeltaText(delta: Int?, approximate: Boolean) {
     val extended = LocalPalmAstroExtendedColors.current
     val (text, color) = when {
         delta == null -> "" to MaterialTheme.colorScheme.onSurfaceVariant
@@ -187,9 +191,12 @@ private fun DeltaText(delta: Int?) {
         delta < 0 -> "▼$delta" to extended.deltaNegative
         else -> "—" to extended.deltaNeutral
     }
+    // Same weakening as the Results delta (PRD delta rules): a MED-comparability change
+    // is indicative only, so it loses its colour and gains an "approximately" mark.
     Text(
-        text,
-        fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.SemiBold, color = color,
+        if (approximate && text.isNotEmpty()) "≈$text" else text,
+        fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.SemiBold,
+        color = if (approximate) extended.deltaNeutral else color,
         modifier = Modifier.widthIn(min = 48.dp).padding(start = 6.dp).clearAndSetSemantics {},
     )
 }

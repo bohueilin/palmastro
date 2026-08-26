@@ -171,7 +171,7 @@ class ScanViewModelTest {
     private fun stubHappyPipeline() {
         coEvery { userRepository.get() } returns makeProfile()
         coEvery { resultRepository.getRecent(2) } returns emptyList()
-        coJustRun { resultRepository.saveResult(any()) }
+        coJustRun { resultRepository.saveResult(any(), any()) }
         coJustRun { resultRepository.saveDelta(any<String>(), any<DeltaResult>()) }
         every { palmFeatureExtractor.extract(any(), any()) } returns
             PalmFeatureResult(makePalmFeatures(), 0.85f, "high", "1.1.0")
@@ -209,7 +209,7 @@ class ScanViewModelTest {
 
     private fun runPipelineToCompletion(vm: ScanViewModel, testScope: TestScope): MonthlyResultEntity {
         val entitySlot = slot<MonthlyResultEntity>()
-        coJustRun { resultRepository.saveResult(capture(entitySlot)) }
+        coJustRun { resultRepository.saveResult(capture(entitySlot), any()) }
         seedAllAngles(vm)
         vm.runPipeline()
         testScope.advanceUntilIdle()
@@ -376,7 +376,7 @@ class ScanViewModelTest {
         val vm = buildViewModel()
         runPipelineToCompletion(vm, this)
 
-        coVerify { resultRepository.saveDelta(monthKey, delta) }
+        coVerify { resultRepository.saveResult(any(), delta) }
         assertEquals(delta, inputSlot.captured.deltaResult)
     }
 
@@ -391,7 +391,7 @@ class ScanViewModelTest {
         runPipelineToCompletion(vm, this)
 
         // Without this the rescan leaves the previous scan's arrows next to new scores.
-        coVerify { resultRepository.saveDelta(monthKey, delta) }
+        coVerify { resultRepository.saveResult(any(), delta) }
     }
 
     @Test
@@ -402,7 +402,8 @@ class ScanViewModelTest {
         runPipelineToCompletion(vm, this)
 
         verify(exactly = 0) { deltaEngine.computeDelta(any(), any()) }
-        coVerify(exactly = 0) { resultRepository.saveDelta(any<String>(), any<DeltaResult>()) }
+        // A null delta clears the row rather than leaving a stale one behind.
+        coVerify { resultRepository.saveResult(any(), null) }
     }
 
     // ------------------------------------------------------------------ error mapping
@@ -483,7 +484,7 @@ class ScanViewModelTest {
 
         assertNull(vm.state.value.error)
         assertTrue(vm.state.value.isComplete)
-        coVerify { resultRepository.saveResult(any()) }
+        coVerify { resultRepository.saveResult(any(), any()) }
     }
 
     @Test
@@ -595,7 +596,7 @@ class ScanViewModelTest {
         assertFalse(vm.state.value.isProcessing)
         assertFalse(vm.state.value.isComplete)
         verify(exactly = 0) { analytics.emit("inference_start", any()) }
-        coVerify(exactly = 0) { resultRepository.saveResult(any()) }
+        coVerify(exactly = 0) { resultRepository.saveResult(any(), any()) }
     }
 
     @Test

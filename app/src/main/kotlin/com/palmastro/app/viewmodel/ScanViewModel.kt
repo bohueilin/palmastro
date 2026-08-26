@@ -293,9 +293,12 @@ class ScanViewModel @Inject constructor(
     private fun rebuildMetricsFor(angle: Angle) {
         // A retake between the restore and here drops the angle: nothing to rebuild.
         val path = capturedPaths[angle] ?: return
-        runCatching {
-            val bitmap = decodeSampledBitmap(path) ?: return
+        val bitmap = runCatching { decodeSampledBitmap(path) }.getOrNull() ?: return
+        try {
             palmMetricsByAngle[angle] = analyzeGuarded(bitmap)?.palmMetrics
+        } catch (_: Exception) {
+            // Best-effort per the KDoc; the finally still frees the frame.
+        } finally {
             bitmap.recycle()
         }
     }
@@ -663,14 +666,10 @@ class ScanViewModel @Inject constructor(
                     }
                 }
 
-                deltaResult?.let { delta ->
-                    resultRepository.saveDelta(monthKey, delta)
-                }
-
                 val resultId = UUID.randomUUID().toString()
                 val keepPhotos = profile.rawMediaRetention
                 resultRepository.saveResult(
-                    MonthlyResultEntity(
+                    result = MonthlyResultEntity(
                         id = resultId,
                         monthKey = monthKey,
                         scanSessionId = UUID.randomUUID().toString(),
@@ -689,7 +688,10 @@ class ScanViewModel @Inject constructor(
                         scanQualityScore = avgQuality,
                         featureCoverage = palmResult.featureCoverage,
                         scanImagePath = if (keepPhotos) "scans/$monthKey" else "",
-                    )
+                    ),
+                    // Written together: a null delta clears the row, so a same-month
+                    // rescan can never keep the replaced reading's arrows.
+                    delta = deltaResult,
                 )
                 // Deleted only on the success path: retryProcessing() re-feeds these same
                 // files into the extractor, so a failed pipeline must keep them.
